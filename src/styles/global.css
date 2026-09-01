@@ -3,3 +3,48 @@
 @import '@astrojs/starlight-tailwind';
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+
+  --color-accent-50: var(--color-blue-50);
+  --color-accent-100: var(--color-blue-100);
+  --color-accent-200: var(--color-blue-200);
+  --color-accent-300: var(--color-blue-300);
+  --color-accent-400: var(--color-blue-400);
+  --color-accent-500: var(--color-blue-500);
+  --color-accent-600: var(--color-blue-600);
+  --color-accent-700: var(--color-blue-700);
+  --color-accent-800: var(--color-blue-800);
+  --color-accent-900: var(--color-blue-900);
+  --color-accent-950: var(--color-blue-950);
+
+  --color-gray-50: #f7f7f8;
+  --color-gray-100: #ededee;
+  --color-gray-200: #dedee1;
+  --color-gray-300: #c9c9cd;
+  --color-gray-400: #a3a3a9;
+  --color-gray-500: #77777f;
+  --color-gray-600: #5b5b63;
+  --color-gray-700: #414147;
+  --color-gray-800: #303035;
+  --color-gray-900: #232327;
+  --color-gray-950: #18181b;
+}
+
+:root {
+  --sl-content-width: 54rem;
+  --sl-sidebar-width: 18.5rem;
+}
+
+:root:not([data-theme='light']),
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #193a5a;
+  --sl-color-accent: #60a5fa;
+  --sl-color-accent-high: #bfdbfe;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--sl-color-accent) 25%, transparent);
+}
