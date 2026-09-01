@@ -34,6 +34,8 @@
 }
 
 :root {
+  --sl-nav-height: 6.75rem;
+  --sl-nav-pad-y: 0rem;
   --sl-content-width: 54rem;
   --sl-sidebar-width: 18.5rem;
 }
@@ -47,4 +49,10 @@
 
 ::selection {
   background: color-mix(in srgb, var(--sl-color-accent) 25%, transparent);
+}
+
+@media (max-width: 49.999rem) {
+  starlight-menu-button button {
+    top: 0.875rem;
+  }
 }

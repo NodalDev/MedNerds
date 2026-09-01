@@ -12,10 +12,17 @@ export default defineConfig({
       description: 'Freies medizinisches Wissen – verständlich, fundiert und offen zugänglich.',
       defaultLocale: 'de',
       customCss: ['./src/styles/global.css'],
+      components: {
+        Header: './src/components/MedNerdsHeader.astro',
+      },
       sidebar: [
         {
           label: 'MedDocs',
           items: [
+            {
+              label: 'Übersicht',
+              slug: 'meddocs',
+            },
             {
               label: 'Kardiologie',
               items: [

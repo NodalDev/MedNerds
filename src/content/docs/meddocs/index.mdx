@@ -1,0 +1,28 @@
+---
+title: MedDocs
+description: Das offene medizinische Nachschlagewerk von MedNerds.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+MedDocs bündelt strukturiertes medizinisches Wissen und macht Zusammenhänge
+über Fachgebiete hinweg schnell auffindbar.
+
+:::note[Im Aufbau]
+Die derzeitigen Seiten sind ein technischer und gestalterischer Prototyp. Alle
+medizinischen Inhalte erhalten später Quellen, Versionsangaben und eine
+redaktionelle Prüfung.
+:::
+
+## Fachgebiete
+
+<CardGrid>
+  <Card title="Kardiologie" icon="heart">
+    Grundlagen, Diagnostik, Krankheitsbilder und Therapie.
+    [Anatomie des Herzens öffnen →](/meddocs/kardiologie/anatomie-des-herzens/)
+  </Card>
+  <Card title="Weitere Fachgebiete" icon="add-document">
+    Innere Medizin, Neurologie, Pharmakologie und weitere Bereiche folgen
+    schrittweise.
+  </Card>
+</CardGrid>

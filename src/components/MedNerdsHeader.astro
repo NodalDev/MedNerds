@@ -1,0 +1,161 @@
+---
+import DefaultHeader from '@astrojs/starlight/components/Header.astro';
+
+const pathname = Astro.url.pathname;
+const productLinks = [
+  { label: 'MedDocs', href: '/meddocs/' },
+  { label: 'MedLearn', href: '/medlearn/' },
+  { label: 'MedCases', href: '/medcases/' },
+  { label: 'MedBlog', href: '/medblog/' },
+  { label: 'MedNerds Basel', href: '/mednerds-basel/' },
+];
+
+const activeProduct = productLinks.find(({ href }) => pathname.startsWith(href));
+---
+
+<div class="mednerds-header">
+  <div class="primary-row">
+    <DefaultHeader><slot /></DefaultHeader>
+  </div>
+
+  <nav class="product-nav" aria-label="MedNerds Bereiche">
+    <div class="desktop-product-links sl-hidden md:sl-flex">
+      {
+        productLinks.map(({ label, href }) => {
+          const isActive = pathname.startsWith(href);
+          return (
+            <a
+              href={href}
+              class:list={{ 'product-link': true, active: isActive }}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {label}
+            </a>
+          );
+        })
+      }
+    </div>
+
+    <mednerds-product-switcher class="mobile-product-switcher sl-flex md:sl-hidden">
+      <label for="mednerds-product-select">Bereich</label>
+      <select id="mednerds-product-select" aria-label="MedNerds Bereich auswählen">
+        <option value="/" selected={!activeProduct}>Startseite</option>
+        {
+          productLinks.map(({ label, href }) => (
+            <option value={href} selected={activeProduct?.href === href}>{label}</option>
+          ))
+        }
+      </select>
+    </mednerds-product-switcher>
+  </nav>
+</div>
+
+<script>
+  class MedNerdsProductSwitcher extends HTMLElement {
+    connectedCallback() {
+      const select = this.querySelector('select');
+      select?.addEventListener('change', () => {
+        window.location.href = select.value;
+      });
+    }
+  }
+
+  if (!customElements.get('mednerds-product-switcher')) {
+    customElements.define('mednerds-product-switcher', MedNerdsProductSwitcher);
+  }
+</script>
+
+<style>
+  .mednerds-header {
+    display: grid;
+    grid-template-rows: 3.75rem 3rem;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .primary-row {
+    min-width: 0;
+  }
+
+  .product-nav {
+    min-width: 0;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .desktop-product-links {
+    height: 100%;
+  }
+
+  .product-link {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    padding: 0 0.9rem;
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 150ms ease, background-color 150ms ease;
+  }
+
+  .product-link:hover {
+    color: var(--sl-color-white);
+    background: color-mix(in srgb, var(--sl-color-accent) 8%, transparent);
+  }
+
+  .product-link.active {
+    color: var(--sl-color-text-accent);
+  }
+
+  .product-link.active::after {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0;
+    left: 0.75rem;
+    height: 2px;
+    border-radius: 999px 999px 0 0;
+    background: var(--sl-color-accent);
+    content: '';
+  }
+
+  .mobile-product-switcher {
+    align-items: center;
+    gap: 0.75rem;
+    height: 100%;
+  }
+
+  .mobile-product-switcher label {
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .mobile-product-switcher select {
+    min-width: 0;
+    max-width: 13rem;
+    height: 2.15rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.65rem;
+    padding: 0 2rem 0 0.75rem;
+    background-color: var(--sl-color-black);
+    color: var(--sl-color-white);
+    font: inherit;
+    font-size: var(--sl-text-sm);
+  }
+
+  .mobile-product-switcher select:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 50rem) {
+    .desktop-product-links {
+      align-items: stretch;
+      gap: 0.25rem;
+      padding-inline-start: calc(var(--sl-sidebar-width) + 0.75rem);
+    }
+  }
+</style>
