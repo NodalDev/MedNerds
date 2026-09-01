@@ -1,40 +1,37 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: MedNerds
+description: Freies medizinisches Wissen, Lernen und klinische Fälle an einem Ort.
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  tagline: Freies medizinisches Wissen. Von der Community, für alle.
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: MedDocs entdecken
+      link: /meddocs/kardiologie/anatomie-des-herzens/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Wissen, Lernen und Austausch verbinden
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
+MedNerds soll medizinische Inhalte schnell auffindbar, verständlich strukturiert
+und offen zugänglich machen. Die Plattform wächst schrittweise mit ihren
+Nutzerinnen und Nutzern.
+
+<CardGrid>
+	<Card title="MedDocs" icon="open-book">
+		Strukturiertes medizinisches Wissen mit klaren Kapiteln, Quellen und
+		Querverweisen. [Beispielartikel öffnen →](/meddocs/kardiologie/anatomie-des-herzens/)
 	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
+	<Card title="MedLearn" icon="pencil">
+		Lernpfade, Quizfragen und Wiederholungen werden in einer späteren Etappe
+		ergänzt.
 	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
+	<Card title="MedCases" icon="document">
+		Klinische Fallbeispiele sollen Wissen mit realistischen Entscheidungen
+		verbinden.
 	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
+	<Card title="MedBlog" icon="add-document">
+		Neuigkeiten, Einordnungen und Beiträge aus der MedNerds-Community.
 	</Card>
 </CardGrid>
