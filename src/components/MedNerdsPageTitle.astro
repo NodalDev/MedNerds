@@ -1,0 +1,202 @@
+---
+import DefaultPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+import type { StarlightRouteData } from '@astrojs/starlight/route-data';
+
+type SidebarEntry = StarlightRouteData['sidebar'][number];
+
+interface Breadcrumb {
+  label: string;
+  href?: string;
+  current?: boolean;
+}
+
+const { sidebar } = Astro.locals.starlightRoute;
+const pathname = Astro.url.pathname;
+
+const isMedDocs = pathname.startsWith('/meddocs/');
+
+function getOverviewHref(entries: SidebarEntry[]) {
+  const overview = entries.find(
+    (entry) =>
+      entry.type === 'link' &&
+      entry.label === 'Übersicht'
+  );
+
+  return overview?.type === 'link'
+    ? overview.href
+    : undefined;
+}
+
+function findCurrentPath(
+  entries: SidebarEntry[],
+  trail: Breadcrumb[] = []
+): Breadcrumb[] | null {
+  for (const entry of entries) {
+    /*
+     * Aktuelle Seite gefunden.
+     */
+    if (entry.type === 'link') {
+      if (entry.isCurrent) {
+        return [
+          ...trail,
+          {
+            label: entry.label,
+            current: true,
+          },
+        ];
+      }
+
+      continue;
+    }
+
+    /*
+     * Sidebar-Gruppe.
+     *
+     * Hat sie eine direkte "Übersicht", wird auch
+     * der Breadcrumb der Gruppe klickbar.
+     */
+    const groupBreadcrumb: Breadcrumb = {
+      label: entry.label,
+      href: getOverviewHref(entry.entries),
+    };
+
+    const result = findCurrentPath(
+      entry.entries,
+      [...trail, groupBreadcrumb]
+    );
+
+    if (result) {
+      return result;
+    }
+  }
+
+  return null;
+}
+
+let breadcrumbs: Breadcrumb[] = [];
+
+if (isMedDocs && pathname !== '/meddocs/') {
+  const sidebarPath = findCurrentPath(sidebar);
+
+  if (sidebarPath) {
+    breadcrumbs = [
+      {
+        label: 'MedDocs',
+        href: '/meddocs/',
+      },
+      ...sidebarPath,
+    ];
+
+    /*
+     * Bei einer Kapitelübersicht erhalten wir z.B.:
+     *
+     * MedDocs
+     * Echokardiographie
+     * Übersicht
+     *
+     * Für Breadcrumbs ist aber schöner:
+     *
+     * MedDocs > Echokardiographie
+     */
+    const last = breadcrumbs.at(-1);
+
+    if (
+      last?.label === 'Übersicht' &&
+      breadcrumbs.length > 1
+    ) {
+      breadcrumbs.pop();
+
+      const newLast = breadcrumbs.at(-1);
+
+      if (newLast) {
+        newLast.href = undefined;
+        newLast.current = true;
+      }
+    }
+  }
+}
+---
+
+{
+  breadcrumbs.length > 0 && (
+    <nav
+      class="mednerds-breadcrumbs"
+      aria-label="Breadcrumb"
+    >
+      <ol>
+        {
+          breadcrumbs.map((crumb) => (
+            <li>
+              {
+                crumb.href && !crumb.current ? (
+                  <a href={crumb.href}>{crumb.label}</a>
+                ) : (
+                  <span aria-current={crumb.current ? 'page' : undefined}>
+                    {crumb.label}
+                  </span>
+                )
+              }
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  )
+}
+
+<DefaultPageTitle />
+
+<style>
+  .mednerds-breadcrumbs {
+    margin-block-end: 0.35rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .mednerds-breadcrumbs ol {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 0.35rem;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+  }
+
+  .mednerds-breadcrumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .mednerds-breadcrumbs li + li::before {
+    content: '›';
+
+    color: var(--sl-color-gray-3);
+    font-weight: 400;
+  }
+
+  .mednerds-breadcrumbs a,
+  .mednerds-breadcrumbs span {
+    color: var(--sl-color-accent);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .mednerds-breadcrumbs a {
+    transition: color 120ms ease;
+  }
+
+  .mednerds-breadcrumbs a:hover {
+    color: var(--sl-color-accent-high);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .mednerds-breadcrumbs [aria-current='page'] {
+    opacity: 0.75;
+  }
+</style>

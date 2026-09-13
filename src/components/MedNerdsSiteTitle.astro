@@ -1,0 +1,98 @@
+---
+import mainLight from '../assets/Logos/MedNerds - horizontal - hell.svg?url';
+import mainDark from '../assets/Logos/MedNerds - horizontal - dunkel.svg?url';
+import ProductLogo from './ProductLogo.astro';
+
+const pathname = Astro.url.pathname;
+const products = [
+  { href: '/meddocs/', label: 'MedDocs', product: 'meddocs' },
+  { href: '/medlearn/', label: 'MedLearn', product: 'medlearn' },
+  { href: '/medcases/', label: 'MedCases', product: 'medcases' },
+  { href: '/medblog/', label: 'MedBlog', product: 'medblog' },
+  { href: '/medtools/', label: 'MedTools', product: 'medtools' },
+  { href: '/mednerds-basel/', label: 'MedNerds Basel', product: 'mednerds-basel' },
+] as const;
+const activeProduct = products.find(({ href }) => pathname.startsWith(href));
+---
+
+<div class="brand-lockup">
+  <a href="/" class="main-brand" aria-label="MedNerds Startseite">
+    <img class="brand-light" src={mainLight} width="1321" height="288" alt="MedNerds" />
+    <img class="brand-dark" src={mainDark} width="1321" height="288" alt="MedNerds" />
+  </a>
+  {
+    activeProduct && (
+      <>
+        <span class="brand-divider" aria-hidden="true" />
+        <a class="section-brand" href={activeProduct.href} aria-label={`${activeProduct.label} Startseite`}>
+          <ProductLogo product={activeProduct.product} />
+        </a>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .main-brand,
+  .section-brand {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    text-decoration: none;
+  }
+
+  .main-brand img {
+    width: auto;
+    height: 2.55rem;
+  }
+
+  .brand-divider {
+    flex: 0 0 auto;
+    width: 1px;
+    height: 2.1rem;
+    background: var(--sl-color-gray-5);
+  }
+
+  .section-brand {
+    --product-logo-height: 1.95rem;
+    max-width: 11rem;
+  }
+
+  .section-brand :global(.product-logo) {
+    transform: translateY(10%);
+  }
+
+  @media (max-width: 31rem) {
+    .brand-lockup {
+      gap: 0.5rem;
+    }
+
+    .main-brand img {
+      height: 1.95rem;
+    }
+
+    .brand-divider {
+      height: 1.6rem;
+    }
+
+    .section-brand {
+      --product-logo-height: 1.45rem;
+      max-width: 7rem;
+    }
+  }
+
+  @media (max-width: 23rem) {
+    .brand-divider,
+    .section-brand {
+      display: none;
+    }
+  }
+</style>

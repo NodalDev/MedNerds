@@ -1,0 +1,64 @@
+---
+import DefaultTwoColumnContent from '@astrojs/starlight/components/TwoColumnContent.astro';
+---
+
+<DefaultTwoColumnContent {...Astro.props}>
+  <slot name="right-sidebar" slot="right-sidebar" />
+  <slot />
+</DefaultTwoColumnContent>
+
+<style is:global>
+  @layer starlight.core {
+    /*
+     * Desktop:
+     * Starlights rechte "On this page"-Sidebar bleibt
+     * in ihrer originalen Spalte, wird aber nicht mehr
+     * am Viewport fixiert.
+     *
+     * Dadurch:
+     * - bleibt sie beim Scrollen sichtbar,
+     * - stoppt automatisch am Ende ihres Parent-Containers,
+     * - läuft nicht über den globalen SiteFooter.
+     */
+    @media (min-width: 72rem) {
+      .right-sidebar-container > .right-sidebar {
+        position: sticky;
+
+        /*
+         * Unterhalb des festen Headers kleben.
+         */
+        top: var(--sl-nav-height);
+
+        /*
+         * Das Original verwendet:
+         *
+         * top: 0;
+         * padding-top: var(--sl-nav-height);
+         *
+         * Da wir jetzt direkt unter dem Header beginnen,
+         * brauchen wir dieses zusätzliche Padding nicht mehr.
+         */
+        padding-top: 0;
+
+        /*
+         * Sichtbare Höhe unterhalb des Headers.
+         */
+        height: calc(
+          100vh - var(--sl-nav-height)
+        );
+
+        /*
+         * Lange Inhaltsverzeichnisse bleiben
+         * innerhalb der rechten Sidebar scrollbar.
+         */
+        overflow-y: auto;
+
+        /*
+         * Starlights vorhandene Spaltenbreite bleibt
+         * vollständig erhalten.
+         */
+        width: 100%;
+      }
+    }
+  }
+</style>

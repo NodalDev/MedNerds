@@ -1,0 +1,419 @@
+---
+const year = new Date().getFullYear();
+
+const productLinks = [
+  { label: 'MedDocs', href: '/meddocs/' },
+  { label: 'MedBlog', href: '/medblog/' },
+  { label: 'MedLearn', href: '/medlearn/' },
+  { label: 'MedCases', href: '/medcases/' },
+  { label: 'MedTools', href: '/medtools/' },
+  { label: 'MedNerds Basel', href: '/mednerds-basel/' },
+] as const;
+---
+
+<footer class="mn-site-footer">
+
+  <!-- ========================================
+       Medizinischer Hinweis
+       ======================================== -->
+
+  <section
+    class="mn-medical-notice"
+    aria-labelledby="mn-medical-notice-title"
+  >
+    <div class="mn-site-footer-inner mn-medical-notice-inner">
+      <div class="mn-medical-notice-icon" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="9"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <path
+            d="M12 10.5v6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <circle
+            cx="12"
+            cy="7.5"
+            r="1"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+
+      <div class="mn-medical-notice-content">
+        <h2 id="mn-medical-notice-title">
+          Medizinischer Hinweis &amp; Haftungsausschluss
+        </h2>
+
+        <p>
+          Die Inhalte von MedNerds dienen ausschließlich der Information
+          und medizinischen Fortbildung. Sie ersetzen keine individuelle
+          ärztliche Untersuchung, Diagnose oder Behandlung. Trotz
+          sorgfältiger Erstellung kann keine Gewähr für Vollständigkeit,
+          Aktualität und Fehlerfreiheit übernommen werden. Bei Beschwerden
+          oder in einem Notfall wende dich bitte an medizinisches
+          Fachpersonal beziehungsweise den örtlichen Notruf.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       Hauptfooter
+       ======================================== -->
+
+  <div class="mn-footer-main">
+    <div class="mn-site-footer-inner mn-footer-grid">
+
+      <div class="mn-footer-brand">
+        <strong>MedNerds</strong>
+
+        <p>
+          Freies medizinisches Wissen – verständlich,
+          fundiert und offen zugänglich.
+        </p>
+      </div>
+
+      <nav
+        class="mn-footer-column"
+        aria-label="MedNerds Bereiche"
+      >
+        <h2>Bereiche</h2>
+
+        {
+          productLinks.map(({ label, href }) => (
+            <a href={href}>{label}</a>
+          ))
+        }
+      </nav>
+
+      <nav
+        class="mn-footer-column"
+        aria-label="Informationen"
+      >
+        <h2>Informationen</h2>
+
+        <a href="/ueber-mednerds/">Über MedNerds</a>
+        <a href="/impressum/">Impressum</a>
+        <a href="/datenschutz/">Datenschutz</a>
+      </nav>
+
+    </div>
+  </div>
+
+  <!-- ========================================
+       Copyright
+       ======================================== -->
+
+  <div class="mn-copyright">
+    <div class="mn-site-footer-inner mn-copyright-inner">
+      <small>
+        © {year} MedNerds Basel
+      </small>
+    </div>
+  </div>
+
+</footer>
+
+<style>
+  /* ----------------------------------------
+     Gesamter Site Footer
+     ---------------------------------------- */
+
+  .mn-site-footer {
+    width: 100%;
+    margin: 0;
+  }
+
+  /*
+   * Der Hintergrund läuft über die volle Seitenbreite.
+   * Nur der Inhalt wird hier begrenzt.
+   */
+  .mn-site-footer-inner {
+    width: min(100%, 90rem);
+
+    margin-inline: auto;
+
+    padding-inline:
+      clamp(1.5rem, 4vw, 4rem);
+  }
+
+  /* ----------------------------------------
+     Medizinischer Hinweis
+     ---------------------------------------- */
+
+  .mn-medical-notice {
+    width: 100%;
+
+    padding-block: 2.5rem;
+
+    background: color-mix(
+      in oklch,
+      var(--sl-color-blue-low) 72%,
+      var(--sl-color-bg) 28%
+    );
+
+    border-block:
+      1px solid
+      color-mix(
+        in oklch,
+        var(--sl-color-blue) 18%,
+        transparent
+      );
+  }
+
+  .mn-medical-notice-inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+
+    align-items: start;
+
+    gap: 1rem;
+  }
+
+  .mn-medical-notice-icon {
+    display: grid;
+    place-items: center;
+
+    width: 2.25rem;
+    height: 2.25rem;
+
+    margin-top: 0.05rem;
+
+    color: var(--sl-color-blue);
+
+    border:
+      1px solid
+      color-mix(
+        in oklch,
+        var(--sl-color-blue) 60%,
+        transparent
+      );
+
+    border-radius: 50%;
+  }
+
+  .mn-medical-notice-icon svg {
+    display: block;
+  }
+
+  .mn-medical-notice-content {
+    min-width: 0;
+  }
+
+  .mn-medical-notice h2 {
+    margin: 0;
+
+    color: var(--sl-color-white);
+
+    font-size: var(--sl-text-base);
+    font-weight: 650;
+    line-height: 1.4;
+  }
+
+  .mn-medical-notice p {
+    max-width: 75rem;
+
+    margin: 0.5rem 0 0;
+
+    color: var(--sl-color-gray-2);
+
+    font-size: var(--sl-text-sm);
+    line-height: 1.7;
+  }
+
+  /* ----------------------------------------
+     Hauptfooter
+     ---------------------------------------- */
+
+  .mn-footer-main {
+    width: 100%;
+
+    padding-block: 4rem 4.5rem;
+
+    background: var(--mn-surface);
+  }
+
+  .mn-footer-grid {
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1.6fr)
+      minmax(10rem, 0.8fr)
+      minmax(10rem, 0.8fr);
+
+    align-items: start;
+
+    gap: clamp(3rem, 7vw, 7rem);
+  }
+
+  /* ----------------------------------------
+     Brand
+     ---------------------------------------- */
+
+  .mn-footer-brand {
+    max-width: 28rem;
+  }
+
+  .mn-footer-brand strong {
+    display: block;
+
+    margin: 0;
+
+    color: var(--sl-color-white);
+
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .mn-footer-brand p {
+    max-width: 26rem;
+
+    margin: 1rem 0 0;
+
+    color: var(--sl-color-gray-3);
+
+    font-size: var(--sl-text-base);
+    line-height: 1.7;
+  }
+
+  /* ----------------------------------------
+     Link-Spalten
+     ---------------------------------------- */
+
+  .mn-footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 0.7rem;
+  }
+
+  .mn-footer-column h2 {
+    margin: 0 0 0.65rem;
+
+    color: var(--sl-color-gray-1);
+
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mn-footer-column a {
+    color: var(--sl-color-gray-3);
+
+    font-size: var(--sl-text-base);
+    line-height: 1.5;
+
+    text-decoration: none;
+
+    transition: color 120ms ease;
+  }
+
+  .mn-footer-column a:hover {
+    color: var(--sl-color-accent);
+  }
+
+  .mn-footer-column a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 0.2rem;
+
+    border-radius: 0.2rem;
+  }
+
+  /* ----------------------------------------
+     Copyright
+     ---------------------------------------- */
+
+  .mn-copyright {
+    width: 100%;
+
+    padding-block: 1rem;
+
+    background: color-mix(
+      in oklch,
+      var(--sl-color-bg) 82%,
+      var(--sl-color-black) 18%
+    );
+
+    border-top:
+      1px solid
+      var(--sl-color-hairline);
+  }
+
+  .mn-copyright-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mn-copyright small {
+    color: var(--sl-color-gray-3);
+
+    font-size: var(--sl-text-xs);
+    line-height: 1.5;
+  }
+
+  /* ----------------------------------------
+     Responsive
+     ---------------------------------------- */
+
+  @media (max-width: 50rem) {
+    .mn-site-footer-inner {
+      padding-inline: 1.25rem;
+    }
+
+    .mn-medical-notice {
+      padding-block: 2rem;
+    }
+
+    .mn-medical-notice-inner {
+      gap: 0.8rem;
+    }
+
+    .mn-medical-notice-icon {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .mn-footer-main {
+      padding-block: 3rem;
+    }
+
+    .mn-footer-grid {
+      grid-template-columns: 1fr;
+
+      gap: 2.75rem;
+    }
+
+    .mn-footer-brand {
+      max-width: 32rem;
+    }
+
+    .mn-footer-column {
+      gap: 0.6rem;
+    }
+
+    .mn-copyright-inner {
+      justify-content: flex-start;
+    }
+  }
+</style>

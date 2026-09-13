@@ -1,0 +1,467 @@
+---
+import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
+---
+
+<script is:inline>
+  try {
+    if (localStorage.getItem('mednerds-sidebar-collapsed') === 'true') {
+      document.documentElement.classList.add('mn-sidebar-collapsed');
+    }
+  } catch {}
+</script>
+
+<DefaultSidebar {...Astro.props}>
+  <slot />
+</DefaultSidebar>
+
+<script>
+  /*
+   * Wenn über einen Haupttitel auf dessen Übersicht navigiert wird,
+   * merken wir uns die Zielroute.
+   *
+   * Auf der Zielseite wird die aktive Hauptgruppe dann einmal
+   * mit der Reveal-Animation eingeblendet.
+   */
+  const REVEAL_AFTER_NAV_KEY = 'mednerds-sidebar-reveal-after-navigation';
+
+  function getTopLevelDetails() {
+    return Array.from(
+      document.querySelectorAll(
+        '.sidebar-content .top-level > li > details'
+      )
+    ).filter(
+      (element): element is HTMLDetailsElement =>
+        element instanceof HTMLDetailsElement
+    );
+  }
+
+  function closeOtherTopLevelGroups(
+    current: HTMLDetailsElement
+  ) {
+    for (const details of getTopLevelDetails()) {
+      if (details !== current) {
+        details.open = false;
+      }
+    }
+  }
+
+  function closeAllTopLevelGroups() {
+    for (const details of getTopLevelDetails()) {
+      details.open = false;
+    }
+  }
+
+  /*
+   * Einheitliche Reveal-Animation starten.
+   */
+  function revealDetails(details: HTMLDetailsElement) {
+    details.classList.remove('mn-opening');
+
+    /*
+     * Reflow erzwingen, damit die Animation auch dann
+     * erneut startet, wenn dieselbe Gruppe schon einmal
+     * animiert wurde.
+     */
+    void details.offsetWidth;
+
+    details.classList.add('mn-opening');
+
+    /*
+     * Die CSS-Animation dauert 350 ms.
+     * Etwas Puffer verhindert, dass die Klasse
+     * vor Animationsende entfernt wird.
+     */
+    window.setTimeout(() => {
+      details.classList.remove('mn-opening');
+    }, 420);
+  }
+
+  /*
+   * Nach Navigation über einen Haupttitel:
+   *
+   * Beispiel:
+   * Klick auf "Echokardiographie"
+   * → /meddocs/echokardiographie/
+   * → Echokardiographie ist dort bereits geöffnet
+   * → deren Inhalt wird trotzdem einmal animiert.
+   */
+  function revealActiveGroupAfterNavigation() {
+    const targetPath = sessionStorage.getItem(
+      REVEAL_AFTER_NAV_KEY
+    );
+
+    if (!targetPath) {
+      return;
+    }
+
+    /*
+     * Nur auf der tatsächlich gespeicherten Zielroute animieren.
+     * Dadurch bleibt kein veralteter Reveal-Zustand übrig.
+     */
+    const currentPath = window.location.pathname;
+
+    if (currentPath !== targetPath) {
+      return;
+    }
+
+    sessionStorage.removeItem(REVEAL_AFTER_NAV_KEY);
+
+    const activeLink = document.querySelector(
+      '.sidebar-content .top-level a[aria-current="page"]'
+    );
+
+    const activeDetails = activeLink?.closest(
+      '.sidebar-content .top-level > li > details'
+    );
+
+    if (!(activeDetails instanceof HTMLDetailsElement)) {
+      return;
+    }
+
+    /*
+     * Sicherstellen, dass die aktive Gruppe offen ist.
+     */
+    activeDetails.open = true;
+
+    /*
+     * Animation auf der neuen Seite starten.
+     */
+    revealDetails(activeDetails);
+  }
+
+  function initialiseSidebarAccordion() {
+    const topLevelDetails = getTopLevelDetails();
+
+    /*
+     * Nur die Hauptgruppe offen lassen,
+     * die die aktive Seite enthält.
+     *
+     * Auf /meddocs/ liegt die aktive Seite außerhalb
+     * aller Hauptgruppen → alle bleiben geschlossen.
+     */
+    const activeLink = document.querySelector(
+      '.sidebar-content .top-level a[aria-current="page"]'
+    );
+
+    const activeDetails = activeLink?.closest(
+      '.sidebar-content .top-level > li > details'
+    );
+
+    for (const details of topLevelDetails) {
+      details.open = details === activeDetails;
+    }
+
+    /*
+     * Accordion nur für die oberste Ebene:
+     * Öffnet sich eine Hauptgruppe, schließen alle anderen.
+     */
+    for (const details of topLevelDetails) {
+      if (details.dataset.mednerdsAccordion === 'true') {
+        continue;
+      }
+
+      details.dataset.mednerdsAccordion = 'true';
+
+      details.addEventListener('toggle', () => {
+        if (details.open) {
+          closeOtherTopLevelGroups(details);
+        }
+      });
+    }
+
+    /*
+     * Globaler MedDocs-Übersichtslink:
+     * beim Klick alle Hauptgruppen schließen.
+     */
+    const topLevelLinks = document.querySelectorAll(
+      '.sidebar-content .top-level > li > a'
+    );
+
+    for (const link of topLevelLinks) {
+      if (!(link instanceof HTMLAnchorElement)) continue;
+
+      if (link.dataset.mednerdsOverview === 'true') {
+        continue;
+      }
+
+      link.dataset.mednerdsOverview = 'true';
+
+      link.addEventListener('click', () => {
+        closeAllTopLevelGroups();
+      });
+    }
+  }
+
+  /*
+   * Reveal-Animation für alle <details>-Gruppen.
+   *
+   * Die Klasse wird bereits beim Klick auf <summary>
+   * gesetzt, also bevor das native <details> sichtbar
+   * geöffnet wird.
+   *
+   * Dadurch gibt es beim normalen Aufklappen keinen
+   * sichtbaren Zwischenframe.
+   */
+  function initialiseRevealAnimations() {
+    const detailsElements = document.querySelectorAll(
+      '.sidebar-content .top-level details'
+    );
+
+    for (const details of detailsElements) {
+      if (!(details instanceof HTMLDetailsElement)) continue;
+
+      if (details.dataset.mednerdsReveal === 'true') {
+        continue;
+      }
+
+      details.dataset.mednerdsReveal = 'true';
+
+      const summary = details.querySelector(':scope > summary');
+
+      if (!(summary instanceof HTMLElement)) continue;
+
+      summary.addEventListener('click', (event) => {
+        const target = event.target;
+
+        if (!(target instanceof Element)) return;
+
+        /*
+         * Haupttitel mit eigener Übersicht:
+         * dort wird direkt navigiert.
+         *
+         * Deshalb auf der ALTEN Seite keine
+         * Öffnungsanimation starten.
+         *
+         * Die Animation wird nach der Navigation
+         * auf der Zielseite ausgeführt.
+         */
+        const isTopLevelSummary = summary.matches(
+          '.top-level > li > details > summary'
+        );
+
+        if (
+          isTopLevelSummary &&
+          target.closest('.group-label')
+        ) {
+          const directLinks = details.querySelectorAll(
+            ':scope > ul > li > a'
+          );
+
+          const overviewLink = Array.from(directLinks).find(
+            (link) =>
+              link instanceof HTMLAnchorElement &&
+              link.textContent?.trim() === 'Übersicht'
+          );
+
+          if (overviewLink) {
+            return;
+          }
+        }
+
+        /*
+         * Normales manuelles Öffnen:
+         * Animation bereits vor dem nativen Toggle vorbereiten.
+         */
+        if (!details.open) {
+          details.classList.remove('mn-opening');
+
+          void details.offsetWidth;
+
+          details.classList.add('mn-opening');
+        }
+      });
+
+      details.addEventListener('toggle', () => {
+        /*
+         * Beim Schließen sofort aufräumen.
+         */
+        if (!details.open) {
+          details.classList.remove('mn-opening');
+          return;
+        }
+
+        /*
+         * Die Animation läuft 350 ms.
+         */
+        window.setTimeout(() => {
+          details.classList.remove('mn-opening');
+        }, 420);
+      });
+    }
+  }
+
+  /*
+   * Klick auf einen Haupttitel:
+   *
+   * EKG
+   * Echokardiographie
+   * Sonographie
+   * Notfallmedizin
+   * Diverses
+   *
+   * Hat die Gruppe einen direkten Link "Übersicht",
+   * navigiert der Titel zu dieser Seite.
+   *
+   * Der Pfeil rechts behält die normale
+   * Auf-/Zu-Funktion.
+   */
+  function initialiseGroupTitleLinks() {
+    const summaries = document.querySelectorAll(
+      '.sidebar-content .top-level > li > details > summary'
+    );
+
+    for (const summary of summaries) {
+      if (!(summary instanceof HTMLElement)) continue;
+
+      if (summary.dataset.mednerdsTitleLink === 'true') {
+        continue;
+      }
+
+      summary.dataset.mednerdsTitleLink = 'true';
+
+      summary.addEventListener('click', (event) => {
+        const target = event.target;
+
+        if (!(target instanceof Element)) return;
+
+        /*
+         * Klick auf Pfeil:
+         * normales <details>-Verhalten.
+         */
+        if (target.closest('.caret')) {
+          return;
+        }
+
+        /*
+         * Nur Klick auf den Gruppentitel.
+         */
+        if (!target.closest('.group-label')) {
+          return;
+        }
+
+        const details = summary.parentElement;
+
+        if (!(details instanceof HTMLDetailsElement)) return;
+
+        /*
+         * Direkten Übersicht-Link innerhalb
+         * dieser Hauptgruppe suchen.
+         */
+        const directLinks = details.querySelectorAll(
+          ':scope > ul > li > a'
+        );
+
+        const overviewLink = Array.from(directLinks).find(
+          (link) =>
+            link instanceof HTMLAnchorElement &&
+            link.textContent?.trim() === 'Übersicht'
+        );
+
+        /*
+         * Falls noch keine Übersicht vorhanden ist:
+         * normales Starlight-Verhalten beibehalten.
+         */
+        if (!(overviewLink instanceof HTMLAnchorElement)) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        /*
+         * Andere Hauptgruppen schließen.
+         */
+        closeOtherTopLevelGroups(details);
+
+        /*
+         * Zielroute speichern.
+         *
+         * Dadurch weiß die neue Seite, dass die aktive
+         * Hauptgruppe einmal animiert werden soll.
+         */
+        sessionStorage.setItem(
+          REVEAL_AFTER_NAV_KEY,
+          overviewLink.pathname
+        );
+
+        /*
+         * Direkt zur Übersicht navigieren.
+         *
+         * Die Gruppe wird auf der alten Seite bewusst
+         * NICHT vorher geöffnet.
+         */
+        overviewLink.click();
+      });
+    }
+  }
+
+  function initialiseMedNerdsSidebar() {
+    /*
+     * 1. korrekten Accordion-Zustand herstellen
+     * 2. normale Reveal-Animationen registrieren
+     * 3. Haupttitel klickbar machen
+     * 4. ggf. Reveal nach Navigation ausführen
+     */
+    initialiseSidebarAccordion();
+    initialiseRevealAnimations();
+    initialiseGroupTitleLinks();
+    revealActiveGroupAfterNavigation();
+  }
+
+  /*
+   * Erster Seitenaufbau.
+   */
+  initialiseMedNerdsSidebar();
+
+  /*
+   * Nach clientseitigen Astro-Navigationen erneut
+   * initialisieren.
+   */
+  document.addEventListener(
+    'astro:page-load',
+    initialiseMedNerdsSidebar
+  );
+</script>
+
+<style is:global>
+  /*
+   * Sidebar Reveal
+   *
+   * Alle untergeordneten Elemente erscheinen
+   * gleichzeitig.
+   *
+   * 350 ms entspricht deinem gewünschten Tempo.
+   */
+  .sidebar-content
+    .top-level
+    details.mn-opening
+    > ul {
+    animation: mn-sidebar-reveal 350ms
+      cubic-bezier(0.2, 0, 0, 1)
+      both;
+  }
+
+  @keyframes mn-sidebar-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(-0.1rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /*
+   * Reduced Motion respektieren.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar-content
+      .top-level
+      details.mn-opening
+      > ul {
+      animation: none;
+    }
+  }
+</style>

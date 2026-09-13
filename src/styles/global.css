@@ -3,52 +3,522 @@
 @import '@astrojs/starlight-tailwind';
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
+@import './mednerds-colors.css';
+
+@layer base {
+  html {
+    overflow-y: scroll;
+  }
+
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
 
 @theme {
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     'Segoe UI', sans-serif;
 
-  --color-accent-50: var(--color-blue-50);
-  --color-accent-100: var(--color-blue-100);
-  --color-accent-200: var(--color-blue-200);
-  --color-accent-300: var(--color-blue-300);
-  --color-accent-400: var(--color-blue-400);
-  --color-accent-500: var(--color-blue-500);
-  --color-accent-600: var(--color-blue-600);
-  --color-accent-700: var(--color-blue-700);
-  --color-accent-800: var(--color-blue-800);
-  --color-accent-900: var(--color-blue-900);
-  --color-accent-950: var(--color-blue-950);
+  --color-accent-50: var(--color-MedNerds-50);
+  --color-accent-100: var(--color-MedNerds-100);
+  --color-accent-200: var(--color-MedNerds-200);
+  --color-accent-300: var(--color-MedNerds-300);
+  --color-accent-400: var(--color-MedNerds-400);
+  --color-accent-500: var(--color-MedNerds-500);
+  --color-accent-600: var(--color-MedNerds-600);
+  --color-accent-700: var(--color-MedNerds-700);
+  --color-accent-800: var(--color-MedNerds-800);
+  --color-accent-900: var(--color-MedNerds-900);
+  --color-accent-950: var(--color-MedNerds-950);
 
-  --color-gray-50: #f7f7f8;
-  --color-gray-100: #ededee;
-  --color-gray-200: #dedee1;
-  --color-gray-300: #c9c9cd;
-  --color-gray-400: #a3a3a9;
-  --color-gray-500: #77777f;
-  --color-gray-600: #5b5b63;
-  --color-gray-700: #414147;
-  --color-gray-800: #303035;
-  --color-gray-900: #232327;
-  --color-gray-950: #18181b;
+  --color-gray-50: var(--color-background-50);
+  --color-gray-100: var(--color-background-100);
+  --color-gray-200: var(--color-background-200);
+  --color-gray-300: var(--color-background-300);
+  --color-gray-400: var(--color-background-400);
+  --color-gray-500: var(--color-background-500);
+  --color-gray-600: var(--color-background-600);
+  --color-gray-700: var(--color-background-700);
+  --color-gray-800: var(--color-background-800);
+  --color-gray-900: var(--color-background-900);
+  --color-gray-950: var(--color-background-950);
 }
+
+/* ----------------------------------------
+   Product accent colors
+   ---------------------------------------- */
+
+:root:has(.mednerds-header[data-product='medlearn']) {
+  --color-accent-50: var(--color-MedLearn-50);
+  --color-accent-100: var(--color-MedLearn-100);
+  --color-accent-200: var(--color-MedLearn-200);
+  --color-accent-300: var(--color-MedLearn-300);
+  --color-accent-400: var(--color-MedLearn-400);
+  --color-accent-500: var(--color-MedLearn-500);
+  --color-accent-600: var(--color-MedLearn-600);
+  --color-accent-700: var(--color-MedLearn-700);
+  --color-accent-800: var(--color-MedLearn-800);
+  --color-accent-900: var(--color-MedLearn-900);
+  --color-accent-950: var(--color-MedLearn-950);
+}
+
+:root:has(.mednerds-header[data-product='medcases']) {
+  --color-accent-50: var(--color-MedCases-50);
+  --color-accent-100: var(--color-MedCases-100);
+  --color-accent-200: var(--color-MedCases-200);
+  --color-accent-300: var(--color-MedCases-300);
+  --color-accent-400: var(--color-MedCases-400);
+  --color-accent-500: var(--color-MedCases-500);
+  --color-accent-600: var(--color-MedCases-600);
+  --color-accent-700: var(--color-MedCases-700);
+  --color-accent-800: var(--color-MedCases-800);
+  --color-accent-900: var(--color-MedCases-900);
+  --color-accent-950: var(--color-MedCases-950);
+}
+
+:root:has(.mednerds-header[data-product='medblog']) {
+  --color-accent-50: var(--color-MedBlog-50);
+  --color-accent-100: var(--color-MedBlog-100);
+  --color-accent-200: var(--color-MedBlog-200);
+  --color-accent-300: var(--color-MedBlog-300);
+  --color-accent-400: var(--color-MedBlog-400);
+  --color-accent-500: var(--color-MedBlog-500);
+  --color-accent-600: var(--color-MedBlog-600);
+  --color-accent-700: var(--color-MedBlog-700);
+  --color-accent-800: var(--color-MedBlog-800);
+  --color-accent-900: var(--color-MedBlog-900);
+  --color-accent-950: var(--color-MedBlog-950);
+}
+
+:root:has(.mednerds-header[data-product='medtools']) {
+  --color-accent-50: var(--color-MedTools-50);
+  --color-accent-100: var(--color-MedTools-100);
+  --color-accent-200: var(--color-MedTools-200);
+  --color-accent-300: var(--color-MedTools-300);
+  --color-accent-400: var(--color-MedTools-400);
+  --color-accent-500: var(--color-MedTools-500);
+  --color-accent-600: var(--color-MedTools-600);
+  --color-accent-700: var(--color-MedTools-700);
+  --color-accent-800: var(--color-MedTools-800);
+  --color-accent-900: var(--color-MedTools-900);
+  --color-accent-950: var(--color-MedTools-950);
+}
+
+/* ----------------------------------------
+   Dark mode / default theme
+   ---------------------------------------- */
 
 :root {
-  --sl-nav-height: 6.75rem;
+  --sl-nav-height: 7.5rem;
   --sl-nav-pad-y: 0rem;
-  --sl-content-width: 54rem;
+  --sl-content-width: 60rem;
   --sl-sidebar-width: 18.5rem;
+
+  /*
+   * Dark background
+   *
+   * Eine Stufe heller als ursprünglich:
+   * background-950 → background-900
+   */
+  --sl-color-bg: var(--color-background-900);
+
+  /* Starlight grayscale mapping */
+  --sl-color-white: var(--color-background-50);
+  --sl-color-black: var(--color-background-950);
+
+  --sl-color-gray-1: var(--color-background-100);
+  --sl-color-gray-2: var(--color-background-200);
+  --sl-color-gray-3: var(--color-background-400);
+  --sl-color-gray-4: var(--color-background-600);
+  --sl-color-gray-5: var(--color-background-800);
+  --sl-color-gray-6: var(--color-background-900);
+  --sl-color-gray-7: var(--color-background-950);
+
+  /*
+   * Header / raised surfaces
+   */
+  --mn-surface: color-mix(
+    in oklch,
+    var(--color-background-900) 70%,
+    var(--color-background-800) 30%
+  );
+
+  --mn-surface-hover: var(--color-background-800);
+
+  --sl-color-bg-nav: var(--mn-surface);
+  --sl-color-bg-sidebar: var(--sl-color-bg);
+
+  --sl-color-hairline: var(--sl-color-gray-5);
+  --sl-color-hairline-light: var(--sl-color-gray-5);
+
+  /* Accent */
+  --sl-color-accent-low: var(--color-accent-900);
+  --sl-color-accent: var(--color-accent-300);
+  --sl-color-accent-high: var(--color-accent-100);
+
+  --mn-tools: var(--color-MedTools-300);
+
+  /* Starlight semantic colors */
+  --sl-color-blue-low: var(--color-MedNerds-950);
+  --sl-color-blue: var(--color-MedNerds-300);
+  --sl-color-blue-high: var(--color-MedNerds-100);
+
+  --sl-color-purple-low: var(--color-MedBlog-950);
+  --sl-color-purple: var(--color-MedBlog-300);
+  --sl-color-purple-high: var(--color-MedBlog-100);
+
+  --sl-color-red-low: var(--color-MedLearn-950);
+  --sl-color-red: var(--color-MedLearn-300);
+  --sl-color-red-high: var(--color-MedLearn-100);
+
+  --sl-color-orange-low: var(--color-MedCases-950);
+  --sl-color-orange: var(--color-MedCases-300);
+  --sl-color-orange-high: var(--color-MedCases-100);
+
+  --sl-color-green-low: var(--color-MedTools-950);
+  --sl-color-green: var(--color-MedTools-300);
+  --sl-color-green-high: var(--color-MedTools-100);
+
+  /*
+   * Sidebar
+   *
+   * Minimal mit der aktiven Produktfarbe getönt.
+   */
+  --mn-sidebar-bg: color-mix(
+    in oklch,
+    var(--sl-color-bg) 96%,
+    var(--sl-color-accent) 4%
+  );
+
+  --mn-sidebar-active-bg: color-mix(
+    in oklch,
+    var(--sl-color-accent) 11%,
+    transparent
+  );
+
+  --mn-sidebar-hover-bg: color-mix(
+    in oklch,
+    var(--sl-color-accent) 6%,
+    transparent
+  );
 }
 
-:root:not([data-theme='light']),
-:root[data-theme='dark'] {
-  --sl-color-accent-low: #193a5a;
-  --sl-color-accent: #60a5fa;
-  --sl-color-accent-high: #bfdbfe;
+/* ----------------------------------------
+   Light mode
+   ---------------------------------------- */
+
+:root[data-theme='light'] {
+  /*
+   * Light background
+   *
+   * Zurück zum ursprünglichen background-50.
+   */
+  --sl-color-bg: var(--color-background-50);
+
+  --sl-color-white: var(--color-background-950);
+  --sl-color-black: var(--color-background-50);
+
+  --sl-color-gray-1: var(--color-background-900);
+  --sl-color-gray-2: var(--color-background-800);
+  --sl-color-gray-3: var(--color-background-600);
+  --sl-color-gray-4: var(--color-background-500);
+  --sl-color-gray-5: var(--color-background-300);
+  --sl-color-gray-6: var(--color-background-100);
+  --sl-color-gray-7: var(--color-background-50);
+
+  /*
+   * Ursprüngliche helle Surface-Abstufung.
+   */
+  --mn-surface: color-mix(
+    in oklch,
+    var(--color-background-50) 80%,
+    var(--color-background-100) 20%
+  );
+
+  --mn-surface-hover: var(--color-background-100);
+
+  --sl-color-bg-nav: var(--mn-surface);
+  --sl-color-bg-sidebar: var(--sl-color-bg);
+
+  /* Accent */
+  --sl-color-accent-low: var(--color-accent-100);
+  --sl-color-accent: var(--color-accent-700);
+  --sl-color-accent-high: var(--color-accent-900);
+
+  --mn-tools: var(--color-MedTools-700);
+
+  /* Starlight semantic colors */
+  --sl-color-blue-low: var(--color-MedNerds-50);
+  --sl-color-blue: var(--color-MedNerds-700);
+  --sl-color-blue-high: var(--color-MedNerds-900);
+
+  --sl-color-purple-low: var(--color-MedBlog-50);
+  --sl-color-purple: var(--color-MedBlog-700);
+  --sl-color-purple-high: var(--color-MedBlog-900);
+
+  --sl-color-red-low: var(--color-MedLearn-50);
+  --sl-color-red: var(--color-MedLearn-700);
+  --sl-color-red-high: var(--color-MedLearn-900);
+
+  --sl-color-orange-low: var(--color-MedCases-50);
+  --sl-color-orange: var(--color-MedCases-700);
+  --sl-color-orange-high: var(--color-MedCases-900);
+
+  --sl-color-green-low: var(--color-MedTools-50);
+  --sl-color-green: var(--color-MedTools-700);
+  --sl-color-green-high: var(--color-MedTools-900);
 }
+
+/* ----------------------------------------
+   MedDocs sidebar
+   ---------------------------------------- */
+
+@layer components {
+  /*
+   * Ebene 1:
+   * EKG, Echokardiographie, Sonographie, ...
+   */
+  .sidebar-content .top-level > li > details > summary .large {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+
+    color: var(--sl-color-gray-1);
+  }
+
+  /*
+   * Ebene 2:
+   * Theorie & Grundlagen, ...
+   */
+  .sidebar-content
+    .top-level
+    > li
+    > details
+    ul
+    details
+    > summary
+    .large {
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    line-height: 1.4;
+
+    letter-spacing: 0;
+    text-transform: none;
+
+    color: var(--sl-color-gray-1);
+  }
+
+  /*
+   * Normale Seitenlinks
+   */
+  .sidebar-content .top-level a {
+    font-size: var(--sl-text-sm);
+    font-weight: 400;
+
+    color: var(--sl-color-gray-2);
+
+    border-radius: 0.4rem;
+
+    transition:
+      color 120ms ease,
+      background-color 120ms ease;
+  }
+
+  /*
+   * Hover
+   */
+  .sidebar-content .top-level a:hover {
+    color: var(--sl-color-accent);
+    background: var(--mn-sidebar-hover-bg);
+  }
+
+  /*
+   * Aktive Seite
+   */
+  .sidebar-content .top-level a[aria-current='page'] {
+    color: var(--sl-color-accent);
+    background: var(--mn-sidebar-active-bg);
+
+    font-weight: 500;
+  }
+
+  /*
+   * Pfeile weniger dominant
+   */
+  .sidebar-content .top-level summary svg {
+    opacity: 0.5;
+  }
+
+  /*
+   * Abstand zwischen Hauptbereichen
+   */
+  .sidebar-content .top-level > li + li {
+    margin-top: 0.85rem;
+  }
+
+  /*
+   * Untergeordnete Inhalte kompakt halten
+   */
+  .sidebar-content .top-level details ul {
+    margin-top: 0.25rem;
+  }
+
+  /*
+   * Desktop-Sidebar:
+   * flach, rahmenlos, leicht eingefärbt.
+   */
+  @media (min-width: 50rem) {
+    .sidebar-pane {
+      background: var(--mn-sidebar-bg);
+
+      border: 0;
+      border-inline-end: 0;
+
+      padding: 0.65rem 0.75rem;
+    }
+
+    .sidebar-content {
+      height: 100%;
+
+      padding: 1rem 0 1.25rem;
+
+      background: transparent;
+
+      border: 0;
+      border-radius: 0;
+
+      box-shadow: none;
+    }
+  }
+}
+
+/* ----------------------------------------
+   Product navigation
+   ---------------------------------------- */
+
+.product-link {
+  --product-light: var(--color-MedNerds-700);
+  --product-dark: var(--color-MedNerds-300);
+  --product-color: var(--product-dark);
+}
+
+.product-link[data-product='medlearn'] {
+  --product-light: var(--color-MedLearn-700);
+  --product-dark: var(--color-MedLearn-300);
+}
+
+.product-link[data-product='medcases'] {
+  --product-light: var(--color-MedCases-700);
+  --product-dark: var(--color-MedCases-300);
+}
+
+.product-link[data-product='medblog'] {
+  --product-light: var(--color-MedBlog-700);
+  --product-dark: var(--color-MedBlog-300);
+}
+
+.product-link[data-product='medtools'] {
+  --product-light: var(--color-MedTools-700);
+  --product-dark: var(--color-MedTools-300);
+}
+
+:root[data-theme='light'] .product-link {
+  --product-color: var(--product-light);
+}
+
+/* ----------------------------------------
+   Cards
+   ---------------------------------------- */
+
+.card {
+  --sl-card-border: var(--sl-color-accent);
+  --sl-card-bg: var(--sl-color-accent-low);
+
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Product cards on the landing page follow the same palette as navigation. */
+:root:has(.mednerds-header[data-product='mednerds']) .card:nth-child(1) {
+  --sl-card-border: var(--sl-color-blue);
+  --sl-card-bg: var(--sl-color-blue-low);
+}
+
+:root:has(.mednerds-header[data-product='mednerds']) .card:nth-child(2) {
+  --sl-card-border: var(--sl-color-red);
+  --sl-card-bg: var(--sl-color-red-low);
+}
+
+:root:has(.mednerds-header[data-product='mednerds']) .card:nth-child(3) {
+  --sl-card-border: var(--sl-color-orange);
+  --sl-card-bg: var(--sl-color-orange-low);
+}
+
+:root:has(.mednerds-header[data-product='mednerds']) .card:nth-child(4) {
+  --sl-card-border: var(--sl-color-purple);
+  --sl-card-bg: var(--sl-color-purple-low);
+}
+
+/* ----------------------------------------
+   Logos
+   ---------------------------------------- */
+
+.product-logo {
+  display: inline-flex;
+  align-items: center;
+
+  height: var(--product-logo-height, 1.375rem);
+  max-width: 100%;
+}
+
+.product-logo img {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+
+  object-fit: contain;
+}
+
+.brand-light,
+:root[data-theme='light'] .brand-dark {
+  display: none;
+}
+
+:root[data-theme='light'] .brand-light {
+  display: block;
+}
+
+@media print {
+  .product-logo .brand-dark {
+    display: none;
+  }
+
+  .product-logo .brand-light {
+    display: block;
+  }
+}
+
+/* ----------------------------------------
+   Miscellaneous
+   ---------------------------------------- */
 
 ::selection {
-  background: color-mix(in srgb, var(--sl-color-accent) 25%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--sl-color-accent) 25%,
+    transparent
+  );
 }
 
 @media (max-width: 49.999rem) {
