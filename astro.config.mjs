@@ -6,6 +6,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://mednerds.ch',
+  
   integrations: [
     starlight({
       title: 'MedNerds',
@@ -46,7 +48,7 @@ export default defineConfig({
           items: [
             {
               label: 'Übersicht',
-              link: 'meddocs/echokardiographie/',
+              link: '/meddocs/echokardiographie/',
             },
             {
               label: 'Theorie & Grundlagen',
