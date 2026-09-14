@@ -1,0 +1,31 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { ComponentProps } from 'astro/types';
+
+interface Props extends Omit<ComponentProps<typeof Icon>, 'size' | 'is:inline' | 'title' | 'desc'> {
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+}
+
+const sizes = { xs: '0.875rem', sm: '1rem', md: '1.25rem', lg: '1.5rem', xl: '2rem' };
+const { name, size = 'md', class: className, 'aria-label': label, ...attributes } = Astro.props;
+---
+
+<Icon
+  {...attributes}
+  name={name}
+  is:inline
+  size={sizes[size]}
+  class:list={['mn-icon', className]}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+/>
+
+<style>
+  .mn-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+</style>

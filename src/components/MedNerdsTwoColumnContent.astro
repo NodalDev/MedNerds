@@ -9,55 +9,277 @@ import DefaultTwoColumnContent from '@astrojs/starlight/components/TwoColumnCont
 
 <style is:global>
   @layer starlight.core {
-    /*
-     * Desktop:
-     * Starlights rechte "On this page"-Sidebar bleibt
-     * in ihrer originalen Spalte, wird aber nicht mehr
-     * am Viewport fixiert.
-     *
-     * Dadurch:
-     * - bleibt sie beim Scrollen sichtbar,
-     * - stoppt automatisch am Ende ihres Parent-Containers,
-     * - läuft nicht über den globalen SiteFooter.
-     */
     @media (min-width: 72rem) {
+      /* ========================================
+         MedNerds right TOC
+         ======================================== */
+
+      /*
+       * WICHTIG:
+       *
+       * Die Breitenberechnung von
+       * .right-sidebar-container und .main-pane
+       * bleibt komplett bei Starlight.
+       *
+       * Dadurch verschiebt sich der Artikel nicht.
+       */
+
+      .right-sidebar-container {
+        border: 0;
+      }
+
+      /* ========================================
+         Sichtbare TOC-Fläche
+         ======================================== */
+
       .right-sidebar-container > .right-sidebar {
         position: sticky;
 
-        /*
-         * Unterhalb des festen Headers kleben.
-         */
-        top: var(--sl-nav-height);
+        top: calc(var(--sl-nav-height) + 1.5rem);
 
         /*
-         * Das Original verwendet:
-         *
-         * top: 0;
-         * padding-top: var(--sl-nav-height);
-         *
-         * Da wir jetzt direkt unter dem Header beginnen,
-         * brauchen wir dieses zusätzliche Padding nicht mehr.
+         * Sichtbar deutlich schmaler,
+         * ohne Starlights reservierte Layout-Spalte
+         * zu verändern.
+         */
+        width: 12.5rem;
+        max-width: calc(100% - 1.5rem);
+
+        /*
+         * Rechts innerhalb der vorhandenen
+         * Starlight-Spalte ausrichten.
+         */
+        margin-inline-start: auto;
+        margin-inline-end: 0.75rem;
+
+        /*
+         * Keine durchgehende vertikale Linie.
+         */
+        border: 0;
+
+        /*
+         * Das alte Starlight-Padding für fixed
+         * brauchen wir bei sticky nicht mehr.
          */
         padding-top: 0;
+        padding-inline: 0;
 
         /*
-         * Sichtbare Höhe unterhalb des Headers.
+         * Bei langen Artikeln darf ausschließlich
+         * vertikal gescrollt werden.
          */
-        height: calc(
-          100vh - var(--sl-nav-height)
+        height: auto;
+
+        max-height: calc(
+          100vh -
+          var(--sl-nav-height) -
+          3rem
         );
 
-        /*
-         * Lange Inhaltsverzeichnisse bleiben
-         * innerhalb der rechten Sidebar scrollbar.
-         */
+        min-width: 0;
+
         overflow-y: auto;
+        overflow-x: hidden;
+
+        overscroll-behavior: contain;
+
+        scrollbar-width: thin;
+
+        scrollbar-color:
+          color-mix(
+            in srgb,
+            var(--sl-color-gray-4) 45%,
+            transparent
+          )
+          transparent;
+      }
+
+      /* Chromium / Safari */
+      .right-sidebar-container
+        > .right-sidebar::-webkit-scrollbar {
+        width: 0.3rem;
+        height: 0;
+      }
+
+      .right-sidebar-container
+        > .right-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .right-sidebar-container
+        > .right-sidebar::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+
+        background:
+          color-mix(
+            in srgb,
+            var(--sl-color-gray-4) 45%,
+            transparent
+          );
+      }
+
+      .right-sidebar-container
+        > .right-sidebar::-webkit-scrollbar-thumb:hover {
+        background:
+          color-mix(
+            in srgb,
+            var(--sl-color-gray-3) 65%,
+            transparent
+          );
+      }
+
+      /* ========================================
+         TOC-Inhalt
+         ======================================== */
+
+      .right-sidebar starlight-toc {
+        display: block;
+
+        width: 100%;
+        min-width: 0;
+      }
+
+      .right-sidebar starlight-toc nav {
+        width: 100%;
+        min-width: 0;
+
+        padding:
+          0.15rem
+          0
+          1rem;
+      }
+
+      /* ========================================
+         Titel: On this page
+         ======================================== */
+
+      .right-sidebar
+        #starlight__on-this-page {
+        margin:
+          0
+          0
+          0.7rem;
+
+        padding: 0;
+
+        color:
+          var(--sl-color-gray-1);
+
+        font-size: 0.78rem;
+        font-weight: 700;
+
+        line-height: 1.35;
+
+        letter-spacing: 0.01em;
+      }
+
+      /* ========================================
+         TOC-Liste
+         ======================================== */
+
+      .right-sidebar starlight-toc ul {
+        min-width: 0;
+      }
+
+      .right-sidebar starlight-toc li {
+        min-width: 0;
+      }
+
+      /* ========================================
+         Links
+         ======================================== */
+
+      .right-sidebar starlight-toc a {
+        position: relative;
+
+        display: block;
+
+        min-width: 0;
+
+        margin-block: 0.05rem;
+
+        padding:
+          0.3rem
+          0.45rem
+          0.3rem
+          0.7rem;
+
+        border-radius: 0.35rem;
+
+        color:
+          var(--sl-color-gray-3);
+
+        font-size: 0.77rem;
+
+        line-height: 1.35;
+
+        text-decoration: none;
 
         /*
-         * Starlights vorhandene Spaltenbreite bleibt
-         * vollständig erhalten.
+         * Lange Überschriften umbrechen,
+         * statt horizontal zu scrollen.
          */
-        width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+
+        transition:
+          color 120ms ease,
+          background-color 120ms ease;
+      }
+
+      .right-sidebar starlight-toc a:hover {
+        color:
+          var(--sl-color-gray-1);
+
+        background:
+          color-mix(
+            in srgb,
+            var(--sl-color-accent) 5%,
+            transparent
+          );
+      }
+
+      /* ========================================
+         Aktiver Abschnitt
+         ======================================== */
+
+      .right-sidebar
+        starlight-toc
+        a[aria-current='true'] {
+        color:
+          var(--sl-color-accent);
+
+        background:
+          color-mix(
+            in srgb,
+            var(--sl-color-accent) 7%,
+            transparent
+          );
+
+        font-weight: 500;
+      }
+
+      /*
+       * Kurzer lokaler Marker wie bei moderneren
+       * Docs-Seiten statt einer hohen Trennlinie.
+       */
+      .right-sidebar
+        starlight-toc
+        a[aria-current='true']::before {
+        position: absolute;
+
+        top: 0.3rem;
+        bottom: 0.3rem;
+        left: 0;
+
+        width: 2px;
+
+        border-radius: 999px;
+
+        background:
+          var(--sl-color-accent);
+
+        content: '';
       }
     }
   }

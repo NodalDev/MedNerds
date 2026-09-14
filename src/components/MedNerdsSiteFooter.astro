@@ -1,4 +1,6 @@
 ---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+
 const year = new Date().getFullYear();
 
 const productLinks = [
@@ -23,35 +25,7 @@ const productLinks = [
   >
     <div class="mn-site-footer-inner mn-medical-notice-inner">
       <div class="mn-medical-notice-icon" aria-hidden="true">
-        <svg
-          viewBox="0 0 24 24"
-          width="22"
-          height="22"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="9"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-          />
-
-          <path
-            d="M12 10.5v6"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-
-          <circle
-            cx="12"
-            cy="7.5"
-            r="1"
-            fill="currentColor"
-          />
-        </svg>
+        <MedNerdsIcon name="tabler:info-circle" class="notice-icon" />
       </div>
 
       <div class="mn-medical-notice-content">
@@ -110,6 +84,7 @@ const productLinks = [
         <a href="/ueber-mednerds/">Über MedNerds</a>
         <a href="/impressum/">Impressum</a>
         <a href="/datenschutz/">Datenschutz</a>
+        <a href="/haftungsausschluss/">Haftungsausschluss</a>
       </nav>
 
     </div>
@@ -196,19 +171,12 @@ const productLinks = [
 
     color: var(--sl-color-blue);
 
-    border:
-      1px solid
-      color-mix(
-        in oklch,
-        var(--sl-color-blue) 60%,
-        transparent
-      );
-
-    border-radius: 50%;
   }
 
-  .mn-medical-notice-icon svg {
+  .mn-medical-notice-icon :global(.notice-icon) {
     display: block;
+      width: 2rem;
+      height: 2rem;
   }
 
   .mn-medical-notice-content {

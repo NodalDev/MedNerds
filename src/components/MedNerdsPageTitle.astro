@@ -1,5 +1,6 @@
 ---
 import DefaultPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+import MedNerdsIcon from './MedNerdsIcon.astro';
 import type { StarlightRouteData } from '@astrojs/starlight/route-data';
 
 type SidebarEntry = StarlightRouteData['sidebar'][number];
@@ -125,8 +126,9 @@ if (isMedDocs && pathname !== '/meddocs/') {
     >
       <ol>
         {
-          breadcrumbs.map((crumb) => (
+          breadcrumbs.map((crumb, index) => (
             <li>
+              {index > 0 && <MedNerdsIcon name="tabler:chevron-right" size="xs" class="breadcrumb-separator" />}
               {
                 crumb.href && !crumb.current ? (
                   <a href={crumb.href}>{crumb.label}</a>
@@ -172,11 +174,8 @@ if (isMedDocs && pathname !== '/meddocs/') {
     gap: 0.35rem;
   }
 
-  .mednerds-breadcrumbs li + li::before {
-    content: '›';
-
+  .mednerds-breadcrumbs :global(.breadcrumb-separator) {
     color: var(--sl-color-gray-3);
-    font-weight: 400;
   }
 
   .mednerds-breadcrumbs a,

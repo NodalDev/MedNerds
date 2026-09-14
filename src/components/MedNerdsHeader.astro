@@ -1,34 +1,61 @@
 ---
 import DefaultHeader from '@astrojs/starlight/components/Header.astro';
+import MedNerdsIcon from './MedNerdsIcon.astro';
 
 const pathname = Astro.url.pathname;
+
 const productLinks = [
   { label: 'MedDocs', href: '/meddocs/', product: 'meddocs' },
   { label: 'MedBlog', href: '/medblog/', product: 'medblog' },
   { label: 'MedLearn', href: '/medlearn/', product: 'medlearn' },
   { label: 'MedCases', href: '/medcases/', product: 'medcases' },
   { label: 'MedTools', href: '/medtools/', product: 'medtools' },
-  { label: 'MedNerds Basel', href: '/mednerds-basel/', product: 'mednerds-basel' },
+  {
+    label: 'MedNerds Basel',
+    href: '/mednerds-basel/',
+    product: 'mednerds-basel',
+  },
 ] as const;
 
-const activeProduct = productLinks.find(({ href }) => pathname.startsWith(href));
+const activeProduct = productLinks.find(({ href }) =>
+  pathname.startsWith(href)
+);
 ---
 
-<div class="mednerds-header" data-product={activeProduct?.href.split('/')[1] ?? 'mednerds'}>
+<div
+  class="mednerds-header"
+  data-product={activeProduct?.href.split('/')[1] ?? 'mednerds'}
+>
+  <!-- ========================================
+       Primärer Header
+       ======================================== -->
+
   <div class="primary-row">
-    <DefaultHeader><slot /></DefaultHeader>
+    <div class="primary-inner">
+      <DefaultHeader>
+        <slot />
+      </DefaultHeader>
+    </div>
   </div>
+
+  <!-- ========================================
+       Produktnavigation
+       ======================================== -->
 
   <nav class="product-nav" aria-label="MedNerds Bereiche">
     <div class="desktop-product-links sl-hidden md:sl-flex">
       {
         productLinks.map(({ label, href }) => {
           const isActive = pathname.startsWith(href);
+
           return (
             <a
               href={href}
               data-product={href.split('/')[1]}
-              class:list={{ 'product-link': true, active: isActive }}
+              class:list={{
+                'product-link': true,
+                active: isActive,
+              }}
               aria-current={isActive ? 'page' : undefined}
             >
               {label}
@@ -38,18 +65,47 @@ const activeProduct = productLinks.find(({ href }) => pathname.startsWith(href))
       }
     </div>
 
-    <mednerds-product-switcher class="mobile-product-switcher sl-flex md:sl-hidden">
-      <label for="mednerds-product-select">Bereich</label>
+    <mednerds-product-switcher
+      class="mobile-product-switcher sl-flex md:sl-hidden"
+    >
+      <label for="mednerds-product-select">
+        Bereich
+      </label>
+
       <div class="mobile-product-control">
-        <div class="mobile-product-label" aria-hidden="true">
-          <span>{activeProduct?.label ?? 'Startseite'}</span>
-          <span class="select-chevron">⌄</span>
+        <div
+          class="mobile-product-label"
+          aria-hidden="true"
+        >
+          <span>
+            {activeProduct?.label ?? 'Startseite'}
+          </span>
+
+          <MedNerdsIcon
+            name="tabler:chevron-down"
+            size="sm"
+          />
         </div>
-        <select id="mednerds-product-select" aria-label="MedNerds Bereich auswählen">
-          <option value="/" selected={!activeProduct}>Startseite</option>
+
+        <select
+          id="mednerds-product-select"
+          aria-label="MedNerds Bereich auswählen"
+        >
+          <option
+            value="/"
+            selected={!activeProduct}
+          >
+            Startseite
+          </option>
+
           {
             productLinks.map(({ label, href }) => (
-              <option value={href} selected={activeProduct?.href === href}>{label}</option>
+              <option
+                value={href}
+                selected={activeProduct?.href === href}
+              >
+                {label}
+              </option>
             ))
           }
         </select>
@@ -62,6 +118,7 @@ const activeProduct = productLinks.find(({ href }) => pathname.startsWith(href))
   class MedNerdsProductSwitcher extends HTMLElement {
     connectedCallback() {
       const select = this.querySelector('select');
+
       select?.addEventListener('change', () => {
         window.location.href = select.value;
       });
@@ -69,25 +126,81 @@ const activeProduct = productLinks.find(({ href }) => pathname.startsWith(href))
   }
 
   if (!customElements.get('mednerds-product-switcher')) {
-    customElements.define('mednerds-product-switcher', MedNerdsProductSwitcher);
+    customElements.define(
+      'mednerds-product-switcher',
+      MedNerdsProductSwitcher
+    );
   }
 </script>
 
 <style>
+  /* ========================================
+     Gesamter MedNerds Header
+     ======================================== */
+
   .mednerds-header {
     display: grid;
     grid-template-rows: 4.35rem 3.15rem;
+
     height: 100%;
     min-width: 0;
   }
+
+  /* ========================================
+     Primäre Header-Zeile
+     ======================================== */
 
   .primary-row {
     min-width: 0;
   }
 
+  /*
+   * Gemeinsame innere Seitenbreite.
+   *
+   * Logo und Theme-Button rücken dadurch
+   * symmetrisch vom Browserrand nach innen.
+   */
+  .primary-inner {
+    box-sizing: border-box;
+
+    width: 100%;
+    max-width: var(--mn-shell-max-width);
+
+    height: 100%;
+
+    margin-inline: auto;
+
+    padding-inline:
+      var(--mn-shell-padding-x);
+
+    min-width: 0;
+  }
+
+  /*
+   * Starlights Header besteht intern aus:
+   *
+   * 1. SiteTitle
+   * 2. Search
+   * 3. rechter Gruppe (Theme etc.)
+   *
+   * Wir geben diesen drei Bereichen eine
+   * stabile Geometrie.
+   */
+  .primary-inner :global(.header) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* ========================================
+     Produktnavigation
+     ======================================== */
+
   .product-nav {
     min-width: 0;
-    border-top: 1px solid var(--sl-color-hairline);
+
+    border-top:
+      1px solid
+      var(--sl-color-hairline);
   }
 
   .desktop-product-links {
@@ -96,101 +209,260 @@ const activeProduct = productLinks.find(({ href }) => pathname.startsWith(href))
 
   .product-link {
     position: relative;
+
     display: inline-flex;
     flex: 0 0 auto;
+
     align-items: center;
-    padding: 0 0.6rem;
-    color: var(--sl-color-gray-2);
-    font-size: var(--sl-text-base);
+
+    padding:
+      0
+      0.6rem;
+
+    color:
+      var(--sl-color-gray-2);
+
+    font-size:
+      var(--sl-text-base);
+
     font-weight: 600;
+
     text-decoration: none;
-    transition: color 150ms ease, background-color 150ms ease;
+
+    transition:
+      color 150ms ease,
+      background-color 150ms ease;
   }
 
   .product-link:hover {
-    color: var(--product-color);
-    background: color-mix(in srgb, var(--product-color) 8%, transparent);
+    color:
+      var(--product-color);
+
+    background:
+      color-mix(
+        in srgb,
+        var(--product-color) 8%,
+        transparent
+      );
   }
 
   .product-link.active {
-    color: var(--product-color);
+    color:
+      var(--product-color);
   }
 
   .product-link.active::after {
     position: absolute;
+
     right: 0.55rem;
     bottom: 0;
     left: 0.55rem;
+
     height: 2px;
-    border-radius: 999px 999px 0 0;
-    background: var(--product-color);
+
+    border-radius:
+      999px 999px 0 0;
+
+    background:
+      var(--product-color);
+
     content: '';
   }
 
+  /* ========================================
+     Mobile Produktnavigation
+     ======================================== */
+
   .mobile-product-switcher {
     align-items: center;
+
     gap: 0.75rem;
+
     height: 100%;
   }
 
   .mobile-product-switcher label {
-    color: var(--sl-color-gray-3);
-    font-size: var(--sl-text-xs);
+    color:
+      var(--sl-color-gray-3);
+
+    font-size:
+      var(--sl-text-xs);
+
     font-weight: 700;
+
     text-transform: uppercase;
+
     letter-spacing: 0.06em;
   }
 
   .mobile-product-control {
     position: relative;
+
     min-width: 0;
+
     height: 2.15rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.65rem;
-    background-color: var(--sl-color-black);
-    color: var(--sl-color-white);
+
+    border:
+      1px solid
+      var(--sl-color-gray-5);
+
+    border-radius:
+      0.65rem;
+
+    background-color:
+      var(--sl-color-black);
+
+    color:
+      var(--sl-color-white);
   }
 
   .mobile-product-label {
     display: flex;
+
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    height: 100%;
-    padding: 0 0.75rem;
-    font-size: var(--sl-text-base);
-    font-weight: 600;
-  }
 
-  .select-chevron {
-    line-height: 1;
+    gap: 1rem;
+
+    height: 100%;
+
+    padding:
+      0
+      0.75rem;
+
+    font-size:
+      var(--sl-text-base);
+
+    font-weight: 600;
   }
 
   .mobile-product-switcher select {
     position: absolute;
+
     inset: 0;
+
     width: 100%;
     height: 100%;
+
     opacity: 0;
+
     cursor: pointer;
+
     font: inherit;
   }
 
   .mobile-product-control:focus-within {
-    outline: 2px solid var(--sl-color-accent);
-    outline-offset: 2px;
+    outline:
+      2px solid
+      var(--sl-color-accent);
+
+    outline-offset:
+      2px;
   }
 
+  /* ========================================
+     Desktop
+     ======================================== */
+
   @media (min-width: 50rem) {
+    /*
+     * Überschreibt Starlights dynamische
+     * Header-Spaltenberechnung.
+     *
+     * Links:
+     * MedNerds + ggf. Produktlogo.
+     *
+     * Mitte:
+     * Suche mit stabiler Breite.
+     *
+     * Rechts:
+     * Theme-Button.
+     *
+     * Wichtig:
+     * Die Breite des Produktlogos beeinflusst
+     * dadurch NICHT mehr die Position der Suche.
+     */
+    .primary-inner :global(.header) {
+      display: grid;
+
+      grid-template-columns:
+        minmax(0, 1fr)
+        minmax(18rem, 22rem)
+        auto;
+
+      align-items: center;
+
+      gap:
+        clamp(
+          1rem,
+          2vw,
+          2rem
+        );
+    }
+
+    /*
+     * Zweiter Bereich des DefaultHeaders:
+     * Search.
+     *
+     * Rechtsbündig innerhalb seiner festen
+     * Grid-Spalte.
+     */
+    .primary-inner
+      :global(.header > div:nth-child(2)) {
+      width: 100%;
+
+      min-width: 0;
+
+      justify-self: end;
+      justify-content: flex-end;
+    }
+
+    /*
+     * Starlight gibt dem Search-Button bereits
+     * max-width: 22rem.
+     *
+     * Die Wrapper-Spalte besitzt ebenfalls
+     * maximal 22rem, deshalb bleibt sie stabil.
+     */
+    .primary-inner
+      :global(.header > div:nth-child(2) site-search) {
+      width: 100%;
+    }
+
+    /*
+     * Rechte Gruppe:
+     * Theme-/Language-/Social-Bereich bleibt
+     * immer am rechten Shell-Rand.
+     */
+    .primary-inner
+      :global(.header > .right-group) {
+      justify-self: end;
+    }
+
     .desktop-product-links {
       align-items: stretch;
+
       gap: 0.1rem;
     }
   }
 
+  /* ========================================
+     Große Desktop-Ansicht
+     ======================================== */
+
   @media (min-width: 72rem) {
+    /*
+     * Produktnavigation vorerst unverändert.
+     *
+     * Diese ziehen wir erst im nächsten Schritt
+     * auf dieselbe Shell-Breite.
+     */
     .desktop-product-links {
-      padding-inline-start: calc(var(--sl-sidebar-width) + 0.35rem);
+      padding-inline-start:
+        calc(
+          var(--sl-sidebar-width) +
+          0.35rem
+        );
     }
   }
 </style>

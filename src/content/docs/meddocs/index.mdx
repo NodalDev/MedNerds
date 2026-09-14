@@ -3,10 +3,9 @@ title: MedDocs
 description: Das offene medizinische Nachschlagewerk von MedNerds.
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
-
-MedDocs bündelt strukturiertes medizinisches Wissen und macht Zusammenhänge
-über Fachgebiete hinweg schnell auffindbar.
+import { CardGrid } from '@astrojs/starlight/components';
+import Card from '../../../components/MedNerdsCard.astro';
+import MedNerdsIcon from '../../../components/MedNerdsIcon.astro';
 
 :::note[Im Aufbau]
 Die derzeitigen Seiten sind ein technischer und gestalterischer Prototyp. Alle
@@ -16,12 +15,28 @@ redaktionelle Prüfung.
 
 ## Fachgebiete
 
+### Lorem
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, 
+vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. 
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+
+### Ipsum 
+Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. 
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, 
+vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.  
+
+#### Test 1
+Blablabla
+
+#### Test 2
+Blablabla
+
 <CardGrid>
-  <Card title="Kardiologie" icon="heart">
+  <Card title="Kardiologie" icon="healthicons:heart-organ-outline">
     Grundlagen, Diagnostik, Krankheitsbilder und Therapie.
-    [Anatomie des Herzens öffnen →](/meddocs/kardiologie/anatomie-des-herzens/)
+    <a href="/meddocs/kardiologie/anatomie-des-herzens/">Anatomie des Herzens öffnen <MedNerdsIcon name="tabler:arrow-right" size="sm" /></a>
   </Card>
-  <Card title="Weitere Fachgebiete" icon="add-document">
+  <Card title="Weitere Fachgebiete" icon="tabler:folder">
     Innere Medizin, Neurologie, Pharmakologie und weitere Bereiche folgen
     schrittweise.
   </Card>

@@ -1,0 +1,45 @@
+---
+import DefaultHero from '@astrojs/starlight/components/Hero.astro';
+import MedNerdsHeroLogo from './MedNerdsHeroLogo.astro';
+
+const isHomepage = Astro.locals.starlightRoute.id === '';
+---
+
+{
+  isHomepage ? (
+    <div class="mednerds-hero grid items-center gap-8 pt-8 pb-16 md:grid-cols-[1fr_1.35fr] md:gap-12 md:py-20 lg:gap-16">
+      <MedNerdsHeroLogo />
+      <div class="hero-copy min-w-0">
+        <DefaultHero />
+      </div>
+    </div>
+  ) : (
+    <DefaultHero />
+  )
+}
+
+<style>
+  /* Keep Starlight's title, CTA, draft notice and accessibility hooks. */
+  .hero-copy :global(.hero) {
+    display: block;
+    padding: 0;
+  }
+
+  .hero-copy :global(.tagline) {
+    max-width: 30ch;
+  }
+
+  @media (min-width: 48rem) {
+    .hero-copy :global(.stack) {
+      text-align: start;
+    }
+
+    .hero-copy :global(.copy) {
+      align-items: flex-start;
+    }
+
+    .hero-copy :global(.actions) {
+      justify-content: flex-start;
+    }
+  }
+</style>

@@ -1,5 +1,8 @@
 ---
 import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
+import MedNerdsIcon from './MedNerdsIcon.astro';
+import { sidebarIcons } from '../data/sidebar-icons';
+import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.svg?url';
 ---
 
 <script is:inline>
@@ -14,7 +17,44 @@ import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
   <slot />
 </DefaultSidebar>
 
+{Object.entries(sidebarIcons).map(([label, name]) => (
+  <template data-sidebar-icon={label}>
+    {
+      label === 'Übersicht' ? (
+        <img
+          src={medNerdsOverviewIcon}
+          alt=""
+          aria-hidden="true"
+          draggable="false"
+          class="mn-sidebar-icon mn-sidebar-brand-icon"
+        />
+      ) : (
+        <MedNerdsIcon
+          name={name}
+          size="md"
+          class="mn-sidebar-icon"
+        />
+      )
+    }
+  </template>
+))}
+
 <script>
+  // Enhance Starlight's existing labels without replacing its navigation markup.
+  // The SVGs are built locally by Astro; this only places them next to the labels.
+  function initialiseSidebarIcons() {
+    const templates = Array.from(document.querySelectorAll<HTMLTemplateElement>('template[data-sidebar-icon]'));
+    const labels = document.querySelectorAll<HTMLElement>(
+      '.sidebar-content .top-level > li > a > span:first-child, ' +
+      '.sidebar-content .top-level > li > details > summary > .group-label > .large'
+    );
+    for (const label of labels) {
+      if (label.querySelector('.mn-sidebar-icon')) continue;
+      const template = templates.find((item) => item.dataset.sidebarIcon === label.textContent?.trim());
+      if (template) label.prepend(template.content.cloneNode(true));
+    }
+  }
+
   /*
    * Wenn über einen Haupttitel auf dessen Übersicht navigiert wird,
    * merken wir uns die Zielroute.
@@ -396,6 +436,7 @@ import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
   }
 
   function initialiseMedNerdsSidebar() {
+    initialiseSidebarIcons();
     /*
      * 1. korrekten Accordion-Zustand herstellen
      * 2. normale Reveal-Animationen registrieren
@@ -424,19 +465,117 @@ import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
 </script>
 
 <style is:global>
+  /* ========================================
+     Sidebar row alignment
+     ======================================== */
+
   /*
-   * Sidebar Reveal
+   * Ganze oberste Navigationszeile vertikal
+   * zentrieren.
    *
+   * Besonders wichtig für "Übersicht",
+   * weil dort der aktive Hintergrund auf dem
+   * gesamten <a>-Element liegt.
+   */
+  .sidebar-content
+    .top-level
+    > li
+    > a {
+    display: flex;
+    align-items: center;
+  }
+
+  /*
+   * Auch die Hauptgruppen:
+   *
+   * EKG
+   * Echokardiographie
+   * Sonographie
+   * Notfallmedizin
+   * Diverses
+   *
+   * werden als vollständige Zeile vertikal
+   * zentriert.
+   */
+  .sidebar-content
+    .top-level
+    > li
+    > details
+    > summary {
+    align-items: center;
+  }
+
+  /*
+   * Icon + Text innerhalb des jeweiligen Labels
+   * ebenfalls sauber zentrieren.
+   *
+   * Dadurch beeinflussen unterschiedliche
+   * Font-Metriken das SVG nicht.
+   */
+  .sidebar-content
+    .top-level
+    > li
+    > a
+    > span:first-child,
+  .sidebar-content
+    .top-level
+    > li
+    > details
+    > summary
+    > .group-label
+    > .large {
+    display: inline-flex;
+    align-items: center;
+
+    min-width: 0;
+  }
+
+  /*
+   * Einheitliches Verhalten der Sidebar-Icons.
+   *
+   * display:block verhindert die typische
+   * zusätzliche Inline-SVG-Baseline.
+   *
+   * Die eigentliche Größe kommt weiterhin
+   * zentral aus:
+   *
+   * <MedNerdsIcon size="md" />
+   */
+  .sidebar-content .mn-sidebar-icon {
+    display: block;
+
+    flex: 0 0 auto;
+    align-self: center;
+
+    margin-inline-end: 0.5rem;
+
+    pointer-events: none;
+  }
+
+  .sidebar-content .mn-sidebar-brand-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+
+  object-fit: contain;
+}
+
+  /* ========================================
+     Sidebar Reveal
+     ======================================== */
+
+  /*
    * Alle untergeordneten Elemente erscheinen
    * gleichzeitig.
    *
-   * 350 ms entspricht deinem gewünschten Tempo.
+   * 350 ms entspricht dem gewünschten Tempo.
    */
   .sidebar-content
     .top-level
     details.mn-opening
     > ul {
-    animation: mn-sidebar-reveal 350ms
+    animation:
+      mn-sidebar-reveal
+      350ms
       cubic-bezier(0.2, 0, 0, 1)
       both;
   }
@@ -453,9 +592,10 @@ import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
     }
   }
 
-  /*
-   * Reduced Motion respektieren.
-   */
+  /* ========================================
+     Reduced Motion
+     ======================================== */
+
   @media (prefers-reduced-motion: reduce) {
     .sidebar-content
       .top-level

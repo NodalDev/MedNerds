@@ -10,7 +10,9 @@ hero:
       icon: right-arrow
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { CardGrid } from '@astrojs/starlight/components';
+import Card from '../../components/MedNerdsCard.astro';
+import MedNerdsIcon from '../../components/MedNerdsIcon.astro';
 
 ## Wissen, Lernen und Austausch verbinden
 
@@ -19,19 +21,19 @@ und offen zugänglich machen. Die Plattform wächst schrittweise mit ihren
 Nutzerinnen und Nutzern.
 
 <CardGrid>
-	<Card title="MedDocs" icon="open-book">
+	<Card title="MedDocs" icon="tabler:book">
 		Strukturiertes medizinisches Wissen mit klaren Kapiteln, Quellen und
-		Querverweisen. [Beispielartikel öffnen →](/meddocs/kardiologie/anatomie-des-herzens/)
+		Querverweisen. <a href="/meddocs/kardiologie/anatomie-des-herzens/">Beispielartikel öffnen <MedNerdsIcon name="tabler:arrow-right" size="sm" /></a>
 	</Card>
-	<Card title="MedLearn" icon="pencil">
+	<Card title="MedLearn" icon="tabler:school">
 		Lernpfade, Quizfragen und Wiederholungen werden in einer späteren Etappe
 		ergänzt.
 	</Card>
-	<Card title="MedCases" icon="document">
+	<Card title="MedCases" icon="healthicons:clinical-f-outline">
 		Klinische Fallbeispiele sollen Wissen mit realistischen Entscheidungen
 		verbinden.
 	</Card>
-	<Card title="MedBlog" icon="add-document">
+	<Card title="MedBlog" icon="tabler:news">
 		Neuigkeiten, Einordnungen und Beiträge aus der MedNerds-Community.
 	</Card>
 </CardGrid>

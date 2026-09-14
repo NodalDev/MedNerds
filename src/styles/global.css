@@ -117,6 +117,10 @@
    ---------------------------------------- */
 
 :root {
+  
+  --mn-shell-max-width: 84rem;
+  --mn-shell-padding-x: clamp(1.5rem, 4vw, 4rem);
+  
   --sl-nav-height: 7.5rem;
   --sl-nav-pad-y: 0rem;
   --sl-content-width: 60rem;
@@ -287,7 +291,7 @@
    * EKG, Echokardiographie, Sonographie, ...
    */
   .sidebar-content .top-level > li > details > summary .large {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 600;
     line-height: 1.4;
 
@@ -356,7 +360,7 @@
   /*
    * Pfeile weniger dominant
    */
-  .sidebar-content .top-level summary svg {
+  .sidebar-content .top-level summary svg.caret {
     opacity: 0.5;
   }
 

@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
+import icon from 'astro-icon';
 
 // https://astro.build/config
 export default defineConfig({
@@ -24,6 +25,7 @@ export default defineConfig({
       components: {
         Header: './src/components/MedNerdsHeader.astro',
         SiteTitle: './src/components/MedNerdsSiteTitle.astro',
+        Hero: './src/components/MedNerdsHero.astro',
         Sidebar: './src/components/MedNerdsSidebar.astro',
         PageTitle: './src/components/MedNerdsPageTitle.astro',
         Pagination: './src/components/MedNerdsPagination.astro',
@@ -81,6 +83,7 @@ export default defineConfig({
       ],
     }),
     react(),
+    icon({ include: { tabler: ['*'], healthicons: ['*'] } }),
   ],
   vite: {
     plugins: [tailwindcss()],
