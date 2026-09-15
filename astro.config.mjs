@@ -47,7 +47,10 @@ export default defineConfig({
         {
           label: 'EKG',
           collapsed: true,
-          items: [{ autogenerate: { directory: 'meddocs/ekg' } }],
+          items: [
+            { label: 'Übersicht', link: '/meddocs/ekg/' },
+            { autogenerate: { directory: 'meddocs/ekg' } },
+          ],
         },
         {
           label: 'Echokardiographie',
@@ -73,17 +76,26 @@ export default defineConfig({
         {
           label: 'Sonographie',
           collapsed: true,
-          items: [{ autogenerate: { directory: 'meddocs/sonographie' } }],
+          items: [
+            { label: 'Übersicht', link: '/meddocs/sonographie/' },
+            { autogenerate: { directory: 'meddocs/sonographie' } },
+          ],
         },
         {
           label: 'Notfallmedizin',
           collapsed: true,
-          items: [{ autogenerate: { directory: 'meddocs/notfallmedizin' } }],
+          items: [
+            { label: 'Übersicht', link: '/meddocs/notfallmedizin/' },
+            { autogenerate: { directory: 'meddocs/notfallmedizin' } },
+          ],
         },
         {
           label: 'Diverses',
           collapsed: true,
-          items: [{ autogenerate: { directory: 'meddocs/diverses' } }],
+          items: [
+            { label: 'Übersicht', link: '/meddocs/diverses/' },
+            { autogenerate: { directory: 'meddocs/diverses' } },
+          ],
         },
       ],
     }),

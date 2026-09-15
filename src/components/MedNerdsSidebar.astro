@@ -5,7 +5,9 @@ import { sidebarIcons } from '../data/sidebar-icons';
 import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.svg?url';
 import { withSidebarBadges } from '../data/sidebar-badges';
 
-if (Astro.url.pathname.startsWith('/meddocs/')) {
+const isMedDocs = Astro.url.pathname.startsWith('/meddocs/');
+
+if (isMedDocs) {
   const route = Astro.locals.starlightRoute;
   route.sidebar = withSidebarBadges(route.sidebar, route.lang);
 }
@@ -13,7 +15,7 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
 
 <script is:inline>
   try {
-    if (localStorage.getItem('mednerds-sidebar-collapsed') === 'true') {
+    if (window.location.pathname.startsWith('/meddocs/') && localStorage.getItem('mednerds-sidebar-collapsed') === 'true') {
       document.documentElement.classList.add('mn-sidebar-collapsed');
     }
   } catch {}
@@ -45,10 +47,24 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
   </template>
 ))}
 
+{isMedDocs && (
+  <button
+    type="button"
+    class="mn-sidebar-toggle"
+    aria-controls="starlight__sidebar"
+    aria-expanded="true"
+  >
+    <MedNerdsIcon name="tabler:layout-sidebar-left-collapse" size="md" />
+    <span class="mn-sidebar-toggle-label">Einklappen</span>
+  </button>
+)}
+
 <script>
   // Text separat begrenzen, damit Icon, Badge und Caret ihren Platz behalten.
-  function initialiseBadgeLabels() {
+  function initialiseSidebarLabels() {
     const labels = document.querySelectorAll<HTMLElement>(
+      '.sidebar-content .top-level > li > a > span:first-child, ' +
+      '.sidebar-content .top-level > li > details > summary > .group-label > .large, ' +
       '.sidebar-content .group-label:has(> .mn-sidebar-badge) > .large, ' +
       '.sidebar-content a:has(> .mn-sidebar-badge) > span:first-child'
     );
@@ -78,15 +94,6 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
     }
   }
 
-  /*
-   * Wenn über einen Haupttitel auf dessen Übersicht navigiert wird,
-   * merken wir uns die Zielroute.
-   *
-   * Auf der Zielseite wird die aktive Hauptgruppe dann einmal
-   * mit der Reveal-Animation eingeblendet.
-   */
-  const REVEAL_AFTER_NAV_KEY = 'mednerds-sidebar-reveal-after-navigation';
-
   function getTopLevelDetails() {
     return Array.from(
       document.querySelectorAll(
@@ -101,99 +108,139 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
   function closeOtherTopLevelGroups(
     current: HTMLDetailsElement
   ) {
+    let changed = false;
     for (const details of getTopLevelDetails()) {
-      if (details !== current) {
+      if (details !== current && details.open) {
         details.open = false;
+        changed = true;
       }
     }
+    if (changed) persistSidebarOpenState();
   }
 
   function closeAllTopLevelGroups() {
+    let changed = false;
     for (const details of getTopLevelDetails()) {
-      details.open = false;
+      if (details.open) {
+        details.open = false;
+        changed = true;
+      }
+    }
+    if (changed) persistSidebarOpenState();
+  }
+
+  function persistSidebarOpenState() {
+    const scroller = document.getElementById('starlight__sidebar');
+    const target = scroller?.querySelector<HTMLElement>('sl-sidebar-state-persist');
+    if (!scroller || !target) return;
+
+    const open: Array<boolean | null> = [];
+    for (const restorePoint of target.querySelectorAll<HTMLElement>('sl-sidebar-restore')) {
+      const index = Number.parseInt(restorePoint.dataset.index ?? '', 10);
+      const details = restorePoint.closest('details');
+      if (!Number.isNaN(index) && details instanceof HTMLDetailsElement) {
+        open[index] = details.open;
+      }
+    }
+
+    try {
+      sessionStorage.setItem('sl-sidebar-state', JSON.stringify({
+        hash: target.dataset.hash ?? '',
+        open,
+        scroll: scroller.scrollTop,
+      }));
+    } catch {}
+  }
+
+  function getOverviewLink(details: HTMLDetailsElement) {
+    return Array.from(details.querySelectorAll<HTMLAnchorElement>(':scope > ul > li > a'))
+      .find((link) => link.querySelector(':scope > span:first-child')?.textContent?.trim() === 'Übersicht');
+  }
+
+  function initialiseCollapsedGroupLinks() {
+    for (const details of getTopLevelDetails()) {
+      const overview = getOverviewLink(details);
+      const summary = details.querySelector(':scope > summary');
+      const icon = summary?.querySelector('.mn-sidebar-icon');
+      const label = summary?.querySelector('.large')?.textContent?.trim();
+      if (!overview || !icon || !label) continue;
+
+      const previous = details.previousElementSibling;
+      const link = previous instanceof HTMLAnchorElement && previous.classList.contains('mn-sidebar-collapsed-link')
+        ? previous
+        : document.createElement('a');
+      link.className = 'mn-sidebar-collapsed-link';
+      link.href = overview.href;
+      link.title = `${label}: Übersicht`;
+      link.setAttribute('aria-label', `Zur Übersicht von ${label}`);
+      link.replaceChildren(icon.cloneNode(true));
+      if (details.querySelector('a[aria-current="page"]')) {
+        link.setAttribute('aria-current', window.location.pathname === overview.pathname ? 'page' : 'true');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+      if (link !== previous) details.before(link);
     }
   }
 
-  /*
-   * Einheitliche Reveal-Animation starten.
-   */
-  function revealDetails(details: HTMLDetailsElement) {
-    details.classList.remove('mn-opening');
+  const SIDEBAR_COLLAPSED_KEY = 'mednerds-sidebar-collapsed';
+  const desktopSidebar = window.matchMedia('(min-width: 50rem)');
 
-    /*
-     * Reflow erzwingen, damit die Animation auch dann
-     * erneut startet, wenn dieselbe Gruppe schon einmal
-     * animiert wurde.
-     */
-    void details.offsetWidth;
-
-    details.classList.add('mn-opening');
-
-    /*
-     * Die CSS-Animation dauert 350 ms.
-     * Etwas Puffer verhindert, dass die Klasse
-     * vor Animationsende entfernt wird.
-     */
-    window.setTimeout(() => {
-      details.classList.remove('mn-opening');
-    }, 420);
+  function isSidebarCollapsed() {
+    return desktopSidebar.matches && document.documentElement.classList.contains('mn-sidebar-collapsed');
   }
 
-  /*
-   * Nach Navigation über einen Haupttitel:
-   *
-   * Beispiel:
-   * Klick auf "Echokardiographie"
-   * → /meddocs/echokardiographie/
-   * → Echokardiographie ist dort bereits geöffnet
-   * → deren Inhalt wird trotzdem einmal animiert.
-   */
-  function revealActiveGroupAfterNavigation() {
-    const targetPath = sessionStorage.getItem(
-      REVEAL_AFTER_NAV_KEY
-    );
+  function updateSidebarToggle() {
+    const toggle = document.querySelector<HTMLButtonElement>('.mn-sidebar-toggle');
+    if (!toggle) return;
 
-    if (!targetPath) {
+    const collapsed = isSidebarCollapsed();
+    const label = collapsed ? 'Ausklappen' : 'Einklappen';
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', `Sidebar ${label.toLowerCase()}`);
+    toggle.title = `Sidebar ${label.toLowerCase()}`;
+    toggle.querySelector('.mn-sidebar-toggle-label')!.textContent = label;
+
+    for (const link of document.querySelectorAll<HTMLAnchorElement>('.sidebar-content .top-level > li > a')) {
+      const text = link.querySelector('.mn-sidebar-label-text')?.textContent?.trim();
+      if (text) {
+        link.title = text;
+        if (collapsed) link.setAttribute('aria-label', text);
+        else link.removeAttribute('aria-label');
+      }
+    }
+
+  }
+
+  function setSidebarCollapsed(collapsed: boolean) {
+    document.documentElement.classList.toggle('mn-sidebar-collapsed', collapsed);
+    if (collapsed) closeAllTopLevelGroups();
+    else initialiseSidebarAccordion();
+    updateSidebarToggle();
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+    } catch {}
+  }
+
+  function initialiseCollapseControl() {
+    const toggle = document.querySelector<HTMLButtonElement>('.mn-sidebar-toggle');
+    if (!toggle) {
+      document.documentElement.classList.remove('mn-sidebar-collapsed');
       return;
     }
 
-    /*
-     * Nur auf der tatsächlich gespeicherten Zielroute animieren.
-     * Dadurch bleibt kein veralteter Reveal-Zustand übrig.
-     */
-    const currentPath = window.location.pathname;
-
-    if (currentPath !== targetPath) {
-      return;
+    updateSidebarToggle();
+    if (toggle.dataset.mednerdsCollapse !== 'true') {
+      toggle.dataset.mednerdsCollapse = 'true';
+      toggle.addEventListener('click', () => setSidebarCollapsed(!isSidebarCollapsed()));
     }
 
-    sessionStorage.removeItem(REVEAL_AFTER_NAV_KEY);
-
-    const activeLink = document.querySelector(
-      '.sidebar-content .top-level a[aria-current="page"]'
-    );
-
-    const activeDetails = activeLink?.closest(
-      '.sidebar-content .top-level > li > details'
-    );
-
-    if (!(activeDetails instanceof HTMLDetailsElement)) {
-      return;
-    }
-
-    /*
-     * Sicherstellen, dass die aktive Gruppe offen ist.
-     */
-    activeDetails.open = true;
-
-    /*
-     * Animation auf der neuen Seite starten.
-     */
-    revealDetails(activeDetails);
   }
 
   function initialiseSidebarAccordion() {
     const topLevelDetails = getTopLevelDetails();
+    const sidebarContent = document.querySelector<HTMLElement>('.sidebar-content');
+    sidebarContent?.classList.add('mn-sidebar-syncing');
 
     /*
      * Nur die Hauptgruppe offen lassen,
@@ -203,7 +250,7 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
      * aller Hauptgruppen → alle bleiben geschlossen.
      */
     const activeLink = document.querySelector(
-      '.sidebar-content .top-level a[aria-current="page"]'
+      '.sidebar-content .top-level > li > details a[aria-current="page"]'
     );
 
     const activeDetails = activeLink?.closest(
@@ -211,7 +258,14 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
     );
 
     for (const details of topLevelDetails) {
-      details.open = details === activeDetails;
+      const shouldBeOpen = !isSidebarCollapsed() && details === activeDetails;
+      if (details.open !== shouldBeOpen) details.open = shouldBeOpen;
+    }
+    persistSidebarOpenState();
+
+    if (sidebarContent) {
+      void sidebarContent.offsetWidth;
+      requestAnimationFrame(() => sidebarContent.classList.remove('mn-sidebar-syncing'));
     }
 
     /*
@@ -289,39 +343,6 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
         if (!(target instanceof Element)) return;
 
         /*
-         * Haupttitel mit eigener Übersicht:
-         * dort wird direkt navigiert.
-         *
-         * Deshalb auf der ALTEN Seite keine
-         * Öffnungsanimation starten.
-         *
-         * Die Animation wird nach der Navigation
-         * auf der Zielseite ausgeführt.
-         */
-        const isTopLevelSummary = summary.matches(
-          '.top-level > li > details > summary'
-        );
-
-        if (
-          isTopLevelSummary &&
-          target.closest('.group-label')
-        ) {
-          const directLinks = details.querySelectorAll(
-            ':scope > ul > li > a'
-          );
-
-          const overviewLink = Array.from(directLinks).find(
-            (link) =>
-              link instanceof HTMLAnchorElement &&
-              link.querySelector(':scope > span:first-child')?.textContent?.trim() === 'Übersicht'
-          );
-
-          if (overviewLink) {
-            return;
-          }
-        }
-
-        /*
          * Normales manuelles Öffnen:
          * Animation bereits vor dem nativen Toggle vorbereiten.
          */
@@ -353,124 +374,18 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
     }
   }
 
-  /*
-   * Klick auf einen Haupttitel:
-   *
-   * EKG
-   * Echokardiographie
-   * Sonographie
-   * Notfallmedizin
-   * Diverses
-   *
-   * Hat die Gruppe einen direkten Link "Übersicht",
-   * navigiert der Titel zu dieser Seite.
-   *
-   * Der Pfeil rechts behält die normale
-   * Auf-/Zu-Funktion.
-   */
-  function initialiseGroupTitleLinks() {
-    const summaries = document.querySelectorAll(
-      '.sidebar-content .top-level > li > details > summary'
-    );
-
-    for (const summary of summaries) {
-      if (!(summary instanceof HTMLElement)) continue;
-
-      if (summary.dataset.mednerdsTitleLink === 'true') {
-        continue;
-      }
-
-      summary.dataset.mednerdsTitleLink = 'true';
-
-      summary.addEventListener('click', (event) => {
-        const target = event.target;
-
-        if (!(target instanceof Element)) return;
-
-        /*
-         * Klick auf Pfeil:
-         * normales <details>-Verhalten.
-         */
-        if (target.closest('.caret')) {
-          return;
-        }
-
-        /*
-         * Nur Klick auf den Gruppentitel.
-         */
-        if (!target.closest('.group-label')) {
-          return;
-        }
-
-        const details = summary.parentElement;
-
-        if (!(details instanceof HTMLDetailsElement)) return;
-
-        /*
-         * Direkten Übersicht-Link innerhalb
-         * dieser Hauptgruppe suchen.
-         */
-        const directLinks = details.querySelectorAll(
-          ':scope > ul > li > a'
-        );
-
-        const overviewLink = Array.from(directLinks).find(
-          (link) =>
-            link instanceof HTMLAnchorElement &&
-            link.querySelector(':scope > span:first-child')?.textContent?.trim() === 'Übersicht'
-        );
-
-        /*
-         * Falls noch keine Übersicht vorhanden ist:
-         * normales Starlight-Verhalten beibehalten.
-         */
-        if (!(overviewLink instanceof HTMLAnchorElement)) {
-          return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        /*
-         * Andere Hauptgruppen schließen.
-         */
-        closeOtherTopLevelGroups(details);
-
-        /*
-         * Zielroute speichern.
-         *
-         * Dadurch weiß die neue Seite, dass die aktive
-         * Hauptgruppe einmal animiert werden soll.
-         */
-        sessionStorage.setItem(
-          REVEAL_AFTER_NAV_KEY,
-          overviewLink.pathname
-        );
-
-        /*
-         * Direkt zur Übersicht navigieren.
-         *
-         * Die Gruppe wird auf der alten Seite bewusst
-         * NICHT vorher geöffnet.
-         */
-        overviewLink.click();
-      });
-    }
-  }
-
   function initialiseMedNerdsSidebar() {
     initialiseSidebarIcons();
-    initialiseBadgeLabels();
+    initialiseSidebarLabels();
+    initialiseCollapsedGroupLinks();
+    initialiseCollapseControl();
     /*
      * 1. korrekten Accordion-Zustand herstellen
      * 2. normale Reveal-Animationen registrieren
-     * 3. Haupttitel klickbar machen
-     * 4. ggf. Reveal nach Navigation ausführen
+     * 3. Haupttitel über das native <details> auf- und zuklappen
      */
     initialiseSidebarAccordion();
     initialiseRevealAnimations();
-    initialiseGroupTitleLinks();
-    revealActiveGroupAfterNavigation();
   }
 
   /*
@@ -486,9 +401,180 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
     'astro:page-load',
     initialiseMedNerdsSidebar
   );
+
+  desktopSidebar.addEventListener('change', () => {
+    initialiseSidebarAccordion();
+    updateSidebarToggle();
+  });
 </script>
 
 <style is:global>
+  .sidebar-content .top-level > li > a.mn-sidebar-collapsed-link {
+    display: none;
+  }
+
+  @media (min-width: 50rem) {
+    .page-body--with-sidebar {
+      transition: grid-template-columns 240ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .sidebar-content .top-level > li {
+      position: relative;
+    }
+
+    .sidebar-content .top-level > li > details {
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity 100ms ease,
+        visibility 0s linear;
+    }
+
+    .sidebar-content .top-level > li > a.mn-sidebar-collapsed-link {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2rem;
+      padding-inline: 0.5rem;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        opacity 110ms ease,
+        visibility 0s linear 110ms;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) {
+      --mn-sidebar-pane-width: 4.5rem;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .page-body--with-sidebar {
+      grid-template-columns: var(--mn-sidebar-pane-width) minmax(0, 1fr);
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        opacity 90ms ease,
+        visibility 0s linear 90ms;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > a.mn-sidebar-collapsed-link {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition-delay: 70ms, 0s;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > a.mn-sidebar-collapsed-link[aria-current] {
+      background: var(--mn-sidebar-active-bg);
+      color: var(--sl-color-accent);
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details > ul,
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level .mn-sidebar-label-text,
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details > summary .mn-sidebar-badge,
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details > summary svg.caret {
+      display: none;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > a,
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details > summary {
+      justify-content: center;
+      padding-inline: 0.5rem;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > a > span:first-child,
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details > summary > .group-label,
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details > summary > .group-label > .large {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 0;
+      margin: 0;
+      overflow: visible;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .mn-sidebar-icon {
+      margin-inline-end: 0;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .mn-sidebar-toggle {
+      justify-content: center;
+      gap: 0;
+      width: 100%;
+      padding-inline: 0;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .mn-sidebar-toggle-label {
+      max-width: 0;
+      opacity: 0;
+    }
+
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .mn-sidebar-toggle .mn-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  .sidebar-content.mn-sidebar-syncing .top-level summary svg.caret {
+    transition: none;
+  }
+
+  .mn-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    align-self: flex-end;
+    margin-top: auto;
+    padding: 0.5rem 0.625rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: transparent;
+    color: var(--sl-color-gray-2);
+    font: inherit;
+    font-size: var(--sl-text-sm);
+    cursor: pointer;
+    transition:
+      gap 220ms cubic-bezier(0.2, 0, 0, 1),
+      background-color 140ms ease,
+      color 140ms ease;
+  }
+
+  .mn-sidebar-toggle-label {
+    display: inline-block;
+    max-width: 8rem;
+    overflow: hidden;
+    opacity: 1;
+    white-space: nowrap;
+    transition:
+      max-width 220ms cubic-bezier(0.2, 0, 0, 1),
+      opacity 100ms ease;
+  }
+
+  .mn-sidebar-toggle .mn-icon {
+    transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .mn-sidebar-toggle:hover {
+    background: var(--mn-sidebar-hover-bg);
+    color: var(--sl-color-accent);
+  }
+
+  .mn-sidebar-toggle:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 49.99rem) {
+    .mn-sidebar-toggle {
+      display: none;
+    }
+  }
+
   /* ========================================
      Sidebar row alignment
      ======================================== */
@@ -560,10 +646,8 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
    * display:block verhindert die typische
    * zusätzliche Inline-SVG-Baseline.
    *
-   * Die eigentliche Größe kommt weiterhin
-   * zentral aus:
-   *
-   * <MedNerdsIcon size="md" />
+   * Eine gemeinsame feste Größe hält SVG- und
+   * Markenicon in beiden Sidebar-Zuständen identisch.
    */
   .sidebar-content .mn-sidebar-icon {
     display: block;
@@ -571,17 +655,17 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
     flex: 0 0 auto;
     align-self: center;
 
+    width: 1.5rem;
+    height: 1.5rem;
+
     margin-inline-end: 0.5rem;
 
     pointer-events: none;
   }
 
   .sidebar-content .mn-sidebar-brand-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-
-  object-fit: contain;
-}
+    object-fit: contain;
+  }
 
   /* ========================================
      Sidebar Reveal
@@ -621,6 +705,15 @@ if (Astro.url.pathname.startsWith('/meddocs/')) {
      ======================================== */
 
   @media (prefers-reduced-motion: reduce) {
+    .page-body--with-sidebar,
+    .sidebar-content .top-level > li > details,
+    .sidebar-content .top-level > li > a.mn-sidebar-collapsed-link,
+    .mn-sidebar-toggle,
+    .mn-sidebar-toggle-label,
+    .mn-sidebar-toggle .mn-icon {
+      transition: none;
+    }
+
     .sidebar-content
       .top-level
       details.mn-opening
