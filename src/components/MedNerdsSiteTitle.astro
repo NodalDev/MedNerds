@@ -44,6 +44,7 @@ const activeProduct = products.find(({ href }) => pathname.startsWith(href));
   .main-brand,
   .section-brand {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     min-width: 0;
     text-decoration: none;
@@ -70,7 +71,7 @@ const activeProduct = products.find(({ href }) => pathname.startsWith(href));
     transform: translateY(10%);
   }
 
-  @media (max-width: 31rem) {
+  @media (max-width: 49.999rem) {
     .brand-lockup {
       gap: 0.5rem;
     }
@@ -89,7 +90,7 @@ const activeProduct = products.find(({ href }) => pathname.startsWith(href));
     }
   }
 
-  @media (max-width: 23rem) {
+  @media (max-width: 28rem) {
     .brand-divider,
     .section-brand {
       display: none;

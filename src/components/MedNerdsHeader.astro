@@ -439,6 +439,13 @@ const activeProduct = productLinks.find(({ href }) =>
       justify-self: end;
     }
 
+    /* Platz für die längste übersetzte Option statt Starlights fester Breite.
+     * Die rechtsbündige Grid-Spalte wächst dabei ausschließlich nach links.
+     */
+    .primary-inner :global(starlight-theme-select select) {
+      width: auto;
+    }
+
     .desktop-product-links {
       align-items: stretch;
 
@@ -449,6 +456,36 @@ const activeProduct = productLinks.find(({ href }) =>
   /* ========================================
      Große Desktop-Ansicht
      ======================================== */
+
+  /* Die breite Suche erst anzeigen, wenn auch beide Wortmarken Platz haben. */
+  @media (min-width: 50rem) and (max-width: 71.999rem) {
+    .primary-inner :global(.header) {
+      grid-template-columns: minmax(0, 1fr) 2.5rem auto;
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 71.999rem) {
+    .primary-inner :global(site-search button[data-open-modal]) {
+      width: 2.5rem;
+      padding: 0;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+      font-size: var(--sl-text-xl);
+    }
+
+    .primary-inner :global(site-search button[data-open-modal] > span),
+    .primary-inner :global(site-search button[data-open-modal] > kbd) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 49.999rem) {
+    .primary-inner {
+      padding-inline: 0;
+    }
+  }
 
   @media (min-width: 72rem) {
     /*

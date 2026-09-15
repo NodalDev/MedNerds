@@ -20,7 +20,12 @@ export default defineConfig({
         { tag: 'link', attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' } },
       ],
       description: 'Freies medizinisches Wissen – verständlich, fundiert und offen zugänglich.',
-      defaultLocale: 'de',
+      locales: {
+        root: {
+          label: 'Deutsch',
+          lang: 'de',
+        },
+      },
       customCss: ['./src/styles/global.css'],
       components: {
         Header: './src/components/MedNerdsHeader.astro',

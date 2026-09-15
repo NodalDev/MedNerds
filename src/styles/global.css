@@ -124,7 +124,7 @@
   --sl-nav-height: 7.5rem;
   --sl-nav-pad-y: 0rem;
   --sl-content-width: 60rem;
-  --sl-sidebar-width: 18.5rem;
+  --sl-sidebar-width: 19rem;
 
   /*
    * Dark background
@@ -286,6 +286,93 @@
    ---------------------------------------- */
 
 @layer components {
+  /* Statusfarben bleiben unabhängig von der aktiven Produktfarbe.
+   * Grün/Orange stammen aus der bereits eingebundenen Tailwind-Palette;
+   * die übrigen Töne aus der MedNerds-Palette.
+   */
+  :root {
+    --mn-badge-new: var(--color-green-300);
+    --mn-badge-top: var(--color-MedLearn-300);
+    --mn-badge-soon: var(--color-MedNerds-300);
+    --mn-badge-planned: var(--color-MedBlog-300);
+    --mn-badge-popular: var(--color-orange-300);
+  }
+
+  :root[data-theme='light'] {
+    --mn-badge-new: var(--color-green-800);
+    --mn-badge-top: var(--color-MedLearn-700);
+    --mn-badge-soon: var(--color-MedNerds-700);
+    --mn-badge-planned: var(--color-MedBlog-700);
+    --mn-badge-popular: var(--color-orange-800);
+  }
+
+  .mn-sidebar-badge--new { --mn-badge-color: var(--mn-badge-new); }
+  .mn-sidebar-badge--top { --mn-badge-color: var(--mn-badge-top); }
+  .mn-sidebar-badge--soon { --mn-badge-color: var(--mn-badge-soon); }
+  .mn-sidebar-badge--planned { --mn-badge-color: var(--mn-badge-planned); }
+  .mn-sidebar-badge--popular { --mn-badge-color: var(--mn-badge-popular); }
+
+  .sidebar-content .mn-sidebar-badge {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.15rem 0.35rem;
+    border: 1px solid color-mix(in srgb, var(--mn-badge-color) 28%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--mn-badge-color) 8%, transparent);
+    color: var(--mn-badge-color);
+    font-family: inherit;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  .sidebar-content summary:has(> .group-label > .mn-sidebar-badge) {
+    gap: 0.375rem;
+  }
+
+  .sidebar-content .top-level > li > details > summary {
+    padding-inline-end: 0.25rem;
+  }
+
+  @media (max-width: 22rem) {
+    .sidebar-content {
+      padding-inline-end: 0.25rem;
+    }
+  }
+
+  .sidebar-content .group-label:has(> .mn-sidebar-badge),
+  .sidebar-content a:has(> .mn-sidebar-badge) {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+
+  .sidebar-content .group-label:has(> .mn-sidebar-badge) {
+    flex: 1;
+  }
+
+  .sidebar-content .group-label:has(> .mn-sidebar-badge) > .large,
+  .sidebar-content a:has(> .mn-sidebar-badge) > span:first-child {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    margin-inline-end: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .sidebar-content .mn-sidebar-label-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   /*
    * Ebene 1:
    * EKG, Echokardiographie, Sonographie, ...
@@ -513,9 +600,27 @@
   }
 }
 
+
+
 /* ----------------------------------------
    Miscellaneous
    ---------------------------------------- */
+
+/* MedDocs: die Titellinie links auf die Inhaltsbreite plus Seitenabstand kürzen.
+ * Der bestehende 1px-Rahmen behält seinen Platz, damit sich nichts verschiebt.
+ * Ab 72rem richtet Starlight den Inhalt mit TOC rechts in der Hauptspalte aus.
+ */
+@media (min-width: 72rem) {
+  html[data-has-sidebar][data-has-toc]:has(.mednerds-header[data-product='meddocs'])
+    .content-panel:has(#_top) + .content-panel {
+    border-image-source: linear-gradient(
+      to right,
+      transparent max(0px, calc(100% - var(--sl-content-width) - 2 * var(--sl-content-pad-x))),
+      var(--sl-color-hairline) 0
+    );
+    border-image-slice: 1;
+  }
+}
 
 ::selection {
   background: color-mix(

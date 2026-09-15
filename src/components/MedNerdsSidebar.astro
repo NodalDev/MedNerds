@@ -3,6 +3,12 @@ import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
 import MedNerdsIcon from './MedNerdsIcon.astro';
 import { sidebarIcons } from '../data/sidebar-icons';
 import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.svg?url';
+import { withSidebarBadges } from '../data/sidebar-badges';
+
+if (Astro.url.pathname.startsWith('/meddocs/')) {
+  const route = Astro.locals.starlightRoute;
+  route.sidebar = withSidebarBadges(route.sidebar, route.lang);
+}
 ---
 
 <script is:inline>
@@ -40,6 +46,23 @@ import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.svg?url';
 ))}
 
 <script>
+  // Text separat begrenzen, damit Icon, Badge und Caret ihren Platz behalten.
+  function initialiseBadgeLabels() {
+    const labels = document.querySelectorAll<HTMLElement>(
+      '.sidebar-content .group-label:has(> .mn-sidebar-badge) > .large, ' +
+      '.sidebar-content a:has(> .mn-sidebar-badge) > span:first-child'
+    );
+    for (const label of labels) {
+      if (label.querySelector('.mn-sidebar-label-text')) continue;
+      const textNodes = Array.from(label.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE);
+      const text = document.createElement('span');
+      text.className = 'mn-sidebar-label-text';
+      label.title = textNodes.map((node) => node.textContent).join('').trim();
+      for (const node of textNodes) text.append(node);
+      label.append(text);
+    }
+  }
+
   // Enhance Starlight's existing labels without replacing its navigation markup.
   // The SVGs are built locally by Astro; this only places them next to the labels.
   function initialiseSidebarIcons() {
@@ -290,7 +313,7 @@ import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.svg?url';
           const overviewLink = Array.from(directLinks).find(
             (link) =>
               link instanceof HTMLAnchorElement &&
-              link.textContent?.trim() === 'Übersicht'
+              link.querySelector(':scope > span:first-child')?.textContent?.trim() === 'Übersicht'
           );
 
           if (overviewLink) {
@@ -394,7 +417,7 @@ import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.svg?url';
         const overviewLink = Array.from(directLinks).find(
           (link) =>
             link instanceof HTMLAnchorElement &&
-            link.textContent?.trim() === 'Übersicht'
+            link.querySelector(':scope > span:first-child')?.textContent?.trim() === 'Übersicht'
         );
 
         /*
@@ -437,6 +460,7 @@ import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.svg?url';
 
   function initialiseMedNerdsSidebar() {
     initialiseSidebarIcons();
+    initialiseBadgeLabels();
     /*
      * 1. korrekten Accordion-Zustand herstellen
      * 2. normale Reveal-Animationen registrieren
