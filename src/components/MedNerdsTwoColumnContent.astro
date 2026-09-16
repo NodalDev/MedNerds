@@ -50,7 +50,7 @@ import DefaultTwoColumnContent from '@astrojs/starlight/components/TwoColumnCont
          * Starlight-Spalte ausrichten.
          */
         margin-inline-start: auto;
-        margin-inline-end: 0.75rem;
+        margin-inline-end: 3rem;
 
         /*
          * Keine durchgehende vertikale Linie.
@@ -225,6 +225,17 @@ import DefaultTwoColumnContent from '@astrojs/starlight/components/TwoColumnCont
         transition:
           color 120ms ease,
           background-color 120ms ease;
+      }
+
+      /* H3-Einträge liegen in Starlights verschachtelter zweiter Liste. */
+      .right-sidebar
+        starlight-toc
+        ul
+        ul
+        > li
+        > a {
+        padding-inline-start: 1.45rem;
+        font-size: 0.8rem;
       }
 
       .right-sidebar starlight-toc a:hover {

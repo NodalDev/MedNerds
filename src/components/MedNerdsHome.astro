@@ -1,0 +1,775 @@
+---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+import medNerdsLogo from '../assets/Logos/MedNerds - icon.svg?url';
+import {
+  productLinks,
+  productStatusLabels,
+} from '../data/product-navigation';
+
+const principles = [
+  {
+    title: 'Verständlich',
+    description:
+      'Komplexe medizinische Zusammenhänge werden klar gegliedert und nachvollziehbar erklärt.',
+    icon: 'tabler:message-language',
+  },
+  {
+    title: 'Fundiert',
+    description:
+      'Quellen, Versionsangaben und redaktionelle Prüfung schaffen eine verlässliche Grundlage.',
+    icon: 'tabler:shield-check',
+  },
+  {
+    title: 'Offen zugänglich',
+    description:
+      'Wissen soll ohne unnötige Hürden auffindbar und für alle nutzbar sein.',
+    icon: 'tabler:world',
+  },
+  {
+    title: 'Vernetzt',
+    description:
+      'Wissen, Lernwege, klinische Fälle und Werkzeuge greifen modular ineinander.',
+    icon: 'tabler:route',
+  },
+] as const;
+
+const roadmapProducts = productLinks.filter(
+  ({ product }) => product !== 'mednerds-basel',
+);
+---
+
+<div class="mn-home not-content">
+  <section class="mn-home-section mn-home-products" aria-labelledby="mn-home-products-title">
+    <div class="mn-home-section-inner">
+      <div class="mn-home-section-heading">
+        <div>
+          <p class="mn-home-eyebrow">Bereiche</p>
+          <h2 id="mn-home-products-title">Was MedNerds verbindet</h2>
+        </div>
+      </div>
+
+      <div class="mn-product-grid">
+        {
+          productLinks.map((product) => (
+            <a
+              class:list={[
+                'mn-product-card',
+                `mn-product-card--${product.product}`,
+              ]}
+              href={product.href}
+            >
+              <span class="mn-product-card-topline">
+                <span class="mn-product-icon" aria-hidden="true">
+                  <MedNerdsIcon name={product.icon} size="lg" />
+                </span>
+                <span class:list={['mn-status', `mn-status--${product.status}`]}>
+                  {productStatusLabels[product.status]}
+                </span>
+              </span>
+              <div class="mn-product-card-copy">
+                <h3 class="mn-product-title">{product.label}</h3>
+                <p class="mn-product-description">{product.description}</p>
+              </div>
+              <span class="mn-product-link-label">
+                Bereich öffnen
+                <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+              </span>
+            </a>
+          ))
+        }
+        <div class="mn-product-grid-logo" aria-hidden="true">
+          <img src={medNerdsLogo} alt="" loading="lazy" decoding="async" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mn-home-section mn-home-principles" aria-labelledby="mn-home-principles-title">
+    <div class="mn-home-section-inner">
+      <div class="mn-home-section-heading mn-home-section-heading--compact">
+        <div>
+          <p class="mn-home-eyebrow">Warum MedNerds?</p>
+          <h2 id="mn-home-principles-title">Wissen mit klaren Grundsätzen</h2>
+        </div>
+      </div>
+
+      <ul class="mn-principles-list">
+        {
+          principles.map((principle, index) => (
+            <li>
+              <span class="mn-principle-number" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span class="mn-principle-icon" aria-hidden="true">
+                <MedNerdsIcon name={principle.icon} size="lg" />
+              </span>
+              <h3>{principle.title}</h3>
+              <p>{principle.description}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="mn-home-section mn-home-roadmap" aria-labelledby="mn-home-roadmap-title">
+    <div class="mn-home-section-inner mn-home-roadmap-grid">
+      <div class="mn-home-roadmap-copy">
+        <p class="mn-home-eyebrow">Aktueller Stand</p>
+        <h2 id="mn-home-roadmap-title">MedNerds wächst Schritt für Schritt.</h2>
+        <p>
+          Aktuell liegt der Fokus auf dem Aufbau von MedDocs. Die weiteren
+          Bereiche folgen auf einer gemeinsamen technischen und redaktionellen
+          Grundlage.
+        </p>
+      </div>
+
+      <ul class="mn-roadmap-list" aria-label="Entwicklungsstand der Bereiche">
+        {
+          roadmapProducts.map((product) => (
+            <li>
+              <span class="mn-roadmap-product">
+                <MedNerdsIcon name={product.icon} size="md" />
+                <span>{product.label}</span>
+              </span>
+              <span class:list={['mn-status', `mn-status--${product.status}`]}>
+                {productStatusLabels[product.status]}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="mn-home-section mn-home-community" aria-labelledby="mn-home-community-title">
+    <div class="mn-home-section-inner">
+      <div class="mn-community-card">
+        <div class="mn-community-mark" aria-hidden="true">
+          <MedNerdsIcon name="tabler:users-group" size="xl" />
+        </div>
+        <div class="mn-community-copy">
+          <p class="mn-home-eyebrow">MedNerds Basel</p>
+          <h2 id="mn-home-community-title">
+            Von Studierenden. Für alle, die Medizin verstehen wollen.
+          </h2>
+          <p>
+            MedNerds Basel ist die Community und das organisatorische Zuhause
+            der Plattform. Hier entstehen Zusammenarbeit, Qualitätssicherung
+            und offene Bildungsangebote.
+          </p>
+        </div>
+        <a class="mn-home-button mn-home-button--secondary" href="/mednerds-basel/">
+          Community kennenlernen
+          <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .mn-home {
+    --mn-home-width: min(
+      100vw,
+      var(--mn-shell-max-width)
+    );
+    width: var(--mn-home-width);
+    max-width: 100vw;
+    margin-top: 0;
+    margin-inline: calc((100% - var(--mn-home-width)) / 2);
+    color: var(--sl-color-gray-2);
+  }
+
+  .mn-home-section {
+    width: 100%;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .mn-home-section-inner {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: var(--mn-shell-max-width);
+    margin-inline: auto;
+    padding-inline: var(--mn-shell-padding-x);
+    padding-block: clamp(4rem, 8vw, 7rem);
+  }
+
+  .mn-home-eyebrow {
+    margin: 0;
+    color: var(--sl-color-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .mn-home h2,
+  .mn-home h3,
+  .mn-home p {
+    margin: 0;
+  }
+
+  .mn-home h2 {
+    color: var(--sl-color-white);
+    font-size: clamp(2rem, 4vw, 3.75rem);
+    font-weight: 680;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+  }
+
+  .mn-home-section-heading > p,
+  .mn-home-roadmap-copy > p:last-child,
+  .mn-community-copy > p:last-child {
+    max-width: 62ch;
+    color: var(--sl-color-gray-2);
+    font-size: clamp(1rem, 1.35vw, 1.125rem);
+    line-height: 1.75;
+  }
+
+  .mn-home-section-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.7fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: end;
+    margin-bottom: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .mn-home-section-heading > div {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .mn-home-section-heading h2 {
+    max-width: 18ch;
+  }
+
+  .mn-home-section-heading--compact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mn-product-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .mn-product-card {
+    --mn-product-color: var(--color-MedNerds-400);
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    grid-column: span 4;
+    min-height: 15.5rem;
+    flex-direction: column;
+    gap: 1.75rem;
+    overflow: hidden;
+    padding: clamp(1.4rem, 2.5vw, 2rem);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.9rem;
+    color: inherit;
+    background: color-mix(in oklch, var(--mn-surface) 82%, transparent);
+    text-decoration: none;
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .mn-product-card::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--mn-product-color);
+    content: '';
+    opacity: 0.72;
+  }
+
+  .mn-product-card::after {
+    position: absolute;
+    z-index: -1;
+    top: -5rem;
+    right: -5rem;
+    width: 11rem;
+    height: 11rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mn-product-color) 9%, transparent);
+    content: '';
+    filter: blur(1rem);
+  }
+
+  .mn-product-card--meddocs,
+  .mn-product-card--medtools {
+    grid-column: span 8;
+  }
+
+  .mn-product-card--meddocs {
+    --mn-product-color: var(--color-MedNerds-400);
+  }
+
+  .mn-product-card--medblog {
+    --mn-product-color: var(--color-MedBlog-400);
+  }
+
+  .mn-product-card--medlearn {
+    --mn-product-color: var(--color-MedLearn-400);
+  }
+
+  .mn-product-card--medcases {
+    --mn-product-color: var(--color-MedCases-400);
+  }
+
+  .mn-product-card--medtools {
+    --mn-product-color: var(--color-MedTools-400);
+  }
+
+  .mn-product-card--mednerds-basel {
+    --mn-product-color: var(--color-MedNerds-300);
+  }
+
+  .mn-product-grid-logo {
+    display: none;
+  }
+
+  .mn-product-card-topline,
+  .mn-product-link-label,
+  .mn-roadmap-product,
+  .mn-home-button {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .mn-product-card-topline {
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .mn-product-icon {
+    display: grid;
+    width: 2.8rem;
+    height: 2.8rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--mn-product-color) 35%, transparent);
+    border-radius: 0.7rem;
+    color: var(--mn-product-color);
+    background: color-mix(in srgb, var(--mn-product-color) 9%, transparent);
+  }
+
+  .mn-status {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 650;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .mn-status--active {
+    color: var(--color-MedTools-300);
+    background: color-mix(in srgb, var(--color-MedTools-400) 8%, transparent);
+  }
+
+  .mn-status--building {
+    color: var(--color-MedNerds-300);
+    background: color-mix(in srgb, var(--color-MedNerds-400) 9%, transparent);
+  }
+
+  .mn-status--planned {
+    color: var(--sl-color-gray-2);
+    background: color-mix(in srgb, var(--sl-color-gray-3) 8%, transparent);
+  }
+
+  :global(:root[data-theme='light']) .mn-product-card--meddocs {
+    --mn-product-color: var(--color-MedNerds-700);
+  }
+
+  :global(:root[data-theme='light']) .mn-product-card--medblog {
+    --mn-product-color: var(--color-MedBlog-700);
+  }
+
+  :global(:root[data-theme='light']) .mn-product-card--medlearn {
+    --mn-product-color: var(--color-MedLearn-700);
+  }
+
+  :global(:root[data-theme='light']) .mn-product-card--medcases {
+    --mn-product-color: var(--color-MedCases-700);
+  }
+
+  :global(:root[data-theme='light']) .mn-product-card--medtools {
+    --mn-product-color: var(--color-MedTools-700);
+  }
+
+  :global(:root[data-theme='light']) .mn-product-card--mednerds-basel {
+    --mn-product-color: var(--color-MedNerds-700);
+  }
+
+  :global(:root[data-theme='light']) .mn-status--active {
+    color: var(--color-MedTools-700);
+  }
+
+  :global(:root[data-theme='light']) .mn-status--building {
+    color: var(--color-MedNerds-700);
+  }
+
+  .mn-product-card-copy {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .mn-product-title {
+    color: var(--sl-color-white);
+    font-size: clamp(1.4rem, 2.1vw, 1.85rem);
+    font-weight: 680;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .mn-product-description {
+    max-width: 48ch;
+    color: var(--sl-color-gray-2);
+    font-size: 0.98rem;
+    line-height: 1.65;
+  }
+
+  .mn-product-link-label {
+    gap: 0.45rem;
+    margin-top: auto;
+    color: var(--mn-product-color);
+    font-size: 0.875rem;
+    font-weight: 650;
+  }
+
+  .mn-product-link-label :global(.mn-icon) {
+    transition: transform 180ms ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-product-card:hover {
+      border-color: color-mix(in srgb, var(--mn-product-color) 48%, transparent);
+      background: color-mix(in oklch, var(--mn-surface) 90%, var(--mn-product-color) 10%);
+      transform: translateY(-2px);
+    }
+
+    .mn-product-card:hover .mn-product-link-label :global(.mn-icon) {
+      transform: translateX(0.2rem);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .mn-product-grid-logo {
+      display: grid;
+      grid-row: 2;
+      grid-column: 9 / -1;
+      place-items: center;
+      min-height: 15.5rem;
+      padding: 1.5rem;
+    }
+
+    .mn-product-grid-logo img {
+      display: block;
+      width: min(72%, 12rem);
+      height: auto;
+      opacity: 0.92;
+    }
+  }
+
+  .mn-product-card:focus-visible,
+  .mn-home-button:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .mn-principles-list,
+  .mn-roadmap-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mn-principles-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-block: 1px solid var(--sl-color-hairline);
+  }
+
+  .mn-principles-list li {
+    display: grid;
+    grid-template-rows: auto auto auto 1fr;
+    gap: 0.85rem;
+    min-width: 0;
+    padding: 1.75rem;
+  }
+
+  .mn-principles-list li + li {
+    border-inline-start: 1px solid var(--sl-color-hairline);
+  }
+
+  .mn-principle-number {
+    color: var(--sl-color-gray-3);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+  }
+
+  .mn-principle-icon {
+    color: var(--sl-color-accent);
+  }
+
+  .mn-principles-list h3 {
+    color: var(--sl-color-white);
+    font-size: 1.15rem;
+    line-height: 1.3;
+  }
+
+  .mn-principles-list p {
+    color: var(--sl-color-gray-2);
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .mn-home-roadmap-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(20rem, 1.15fr);
+    gap: clamp(3rem, 8vw, 8rem);
+    align-items: start;
+  }
+
+  .mn-home-roadmap-copy {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .mn-home-roadmap-copy h2 {
+    max-width: 15ch;
+  }
+
+  .mn-roadmap-list {
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .mn-roadmap-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .mn-roadmap-product {
+    gap: 0.7rem;
+    min-width: 0;
+    color: var(--sl-color-white);
+    font-weight: 620;
+  }
+
+  .mn-roadmap-product :global(.mn-icon) {
+    color: var(--sl-color-accent);
+  }
+
+  .mn-community-card,
+  .mn-home-final-card {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 1rem;
+  }
+
+  .mn-community-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: center;
+    padding: clamp(1.75rem, 4vw, 3.5rem);
+    background: color-mix(in oklch, var(--mn-surface) 88%, var(--color-MedNerds-700) 12%);
+  }
+
+  .mn-community-mark {
+    display: grid;
+    width: clamp(4rem, 8vw, 6rem);
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--color-MedNerds-400) 32%, transparent);
+    border-radius: 50%;
+    color: var(--color-MedNerds-300);
+    background: color-mix(in srgb, var(--color-MedNerds-500) 9%, transparent);
+  }
+
+  .mn-community-copy {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .mn-community-copy h2 {
+    max-width: 24ch;
+    font-size: clamp(1.75rem, 3vw, 2.75rem);
+  }
+
+  .mn-home-button {
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 2.85rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--sl-color-accent);
+    border-radius: 0.65rem;
+    color: var(--sl-color-black);
+    background: var(--sl-color-accent-high);
+    font-size: 0.9rem;
+    font-weight: 680;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color 150ms ease,
+      color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .mn-home-button--secondary {
+    color: var(--sl-color-white);
+    background: transparent;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-home-button:hover {
+      border-color: var(--sl-color-accent-high);
+      background: var(--sl-color-accent);
+    }
+
+    .mn-home-button--secondary:hover {
+      color: var(--sl-color-black);
+      background: var(--sl-color-accent-high);
+    }
+  }
+
+  .mn-home-final-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    background: var(--mn-surface);
+  }
+
+  .mn-home-final-card > div {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .mn-home-final-card h2 {
+    font-size: clamp(1.5rem, 2.7vw, 2.25rem);
+  }
+
+  @media (max-width: 63.99rem) {
+    .mn-product-card,
+    .mn-product-card--meddocs,
+    .mn-product-card--medtools {
+      grid-column: span 6;
+    }
+
+    .mn-principles-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mn-principles-list li:nth-child(3) {
+      border-inline-start: 0;
+      border-top: 1px solid var(--sl-color-hairline);
+    }
+
+    .mn-principles-list li:nth-child(4) {
+      border-top: 1px solid var(--sl-color-hairline);
+    }
+
+    .mn-community-card {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .mn-community-card .mn-home-button {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .mn-home-section-inner {
+      padding-block: clamp(3.25rem, 12vw, 5rem);
+    }
+
+    .mn-home-section-heading,
+    .mn-home-roadmap-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    .mn-home-section-heading {
+      align-items: start;
+      margin-bottom: 2rem;
+    }
+
+    .mn-product-card,
+    .mn-product-card--meddocs,
+    .mn-product-card--medtools {
+      grid-column: 1 / -1;
+      min-height: 14rem;
+    }
+
+    .mn-home-roadmap-grid {
+      gap: 2.5rem;
+    }
+
+    .mn-community-card {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .mn-community-card .mn-home-button {
+      grid-column: auto;
+      justify-self: start;
+    }
+
+    .mn-home-final-card {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 35rem) {
+    .mn-principles-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .mn-principles-list li + li,
+    .mn-principles-list li:nth-child(3),
+    .mn-principles-list li:nth-child(4) {
+      border-top: 1px solid var(--sl-color-hairline);
+      border-inline-start: 0;
+    }
+
+    .mn-roadmap-list li {
+      gap: 0.75rem;
+    }
+
+    .mn-home-button {
+      width: 100%;
+      white-space: normal;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mn-product-card,
+    .mn-product-link-label :global(.mn-icon),
+    .mn-home-button {
+      transition: none;
+    }
+
+    .mn-product-card:hover,
+    .mn-product-card:hover .mn-product-link-label :global(.mn-icon) {
+      transform: none;
+    }
+  }
+</style>

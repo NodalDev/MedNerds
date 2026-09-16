@@ -1,25 +1,9 @@
 ---
 import DefaultHeader from '@astrojs/starlight/components/Header.astro';
-import MedNerdsIcon from './MedNerdsIcon.astro';
+import { getActiveProduct, productLinks } from '../data/product-navigation';
 
 const pathname = Astro.url.pathname;
-
-const productLinks = [
-  { label: 'MedDocs', href: '/meddocs/', product: 'meddocs' },
-  { label: 'MedBlog', href: '/medblog/', product: 'medblog' },
-  { label: 'MedLearn', href: '/medlearn/', product: 'medlearn' },
-  { label: 'MedCases', href: '/medcases/', product: 'medcases' },
-  { label: 'MedTools', href: '/medtools/', product: 'medtools' },
-  {
-    label: 'MedNerds Basel',
-    href: '/mednerds-basel/',
-    product: 'mednerds-basel',
-  },
-] as const;
-
-const activeProduct = productLinks.find(({ href }) =>
-  pathname.startsWith(href)
-);
+const activeProduct = getActiveProduct(pathname);
 ---
 
 <div
@@ -43,7 +27,7 @@ const activeProduct = productLinks.find(({ href }) =>
        ======================================== -->
 
   <nav class="product-nav" aria-label="MedNerds Bereiche">
-    <div class="desktop-product-links sl-hidden md:sl-flex">
+    <div class="desktop-product-links sl-flex">
       {
         productLinks.map(({ label, href }) => {
           const isActive = pathname.startsWith(href);
@@ -64,73 +48,81 @@ const activeProduct = productLinks.find(({ href }) =>
         })
       }
     </div>
-
-    <mednerds-product-switcher
-      class="mobile-product-switcher sl-flex md:sl-hidden"
-    >
-      <label for="mednerds-product-select">
-        Bereich
-      </label>
-
-      <div class="mobile-product-control">
-        <div
-          class="mobile-product-label"
-          aria-hidden="true"
-        >
-          <span>
-            {activeProduct?.label ?? 'Startseite'}
-          </span>
-
-          <MedNerdsIcon
-            name="tabler:chevron-down"
-            size="sm"
-          />
-        </div>
-
-        <select
-          id="mednerds-product-select"
-          aria-label="MedNerds Bereich auswählen"
-        >
-          <option
-            value="/"
-            selected={!activeProduct}
-          >
-            Startseite
-          </option>
-
-          {
-            productLinks.map(({ label, href }) => (
-              <option
-                value={href}
-                selected={activeProduct?.href === href}
-              >
-                {label}
-              </option>
-            ))
-          }
-        </select>
-      </div>
-    </mednerds-product-switcher>
   </nav>
 </div>
 
 <script>
-  class MedNerdsProductSwitcher extends HTMLElement {
-    connectedCallback() {
-      const select = this.querySelector('select');
+  const desktopProductNav = window.matchMedia('(min-width: 50rem)');
+  const root = document.documentElement;
+  const header = document.querySelector('.mednerds-header');
 
-      select?.addEventListener('change', () => {
-        window.location.href = select.value;
-      });
+  let lastScrollY = Math.max(window.scrollY, 0);
+  let accumulatedDistance = 0;
+  let currentDirection = 0;
+  let animationFrame = 0;
+
+  const setProductNavHidden = (hidden: boolean) => {
+    const shouldHide = desktopProductNav.matches && window.scrollY > 24 && hidden;
+    root.toggleAttribute('data-product-nav-hidden', shouldHide);
+  };
+
+  const resetScrollState = () => {
+    lastScrollY = Math.max(window.scrollY, 0);
+    accumulatedDistance = 0;
+    currentDirection = 0;
+
+    if (!desktopProductNav.matches || lastScrollY <= 24) {
+      setProductNavHidden(false);
     }
-  }
+  };
 
-  if (!customElements.get('mednerds-product-switcher')) {
-    customElements.define(
-      'mednerds-product-switcher',
-      MedNerdsProductSwitcher
-    );
-  }
+  const updateProductNav = () => {
+    animationFrame = 0;
+
+    const scrollY = Math.max(window.scrollY, 0);
+    const delta = scrollY - lastScrollY;
+
+    if (scrollY <= 24) {
+      setProductNavHidden(false);
+      resetScrollState();
+      return;
+    }
+
+    if (Math.abs(delta) < 1) return;
+
+    const nextDirection = Math.sign(delta);
+
+    if (nextDirection !== currentDirection) {
+      currentDirection = nextDirection;
+      accumulatedDistance = 0;
+    }
+
+    accumulatedDistance += Math.abs(delta);
+    lastScrollY = scrollY;
+
+    if (currentDirection > 0 && scrollY > 80 && accumulatedDistance >= 28) {
+      setProductNavHidden(true);
+      accumulatedDistance = 0;
+    } else if (currentDirection < 0 && accumulatedDistance >= 18) {
+      setProductNavHidden(false);
+      accumulatedDistance = 0;
+    }
+  };
+
+  const queueProductNavUpdate = () => {
+    if (animationFrame) return;
+    animationFrame = window.requestAnimationFrame(updateProductNav);
+  };
+
+  window.addEventListener('scroll', queueProductNavUpdate, { passive: true });
+  desktopProductNav.addEventListener('change', resetScrollState);
+  header?.addEventListener('focusin', () => setProductNavHidden(false));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab') setProductNavHidden(false);
+  });
+
+  resetScrollState();
+  root.setAttribute('data-product-nav-ready', '');
 </script>
 
 <style>
@@ -140,7 +132,7 @@ const activeProduct = productLinks.find(({ href }) =>
 
   .mednerds-header {
     display: grid;
-    grid-template-rows: 4.35rem 3.15rem;
+    grid-template-rows: minmax(0, 1fr);
 
     height: 100%;
     min-width: 0;
@@ -191,16 +183,39 @@ const activeProduct = productLinks.find(({ href }) =>
     min-width: 0;
   }
 
+  .primary-inner :global(starlight-theme-select select:focus),
+  .primary-inner :global(starlight-theme-select select:focus-visible),
+  .primary-inner :global(starlight-theme-select select:active) {
+    outline: none;
+    box-shadow: none;
+  }
+
   /* ========================================
      Produktnavigation
      ======================================== */
 
   .product-nav {
+    display: none;
     min-width: 0;
+    width: calc(100% + 2 * var(--sl-nav-pad-x));
+    margin-inline: calc(-1 * var(--sl-nav-pad-x));
+    padding-inline: var(--sl-nav-pad-x);
+    overflow: hidden;
 
     border-top:
       1px solid
       var(--sl-color-hairline);
+
+    background: var(--sl-color-bg-nav);
+
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+
+    transition:
+      transform 200ms cubic-bezier(0.2, 0, 0, 1),
+      opacity 160ms ease,
+      visibility 0s linear;
   }
 
   .desktop-product-links {
@@ -215,9 +230,14 @@ const activeProduct = productLinks.find(({ href }) =>
 
     align-items: center;
 
+    margin-block: 0.35rem;
+
     padding:
       0
-      0.6rem;
+      0.75rem;
+
+    border: 1px solid transparent;
+    border-radius: 0.55rem;
 
     color:
       var(--sl-color-gray-2);
@@ -231,6 +251,7 @@ const activeProduct = productLinks.find(({ href }) =>
 
     transition:
       color 150ms ease,
+      border-color 150ms ease,
       background-color 150ms ease;
   }
 
@@ -240,124 +261,41 @@ const activeProduct = productLinks.find(({ href }) =>
 
     background:
       color-mix(
-        in srgb,
-        var(--product-color) 8%,
+        in oklch,
+        var(--product-color) 6%,
         transparent
       );
+
+    border-color:
+      color-mix(
+        in oklch,
+        var(--product-color) 18%,
+        transparent
+      );
+  }
+
+  .product-link:focus-visible {
+    outline: 2px solid var(--product-color);
+    outline-offset: 2px;
   }
 
   .product-link.active {
     color:
       var(--product-color);
-  }
-
-  .product-link.active::after {
-    position: absolute;
-
-    right: 0.55rem;
-    bottom: 0;
-    left: 0.55rem;
-
-    height: 2px;
-
-    border-radius:
-      999px 999px 0 0;
 
     background:
-      var(--product-color);
+      color-mix(
+        in oklch,
+        var(--product-color) 10%,
+        transparent
+      );
 
-    content: '';
-  }
-
-  /* ========================================
-     Mobile Produktnavigation
-     ======================================== */
-
-  .mobile-product-switcher {
-    align-items: center;
-
-    gap: 0.75rem;
-
-    height: 100%;
-  }
-
-  .mobile-product-switcher label {
-    color:
-      var(--sl-color-gray-3);
-
-    font-size:
-      var(--sl-text-xs);
-
-    font-weight: 700;
-
-    text-transform: uppercase;
-
-    letter-spacing: 0.06em;
-  }
-
-  .mobile-product-control {
-    position: relative;
-
-    min-width: 0;
-
-    height: 2.15rem;
-
-    border:
-      1px solid
-      var(--sl-color-gray-5);
-
-    border-radius:
-      0.65rem;
-
-    background-color:
-      var(--sl-color-black);
-
-    color:
-      var(--sl-color-white);
-  }
-
-  .mobile-product-label {
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 1rem;
-
-    height: 100%;
-
-    padding:
-      0
-      0.75rem;
-
-    font-size:
-      var(--sl-text-base);
-
-    font-weight: 600;
-  }
-
-  .mobile-product-switcher select {
-    position: absolute;
-
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    opacity: 0;
-
-    cursor: pointer;
-
-    font: inherit;
-  }
-
-  .mobile-product-control:focus-within {
-    outline:
-      2px solid
-      var(--sl-color-accent);
-
-    outline-offset:
-      2px;
+    border-color:
+      color-mix(
+        in oklch,
+        var(--product-color) 28%,
+        transparent
+      );
   }
 
   /* ========================================
@@ -365,6 +303,19 @@ const activeProduct = productLinks.find(({ href }) =>
      ======================================== */
 
   @media (min-width: 50rem) {
+    .mednerds-header {
+      grid-template-rows: 4.35rem 3.15rem;
+
+      transition:
+        grid-template-rows
+        200ms
+        cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .product-nav {
+      display: block;
+    }
+
     /*
      * Überschreibt Starlights dynamische
      * Header-Spaltenberechnung.
@@ -447,9 +398,57 @@ const activeProduct = productLinks.find(({ href }) =>
     }
 
     .desktop-product-links {
-      align-items: stretch;
+      align-items: center;
 
       gap: 0.1rem;
+    }
+
+    :global(html[data-product-nav-hidden]) {
+      --sl-nav-height: 4.35rem;
+    }
+
+    :global(html[data-product-nav-hidden]) .mednerds-header {
+      grid-template-rows: 4.35rem 0;
+    }
+
+    :global(html[data-product-nav-hidden]) .product-nav {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-0.65rem);
+      visibility: hidden;
+
+      transition-delay: 0s, 0s, 200ms;
+    }
+
+    :global(html[data-product-nav-ready] .page > .header) {
+      transition:
+        height
+        200ms
+        cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    :global(html[data-product-nav-ready] .main-frame) {
+      transition:
+        padding-top
+        200ms
+        cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    :global(html[data-product-nav-ready] .sidebar) {
+      transition:
+        top 200ms cubic-bezier(0.2, 0, 0, 1),
+        height 200ms cubic-bezier(0.2, 0, 0, 1),
+        width 240ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    :global(
+      html[data-product-nav-ready]
+        .right-sidebar-container
+        > .right-sidebar
+    ) {
+      transition:
+        top 200ms cubic-bezier(0.2, 0, 0, 1),
+        max-height 200ms cubic-bezier(0.2, 0, 0, 1);
     }
   }
 
@@ -485,6 +484,10 @@ const activeProduct = productLinks.find(({ href }) =>
     .primary-inner {
       padding-inline: 0;
     }
+
+    .primary-inner :global(site-search > button[data-open-modal]) {
+      display: none;
+    }
   }
 
   @media (min-width: 72rem) {
@@ -500,6 +503,22 @@ const activeProduct = productLinks.find(({ href }) =>
           var(--sl-sidebar-width) +
           0.35rem
         );
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mednerds-header,
+    .product-nav,
+    .product-link,
+    :global(html[data-product-nav-ready] .page > .header),
+    :global(html[data-product-nav-ready] .main-frame),
+    :global(html[data-product-nav-ready] .sidebar),
+    :global(
+      html[data-product-nav-ready]
+        .right-sidebar-container
+        > .right-sidebar
+    ) {
+      transition: none;
     }
   }
 </style>

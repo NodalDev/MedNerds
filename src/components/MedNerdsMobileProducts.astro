@@ -1,0 +1,105 @@
+---
+import ProductLogo from './ProductLogo.astro';
+import { getActiveProduct, productLinks } from '../data/product-navigation';
+
+const activeProduct = getActiveProduct(Astro.url.pathname);
+---
+
+<section class="mobile-products print:hidden" aria-labelledby="mobile-products-title">
+  <h2 id="mobile-products-title">MedNerds-Bereiche</h2>
+
+  <div class="mobile-products-grid">
+    {
+      productLinks.map(({ label, href, product }) => {
+        const isActive = activeProduct?.href === href;
+
+        return (
+          <a
+            class:list={['product-link', 'mobile-product-link', { active: isActive }]}
+            href={href}
+            data-product={product}
+            aria-label={label}
+            aria-current={isActive ? 'location' : undefined}
+          >
+            <ProductLogo product={product} />
+          </a>
+        );
+      })
+    }
+  </div>
+</section>
+
+<style>
+  .mobile-products {
+    display: none;
+  }
+
+  @media (max-width: 49.999rem) {
+    .mobile-products {
+      display: grid;
+      gap: 0.75rem;
+      padding-block: 1rem 0;
+      border-top: 1px solid var(--sl-color-hairline-shade);
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--sl-color-gray-3);
+      font-size: var(--sl-text-xs);
+      font-weight: 700;
+      line-height: 1.4;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .mobile-products-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.55rem;
+      min-width: 0;
+    }
+
+    .mobile-product-link {
+      --product-logo-height: 1.1rem;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      min-height: 3.25rem;
+      padding: 0.75rem;
+      border: 1px solid var(--sl-color-gray-5);
+      border-radius: 0.65rem;
+      background: color-mix(in srgb, var(--product-color) 3%, var(--sl-color-black));
+      color: var(--sl-color-white);
+      text-decoration: none;
+      transition:
+        border-color 120ms ease,
+        background-color 120ms ease;
+    }
+
+    .mobile-product-link:hover {
+      border-color: color-mix(in srgb, var(--product-color) 55%, var(--sl-color-gray-5));
+      background: color-mix(in srgb, var(--product-color) 8%, var(--sl-color-black));
+    }
+
+    .mobile-product-link:focus-visible {
+      outline: 2px solid var(--product-color);
+      outline-offset: 2px;
+    }
+
+    .mobile-product-link.active {
+      border-color: color-mix(in srgb, var(--product-color) 65%, var(--sl-color-gray-5));
+      background: color-mix(in srgb, var(--product-color) 11%, var(--sl-color-black));
+      box-shadow: inset 2px 0 0 var(--product-color);
+    }
+
+    .mobile-product-link :global(.product-logo) {
+      min-width: 0;
+    }
+  }
+
+  @media (min-width: 22rem) and (max-width: 49.999rem) {
+    .mobile-products-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

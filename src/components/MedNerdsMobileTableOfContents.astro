@@ -1,0 +1,77 @@
+---
+import DefaultMobileTableOfContents from '@astrojs/starlight/components/MobileTableOfContents.astro';
+
+const { toc } = Astro.locals.starlightRoute;
+const hasMeaningfulTableOfContents = (toc?.items.length ?? 0) > 1;
+---
+
+{
+  hasMeaningfulTableOfContents && (
+    <div class="content-table-of-contents print:hidden">
+      <DefaultMobileTableOfContents />
+    </div>
+  )
+}
+
+<style is:global>
+  .content-table-of-contents {
+    margin-block: 1rem 0.25rem;
+  }
+
+  .content-table-of-contents mobile-starlight-toc nav {
+    position: static;
+    inset: auto;
+    overflow: hidden;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.65rem;
+    background: var(--sl-color-black);
+  }
+
+  .content-table-of-contents mobile-starlight-toc summary {
+    min-height: 2.75rem;
+    height: auto;
+    padding: 0.625rem 0.75rem;
+    border: 0;
+  }
+
+  .content-table-of-contents mobile-starlight-toc .toggle {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+  }
+
+  .content-table-of-contents mobile-starlight-toc .display-current {
+    display: none;
+  }
+
+  .content-table-of-contents mobile-starlight-toc .dropdown {
+    max-height: min(55vh, 24rem);
+    margin: 0;
+    border: 0;
+    border-top: 1px solid var(--sl-color-hairline-shade);
+    background: color-mix(in srgb, var(--sl-color-black) 94%, var(--sl-color-accent) 6%);
+    box-shadow: none;
+  }
+
+  /* H3-Einträge innerhalb des mobilen Disclosure dezent unter H2 einrücken. */
+  .content-table-of-contents
+    mobile-starlight-toc
+    .dropdown
+    ul
+    ul
+    > li
+    > a {
+    padding-inline-start: 1.75rem;
+    font-size: 0.8125rem;
+  }
+
+  @media (min-width: 72rem) {
+    .content-table-of-contents {
+      display: none;
+    }
+  }
+</style>

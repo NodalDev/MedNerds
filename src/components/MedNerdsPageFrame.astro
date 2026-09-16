@@ -1,11 +1,28 @@
 ---
 import MobileMenuToggle from '@astrojs/starlight/components/MobileMenuToggle.astro';
 import MedNerdsSiteFooter from './MedNerdsSiteFooter.astro';
+import MedNerdsDrawerSearch from './MedNerdsDrawerSearch.astro';
+import MedNerdsMobileMenuFooter from './MedNerdsMobileMenuFooter.astro';
+import MedNerdsMobileProducts from './MedNerdsMobileProducts.astro';
+import { getActiveProduct } from '../data/product-navigation';
+import { pageLayoutOptions, resolvePageLayout } from '../data/page-layouts';
 
-const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
+const route = Astro.locals.starlightRoute;
+const pageLayout = resolvePageLayout(route.entry.data.pageLayout);
+const hasSidebar = route.hasSidebar && pageLayoutOptions[pageLayout].showSidebar;
+const hasLeftRail = route.hasSidebar && pageLayoutOptions[pageLayout].reserveLeftRail;
+const activeProduct = getActiveProduct(Astro.url.pathname);
 ---
 
-<div class="page">
+<div
+  class:list={[
+    'page',
+    `page--${pageLayout}`,
+    hasSidebar && 'page--with-sidebar',
+    hasLeftRail && 'page--with-left-rail',
+    'page--with-navigation-drawer',
+  ]}
+>
   <!-- ========================================
        Globaler Header
        ======================================== -->
@@ -22,27 +39,36 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
     class:list={{
       'page-body': true,
       'page-body--with-sidebar': hasSidebar,
+      'page-body--with-left-rail': hasLeftRail,
+      [`page-body--${pageLayout}`]: true,
     }}
   >
-    {
-      hasSidebar && (
-        <nav
-          class="sidebar print:hidden"
-          aria-label={Astro.locals.t('sidebarNav.accessibleLabel')}
-        >
-          <MobileMenuToggle />
+    <nav
+      class:list={[
+        'sidebar print:hidden',
+        !hasSidebar && 'sidebar--mobile-only',
+      ]}
+      aria-label={Astro.locals.t('sidebarNav.accessibleLabel')}
+    >
+      <MobileMenuToggle />
 
-          <div
-            id="starlight__sidebar"
-            class="sidebar-pane"
-          >
-            <div class="sidebar-content sl-flex">
-              <slot name="sidebar" />
-            </div>
-          </div>
-        </nav>
-      )
-    }
+      <div
+        id="starlight__sidebar"
+        class="sidebar-pane"
+      >
+        <div class="sidebar-content sl-flex">
+          <MedNerdsDrawerSearch />
+          {
+            hasSidebar && activeProduct && (
+              <h2 class="drawer-section-title">{activeProduct.label}</h2>
+            )
+          }
+          {hasSidebar && <slot name="sidebar" />}
+          <MedNerdsMobileProducts />
+          <MedNerdsMobileMenuFooter placedByPageFrame />
+        </div>
+      </div>
+    </nav>
 
     <div class="main-frame">
       <slot />
@@ -107,7 +133,7 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
     /*
      * Auf Mobile Platz für den Menübutton lassen.
      */
-    :global([data-has-sidebar]) .header {
+    .page--with-navigation-drawer .header {
       padding-inline-end: calc(
         var(--sl-nav-gap) +
         var(--sl-nav-pad-x) +
@@ -165,6 +191,20 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
       gap: 1rem;
     }
 
+    .drawer-section-title {
+      display: none;
+    }
+
+    @media (max-width: 49.999rem) {
+      .drawer-section-title {
+        display: block;
+        margin: 0;
+        color: var(--sl-color-white);
+        font-size: var(--sl-text-lg);
+        line-height: 1.3;
+      }
+    }
+
     /* ========================================
        Hauptinhalt – Mobile
        ======================================== */
@@ -186,7 +226,7 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
       /*
        * Mobilen Menü-Abstand wieder entfernen.
        */
-      :global([data-has-sidebar]) .header {
+      .page--with-navigation-drawer .header {
         padding-inline-end:
           var(--sl-nav-pad-x);
       }
@@ -195,16 +235,46 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
          Grid
          ---------------------------------------- */
 
-      .page-body--with-sidebar {
+      .page-body--with-left-rail {
+        --mn-current-left-rail-width:
+          var(--mn-left-rail-width);
+
         display: grid;
 
         grid-template-columns:
-          var(--sl-sidebar-width)
+          var(--mn-current-left-rail-width)
           minmax(0, 1fr);
+
+        column-gap: var(--mn-layout-gap);
 
         align-items: stretch;
 
+        width: 100%;
+        max-width: var(--mn-page-shell-max);
+
+        margin-inline: auto;
+
         min-width: 0;
+
+        transition:
+          grid-template-columns
+          240ms
+          cubic-bezier(0.2, 0, 0, 1);
+      }
+
+      .sidebar--mobile-only {
+        display: none;
+      }
+
+      .page-body--legal {
+        --mn-current-left-rail-width:
+          var(--mn-left-rail-collapsed-width);
+      }
+
+      :global(:root.mn-sidebar-collapsed:has(.mn-sidebar-toggle))
+        .page-body--with-left-rail {
+        --mn-current-left-rail-width:
+          var(--mn-left-rail-collapsed-width);
       }
 
       /* ----------------------------------------
@@ -226,9 +296,19 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
 
         min-width: 0;
 
+        width: var(
+          --mn-sidebar-visual-width,
+          var(--mn-left-rail-width)
+        );
+
         height: calc(
           100vh - var(--sl-nav-height)
         );
+
+        transition:
+          width
+          240ms
+          cubic-bezier(0.2, 0, 0, 1);
       }
 
       /* ----------------------------------------
@@ -273,6 +353,8 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
          ---------------------------------------- */
 
       .main-frame {
+        grid-column: 2;
+
         min-width: 0;
 
         /*
@@ -288,6 +370,41 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
          * ihre eigene Grid-Spalte.
          */
         padding-inline-start: 0;
+      }
+    }
+
+    @media (min-width: 90rem) {
+      .page-body--with-left-rail,
+      .page-body--legal,
+      :global(:root.mn-sidebar-collapsed:has(.mn-sidebar-toggle))
+        .page-body--with-left-rail {
+        --mn-current-left-rail-width:
+          var(--mn-left-rail-width);
+      }
+
+      :global(html:not([data-has-toc]))
+        .page--with-left-rail
+        :global(.main-pane) {
+        --sl-content-margin-inline: auto 0;
+
+        width: min(
+          calc(100% - var(--mn-right-rail-width)),
+          calc(
+            var(--mn-content-max) +
+            (
+              100% -
+              var(--mn-content-max) -
+              var(--mn-right-rail-width)
+            ) / 2
+          )
+        );
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .page-body--with-left-rail,
+      .sidebar {
+        transition: none;
       }
     }
   }

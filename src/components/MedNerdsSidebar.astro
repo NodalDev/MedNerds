@@ -15,8 +15,19 @@ if (isMedDocs) {
 
 <script is:inline>
   try {
-    if (window.location.pathname.startsWith('/meddocs/') && localStorage.getItem('mednerds-sidebar-collapsed') === 'true') {
-      document.documentElement.classList.add('mn-sidebar-collapsed');
+    if (window.location.pathname.startsWith('/meddocs/')) {
+      const preference = localStorage.getItem('mednerds-sidebar-collapsed');
+      const isCompactDesktop = window.matchMedia(
+        '(min-width: 50rem) and (max-width: 89.999rem)'
+      ).matches;
+      const shouldCollapse = preference === null
+        ? isCompactDesktop
+        : preference === 'true';
+
+      document.documentElement.classList.toggle(
+        'mn-sidebar-collapsed',
+        shouldCollapse
+      );
     }
   } catch {}
 </script>
@@ -54,8 +65,8 @@ if (isMedDocs) {
     aria-controls="starlight__sidebar"
     aria-expanded="true"
   >
-    <MedNerdsIcon name="tabler:layout-sidebar-left-collapse" size="md" />
     <span class="mn-sidebar-toggle-label">Einklappen</span>
+    <MedNerdsIcon name="tabler:layout-sidebar-left-collapse" size="md" />
   </button>
 )}
 
@@ -185,6 +196,31 @@ if (isMedDocs) {
 
   const SIDEBAR_COLLAPSED_KEY = 'mednerds-sidebar-collapsed';
   const desktopSidebar = window.matchMedia('(min-width: 50rem)');
+  const compactDesktopSidebar = window.matchMedia(
+    '(min-width: 50rem) and (max-width: 89.999rem)'
+  );
+
+  function getManualSidebarPreference() {
+    try {
+      const preference = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      if (preference === 'true') return true;
+      if (preference === 'false') return false;
+    } catch {}
+
+    return null;
+  }
+
+  function syncSidebarCollapsedState() {
+    const manualPreference = getManualSidebarPreference();
+    const collapsed = desktopSidebar.matches && (
+      manualPreference ?? compactDesktopSidebar.matches
+    );
+
+    document.documentElement.classList.toggle(
+      'mn-sidebar-collapsed',
+      collapsed
+    );
+  }
 
   function isSidebarCollapsed() {
     return desktopSidebar.matches && document.documentElement.classList.contains('mn-sidebar-collapsed');
@@ -229,6 +265,7 @@ if (isMedDocs) {
       return;
     }
 
+    syncSidebarCollapsedState();
     updateSidebarToggle();
     if (toggle.dataset.mednerdsCollapse !== 'true') {
       toggle.dataset.mednerdsCollapse = 'true';
@@ -402,7 +439,8 @@ if (isMedDocs) {
     initialiseMedNerdsSidebar
   );
 
-  desktopSidebar.addEventListener('change', () => {
+  compactDesktopSidebar.addEventListener('change', () => {
+    syncSidebarCollapsedState();
     initialiseSidebarAccordion();
     updateSidebarToggle();
   });
@@ -414,8 +452,12 @@ if (isMedDocs) {
   }
 
   @media (min-width: 50rem) {
-    .page-body--with-sidebar {
-      transition: grid-template-columns 240ms cubic-bezier(0.2, 0, 0, 1);
+    .sidebar-content:has(.mn-sidebar-toggle) {
+      padding-bottom: 0.1rem;
+    }
+
+    .sidebar-content:has(.mn-sidebar-toggle)::after {
+      display: none;
     }
 
     .sidebar-content .top-level > li {
@@ -447,11 +489,8 @@ if (isMedDocs) {
     }
 
     :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) {
-      --mn-sidebar-pane-width: 4.5rem;
-    }
-
-    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .page-body--with-sidebar {
-      grid-template-columns: var(--mn-sidebar-pane-width) minmax(0, 1fr);
+      --mn-sidebar-visual-width:
+        var(--mn-left-rail-collapsed-width);
     }
 
     :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details {
@@ -705,7 +744,6 @@ if (isMedDocs) {
      ======================================== */
 
   @media (prefers-reduced-motion: reduce) {
-    .page-body--with-sidebar,
     .sidebar-content .top-level > li > details,
     .sidebar-content .top-level > li > a.mn-sidebar-collapsed-link,
     .mn-sidebar-toggle,

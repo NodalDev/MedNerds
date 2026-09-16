@@ -1,5 +1,8 @@
 ---
 import MedNerdsIcon from './MedNerdsIcon.astro';
+import footerLogoLight from '../assets/Logos/MedNerds - einfarbig - hell.svg?url';
+import footerLogoDark from '../assets/Logos/MedNerds - einfarbig - dunkel.svg?url';
+import licenseLogo from '../assets/licenses/Cc-by-nc-sa_icon.svg?url';
 
 const year = new Date().getFullYear();
 
@@ -10,6 +13,13 @@ const productLinks = [
   { label: 'MedCases', href: '/medcases/' },
   { label: 'MedTools', href: '/medtools/' },
   { label: 'MedNerds Basel', href: '/mednerds-basel/' },
+] as const;
+
+const participationLinks = [
+  { label: 'Mitmachen', href: '/mitmachen/' },
+  { label: 'Wissen beitragen', href: '/wissen-beitragen/' },
+  { label: 'Fehler melden', href: '/fehler-melden/' },
+  { label: 'Spenden', href: '/spenden/' },
 ] as const;
 ---
 
@@ -24,24 +34,35 @@ const productLinks = [
     aria-labelledby="mn-medical-notice-title"
   >
     <div class="mn-site-footer-inner mn-medical-notice-inner">
-      <div class="mn-medical-notice-icon" aria-hidden="true">
-        <MedNerdsIcon name="tabler:info-circle" class="notice-icon" />
-      </div>
+      <div class="mn-medical-notice-panel">
+        <div class="mn-medical-notice-icon" aria-hidden="true">
+          <MedNerdsIcon name="tabler:info-circle" class="notice-icon" />
+        </div>
 
-      <div class="mn-medical-notice-content">
-        <h2 id="mn-medical-notice-title">
-          Medizinischer Hinweis &amp; Haftungsausschluss
-        </h2>
+        <div class="mn-medical-notice-content">
+          <h2 id="mn-medical-notice-title">
+            Medizinischer Hinweis &amp; Haftungsausschluss
+          </h2>
 
-        <p>
-          Die Inhalte von MedNerds dienen ausschließlich der Information
-          und medizinischen Fortbildung. Sie ersetzen keine individuelle
-          ärztliche Untersuchung, Diagnose oder Behandlung. Trotz
-          sorgfältiger Erstellung kann keine Gewähr für Vollständigkeit,
-          Aktualität und Fehlerfreiheit übernommen werden. Bei Beschwerden
-          oder in einem Notfall wende dich bitte an medizinisches
-          Fachpersonal beziehungsweise den örtlichen Notruf.
-        </p>
+          <p>
+            Die Inhalte von MedNerds dienen ausschließlich der Information
+            und medizinischen Fortbildung. Sie ersetzen keine individuelle
+            ärztliche Untersuchung, Diagnose oder Behandlung. Trotz
+            sorgfältiger Erstellung kann keine Gewähr für Vollständigkeit,
+            Aktualität und Fehlerfreiheit übernommen werden. Bei Beschwerden
+            oder in einem Notfall wende dich bitte an medizinisches
+            Fachpersonal beziehungsweise den örtlichen Notruf.
+          </p>
+        </div>
+
+        <a
+          class="mn-medical-notice-action"
+          href="/haftungsausschluss/"
+          aria-label="Mehr über den medizinischen Hinweis und Haftungsausschluss erfahren"
+        >
+          <span>Mehr erfahren</span>
+          <MedNerdsIcon name="tabler:arrow-right" size="sm" class="notice-action-icon" />
+        </a>
       </div>
     </div>
   </section>
@@ -54,11 +75,39 @@ const productLinks = [
     <div class="mn-site-footer-inner mn-footer-grid">
 
       <div class="mn-footer-brand">
-        <strong>MedNerds</strong>
+        <span class="mn-footer-logo">
+          <img
+            class="brand-light"
+            src={footerLogoLight}
+            width="128"
+            height="28"
+            alt="MedNerds"
+          />
+          <img
+            class="brand-dark"
+            src={footerLogoDark}
+            width="128"
+            height="28"
+            alt="MedNerds"
+          />
+        </span>
 
         <p>
           Freies medizinisches Wissen – verständlich,
           fundiert und offen zugänglich.
+        </p>
+
+        <p>
+          <img
+            src={licenseLogo}
+            width="120"
+            height="42"
+            alt="Creative Commons BY-NC-SA 4.0"
+          />
+        </p>
+
+        <p>
+          Eigene Texte und Bilder stehen, sofern nicht anders angegeben, unter <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de">CC BY-NC-SA 4.0</a>.
         </p>
       </div>
 
@@ -77,14 +126,29 @@ const productLinks = [
 
       <nav
         class="mn-footer-column"
+        aria-label="Bei MedNerds mitwirken"
+      >
+        <h2>Mitwirken</h2>
+
+        {
+          participationLinks.map(({ label, href }) => (
+            <a href={href}>{label}</a>
+          ))
+        }
+      </nav>
+
+      <nav
+        class="mn-footer-column"
         aria-label="Informationen"
       >
         <h2>Informationen</h2>
 
-        <a href="/ueber-mednerds/">Über MedNerds</a>
-        <a href="/impressum/">Impressum</a>
-        <a href="/datenschutz/">Datenschutz</a>
+        <a href="/ueber-uns/">Über MedNerds</a>
         <a href="/haftungsausschluss/">Haftungsausschluss</a>
+        <a href="/nutzungsbedingungen/">Nutzungsbedingungen</a>
+        <a href="/urheberrecht/">Urheberrecht</a>
+        <a href="/datenschutz/">Datenschutz</a>
+        <a href="/impressum/">Impressum</a>
       </nav>
 
     </div>
@@ -97,7 +161,7 @@ const productLinks = [
   <div class="mn-copyright">
     <div class="mn-site-footer-inner mn-copyright-inner">
       <small>
-        © {year} MedNerds Basel
+        Logo und Konzeption MedNerds © {year} MedNerds Basel
       </small>
     </div>
   </div>
@@ -118,67 +182,84 @@ const productLinks = [
    * Der Hintergrund läuft über die volle Seitenbreite.
    * Nur der Inhalt wird hier begrenzt.
    */
-.mn-site-footer-inner {
-  box-sizing: border-box;
+  .mn-site-footer-inner {
+    box-sizing: border-box;
 
-  width: 100%;
-  max-width: var(--mn-shell-max-width);
+    width: 100%;
+    max-width: var(--mn-shell-max-width);
 
-  margin-inline: auto;
+    margin-inline: auto;
 
-  padding-inline: var(--mn-shell-padding-x);
-}
+    padding-inline: var(--mn-shell-padding-x);
+  }
 
   /* ----------------------------------------
      Medizinischer Hinweis
      ---------------------------------------- */
 
   .mn-medical-notice {
+    --mn-notice-accent: var(--color-MedNerds-300);
+
     width: 100%;
 
-    padding-block: 2.5rem;
+    padding-block: clamp(1.75rem, 3vw, 2.5rem);
 
     background: color-mix(
       in oklch,
-      var(--sl-color-blue-low) 72%,
-      var(--sl-color-bg) 28%
+      var(--sl-color-bg) 92%,
+      var(--mn-surface) 8%
     );
 
-    border-block:
-      1px solid
-      color-mix(
-        in oklch,
-        var(--sl-color-blue) 18%,
-        transparent
-      );
+    border-block: 1px solid var(--sl-color-hairline);
   }
 
   .mn-medical-notice-inner {
+    display: block;
+  }
+
+  .mn-medical-notice-panel {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: start;
+    gap: clamp(0.9rem, 2vw, 1.25rem);
 
-    gap: 1rem;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+
+    border: 1px solid color-mix(
+      in oklch,
+      var(--sl-color-hairline) 82%,
+      var(--mn-notice-accent) 18%
+    );
+    border-inline-start: 3px solid color-mix(
+      in oklch,
+      var(--mn-notice-accent) 72%,
+      var(--sl-color-hairline) 28%
+    );
+    border-radius: 0.85rem;
+
+    background: color-mix(
+      in oklch,
+      var(--mn-surface) 92%,
+      var(--sl-color-accent-low) 8%
+    );
   }
 
   .mn-medical-notice-icon {
     display: grid;
     place-items: center;
 
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 1.75rem;
+    height: 1.75rem;
 
-    margin-top: 0.05rem;
+    margin-top: 0.03rem;
 
-    color: var(--sl-color-blue);
-
+    color: var(--mn-notice-accent);
   }
 
   .mn-medical-notice-icon :global(.notice-icon) {
     display: block;
-      width: 2rem;
-      height: 2rem;
+    width: 1.55rem;
+    height: 1.55rem;
   }
 
   .mn-medical-notice-content {
@@ -191,19 +272,93 @@ const productLinks = [
     color: var(--sl-color-white);
 
     font-size: var(--sl-text-base);
-    font-weight: 650;
-    line-height: 1.4;
+    font-weight: 680;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
   }
 
   .mn-medical-notice p {
-    max-width: 75rem;
+    max-width: 82ch;
 
-    margin: 0.5rem 0 0;
+    margin: 0.45rem 0 0;
 
     color: var(--sl-color-gray-2);
 
     font-size: var(--sl-text-sm);
-    line-height: 1.7;
+    line-height: 1.65;
+  }
+
+  .mn-medical-notice-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    gap: 0.4rem;
+
+    min-height: 2.5rem;
+    padding: 0.55rem 0.9rem;
+
+    border: 1px solid color-mix(
+      in oklch,
+      var(--sl-color-hairline) 65%,
+      var(--mn-notice-accent) 35%
+    );
+    border-radius: 0.65rem;
+
+    background: color-mix(
+      in oklch,
+      var(--mn-surface) 88%,
+      var(--mn-notice-accent) 12%
+    );
+    color: var(--sl-color-white);
+
+    font-size: var(--sl-text-sm);
+    font-weight: 650;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+
+    transition:
+      border-color 140ms ease,
+      background-color 140ms ease,
+      color 140ms ease;
+  }
+
+  .mn-medical-notice-action:hover {
+    border-color: var(--mn-notice-accent);
+    background: color-mix(
+      in oklch,
+      var(--mn-surface) 78%,
+      var(--mn-notice-accent) 22%
+    );
+    color: var(--sl-color-accent);
+  }
+
+  .mn-medical-notice-action:focus-visible {
+    outline: 2px solid var(--mn-notice-accent);
+    outline-offset: 0.2rem;
+  }
+
+  .mn-medical-notice-action :global(.notice-action-icon) {
+    flex: none;
+  }
+
+  :global(:root[data-theme='light']) .mn-medical-notice {
+    --mn-notice-accent: var(--color-MedNerds-700);
+
+    background: color-mix(
+      in oklch,
+      var(--sl-color-bg) 97%,
+      var(--color-MedNerds-100) 3%
+    );
+  }
+
+  :global(:root[data-theme='light']) .mn-medical-notice-panel {
+    background: color-mix(
+      in oklch,
+      var(--mn-surface) 96%,
+      var(--color-MedNerds-100) 4%
+    );
   }
 
   /* ----------------------------------------
@@ -222,13 +377,12 @@ const productLinks = [
     display: grid;
 
     grid-template-columns:
-      minmax(0, 1.6fr)
-      minmax(10rem, 0.8fr)
-      minmax(10rem, 0.8fr);
+      minmax(13rem, 1.2fr)
+      repeat(3, minmax(9rem, 0.75fr));
 
     align-items: start;
 
-    gap: clamp(3rem, 7vw, 7rem);
+    gap: clamp(2rem, 4vw, 4.5rem);
   }
 
   /* ----------------------------------------
@@ -236,19 +390,19 @@ const productLinks = [
      ---------------------------------------- */
 
   .mn-footer-brand {
-    max-width: 28rem;
+    max-width: 24rem;
   }
 
-  .mn-footer-brand strong {
+  .mn-footer-logo {
     display: block;
+    width: 10rem;
+    max-width: 100%;
+    line-height: 0;
+  }
 
-    margin: 0;
-
-    color: var(--sl-color-white);
-
-    font-size: 1.55rem;
-    font-weight: 700;
-    line-height: 1.2;
+  .mn-footer-brand .mn-footer-logo > img {
+    width: 100%;
+    height: auto;
   }
 
   .mn-footer-brand p {
@@ -346,22 +500,42 @@ const productLinks = [
      Responsive
      ---------------------------------------- */
 
+  @media (min-width: 50.01rem) and (max-width: 64rem) {
+    .mn-footer-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 3rem 4rem;
+    }
+  }
+
   @media (max-width: 50rem) {
     .mn-site-footer-inner {
       padding-inline: 1.25rem;
     }
 
     .mn-medical-notice {
-      padding-block: 2rem;
+      padding-block: 1.5rem;
     }
 
-    .mn-medical-notice-inner {
-      gap: 0.8rem;
+    .mn-medical-notice-panel {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.75rem;
+      padding: 1.15rem;
+    }
+
+    .mn-medical-notice-action {
+      grid-column: 2;
+      justify-self: start;
+      margin-top: 0.25rem;
     }
 
     .mn-medical-notice-icon {
-      width: 2rem;
-      height: 2rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .mn-medical-notice-icon :global(.notice-icon) {
+      width: 1.35rem;
+      height: 1.35rem;
     }
 
     .mn-footer-main {

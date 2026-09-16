@@ -2,17 +2,10 @@
 import mainLight from '../assets/Logos/MedNerds - horizontal - hell.svg?url';
 import mainDark from '../assets/Logos/MedNerds - horizontal - dunkel.svg?url';
 import ProductLogo from './ProductLogo.astro';
+import { getActiveProduct } from '../data/product-navigation';
 
 const pathname = Astro.url.pathname;
-const products = [
-  { href: '/meddocs/', label: 'MedDocs', product: 'meddocs' },
-  { href: '/medlearn/', label: 'MedLearn', product: 'medlearn' },
-  { href: '/medcases/', label: 'MedCases', product: 'medcases' },
-  { href: '/medblog/', label: 'MedBlog', product: 'medblog' },
-  { href: '/medtools/', label: 'MedTools', product: 'medtools' },
-  { href: '/mednerds-basel/', label: 'MedNerds Basel', product: 'mednerds-basel' },
-] as const;
-const activeProduct = products.find(({ href }) => pathname.startsWith(href));
+const activeProduct = getActiveProduct(pathname);
 ---
 
 <div class="brand-lockup">
@@ -77,7 +70,7 @@ const activeProduct = products.find(({ href }) => pathname.startsWith(href));
     }
 
     .main-brand img {
-      height: 1.95rem;
+      height: 1.7rem;
     }
 
     .brand-divider {
@@ -85,15 +78,27 @@ const activeProduct = products.find(({ href }) => pathname.startsWith(href));
     }
 
     .section-brand {
-      --product-logo-height: 1.45rem;
-      max-width: 7rem;
+      --product-logo-height: 1.25rem;
+      max-width: 5.75rem;
     }
   }
 
   @media (max-width: 28rem) {
-    .brand-divider,
+    .brand-lockup {
+      gap: 0.35rem;
+    }
+
+    .main-brand img {
+      height: 1.5rem;
+    }
+
+    .brand-divider {
+      height: 1.3rem;
+    }
+
     .section-brand {
-      display: none;
+      --product-logo-height: 1.05rem;
+      max-width: 4.75rem;
     }
   }
 </style>

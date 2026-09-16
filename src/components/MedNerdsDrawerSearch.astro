@@ -1,0 +1,77 @@
+---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+
+const searchLabel = Astro.locals.t('search.label');
+---
+
+<mednerds-drawer-search class="drawer-search print:hidden">
+  <button type="button" aria-label={searchLabel}>
+    <MedNerdsIcon name="tabler:search" size="sm" />
+    <span>{searchLabel} …</span>
+  </button>
+</mednerds-drawer-search>
+
+<script>
+  class MedNerdsDrawerSearch extends HTMLElement {
+    connectedCallback() {
+      const button = this.querySelector('button');
+      if (!button || button.dataset.searchReady === 'true') return;
+
+      button.dataset.searchReady = 'true';
+      button.addEventListener('click', () => {
+        document
+          .querySelector<HTMLButtonElement>('site-search button[data-open-modal]')
+          ?.click();
+      });
+    }
+  }
+
+  if (!customElements.get('mednerds-drawer-search')) {
+    customElements.define('mednerds-drawer-search', MedNerdsDrawerSearch);
+  }
+</script>
+
+<style>
+  .drawer-search {
+    display: none;
+  }
+
+  @media (max-width: 49.999rem) {
+    .drawer-search {
+      display: block;
+      min-width: 0;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      width: 100%;
+      min-height: 2.75rem;
+      padding: 0.65rem 0.8rem;
+      border: 1px solid var(--sl-color-gray-5);
+      border-radius: 0.65rem;
+      background: var(--sl-color-black);
+      color: var(--sl-color-gray-2);
+      font: inherit;
+      font-size: var(--sl-text-sm);
+      text-align: start;
+      cursor: pointer;
+      transition:
+        border-color 120ms ease,
+        background-color 120ms ease,
+        color 120ms ease;
+    }
+
+    button:hover {
+      border-color: var(--sl-color-gray-3);
+      background: color-mix(in srgb, var(--sl-color-white) 4%, var(--sl-color-black));
+      color: var(--sl-color-white);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--sl-color-accent);
+      outline-offset: 2px;
+    }
+  }
+</style>

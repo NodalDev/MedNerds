@@ -1,0 +1,30 @@
+---
+import DefaultMobileMenuFooter from '@astrojs/starlight/components/MobileMenuFooter.astro';
+
+interface Props {
+  placedByPageFrame?: boolean;
+}
+
+const { placedByPageFrame = false } = Astro.props;
+---
+
+{
+  placedByPageFrame && (
+    <div class="drawer-preferences">
+      <DefaultMobileMenuFooter />
+    </div>
+  )
+}
+
+<style>
+  .drawer-preferences {
+    display: none;
+  }
+
+  @media (max-width: 49.999rem) {
+    .drawer-preferences {
+      display: block;
+      margin-top: auto;
+    }
+  }
+</style>

@@ -26,16 +26,23 @@ export default defineConfig({
           lang: 'de',
         },
       },
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 3,
+      },
       customCss: ['./src/styles/global.css'],
       components: {
         Header: './src/components/MedNerdsHeader.astro',
+        MobileMenuFooter: './src/components/MedNerdsMobileMenuFooter.astro',
         SiteTitle: './src/components/MedNerdsSiteTitle.astro',
+        SocialIcons: './src/components/MedNerdsSocialIcons.astro',
         Hero: './src/components/MedNerdsHero.astro',
         Sidebar: './src/components/MedNerdsSidebar.astro',
         PageTitle: './src/components/MedNerdsPageTitle.astro',
         Pagination: './src/components/MedNerdsPagination.astro',
         Footer: './src/components/MedNerdsContentFooter.astro',
         PageFrame: './src/components/MedNerdsPageFrame.astro',
+        PageSidebar: './src/components/MedNerdsPageSidebar.astro',
         TwoColumnContent: './src/components/MedNerdsTwoColumnContent.astro',
       },
       sidebar: [

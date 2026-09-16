@@ -1,7 +1,9 @@
 ---
 import DefaultPageTitle from '@astrojs/starlight/components/PageTitle.astro';
 import MedNerdsIcon from './MedNerdsIcon.astro';
+import MedNerdsMobileTableOfContents from './MedNerdsMobileTableOfContents.astro';
 import type { StarlightRouteData } from '@astrojs/starlight/route-data';
+import { resolvePageLayout } from '../data/page-layouts';
 
 type SidebarEntry = StarlightRouteData['sidebar'][number];
 
@@ -11,8 +13,11 @@ interface Breadcrumb {
   current?: boolean;
 }
 
-const { sidebar } = Astro.locals.starlightRoute;
+const route = Astro.locals.starlightRoute;
+const { sidebar } = route;
 const pathname = Astro.url.pathname;
+const pageLayout = resolvePageLayout(route.entry.data.pageLayout);
+const isLegalLayout = pageLayout === 'legal';
 
 const isMedDocs = pathname.startsWith('/meddocs/');
 
@@ -146,7 +151,18 @@ if (isMedDocs && pathname !== '/meddocs/') {
   )
 }
 
-<DefaultPageTitle />
+{
+  isLegalLayout ? (
+    <div id="_top" class="legal-page-title-content">
+      <MedNerdsMobileTableOfContents />
+    </div>
+  ) : (
+    <>
+      <DefaultPageTitle />
+      <MedNerdsMobileTableOfContents />
+    </>
+  )
+}
 
 <style>
   .mednerds-breadcrumbs {
@@ -197,6 +213,19 @@ if (isMedDocs && pathname !== '/meddocs/') {
   }
 
   .mednerds-breadcrumbs [aria-current='page'] {
-    
+
+  }
+
+  .legal-page-title-content {
+    min-width: 0;
+  }
+
+  :global(.page--legal .content-panel:has(.legal-page-title-content)) {
+    padding-block: 0;
+  }
+
+  :global(.page--legal .content-panel:has(.legal-page-title-content) + .content-panel) {
+    border-top: 0;
+    padding-block-start: 4rem;
   }
 </style>

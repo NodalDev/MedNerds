@@ -1,0 +1,60 @@
+---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+
+const socialLinks = [
+  { label: 'YouTube', icon: 'tabler:brand-youtube' },
+  { label: 'Instagram', icon: 'tabler:brand-instagram' },
+  { label: 'GitHub', icon: 'tabler:brand-github' },
+  { label: 'LinkedIn', icon: 'tabler:brand-linkedin' },
+  { label: 'X', icon: 'tabler:brand-x' },
+] as const;
+
+const placeholderHref = 'https://mednerds.ch/';
+---
+
+<nav class="mn-header-socials" aria-label="MedNerds auf Social Media">
+  {
+    socialLinks.map(({ label, icon }) => (
+      <a href={placeholderHref} aria-label={label} title={label}>
+        <MedNerdsIcon name={icon} size="sm" />
+      </a>
+    ))
+  }
+</nav>
+
+<style>
+  .mn-header-socials {
+    display: none;
+    align-items: center;
+    gap: 0.1rem;
+  }
+
+  .mn-header-socials a {
+    display: inline-grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 0.4rem;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    transition:
+      color 120ms ease,
+      background-color 120ms ease;
+  }
+
+  .mn-header-socials a:hover {
+    color: var(--sl-color-white);
+    background: color-mix(in srgb, var(--sl-color-white) 6%, transparent);
+  }
+
+  .mn-header-socials a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 64rem) {
+    .mn-header-socials {
+      display: flex;
+    }
+  }
+</style>

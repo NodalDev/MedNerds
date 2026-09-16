@@ -1,16 +1,42 @@
 ---
 import DefaultHero from '@astrojs/starlight/components/Hero.astro';
+import { LinkButton } from '@astrojs/starlight/components';
 import MedNerdsHeroLogo from './MedNerdsHeroLogo.astro';
 
 const isHomepage = Astro.locals.starlightRoute.id === '';
+const { data } = Astro.locals.starlightRoute.entry;
+const { title = data.title, tagline, actions = [] } = data.hero || {};
 ---
 
 {
   isHomepage ? (
     <div class="mednerds-hero grid items-center gap-8 pt-8 pb-16 md:grid-cols-[1fr_1.35fr] md:gap-12 md:py-20 lg:gap-16">
       <MedNerdsHeroLogo />
-      <div class="hero-copy min-w-0">
-        <DefaultHero />
+      <div class="home-hero-content min-w-0">
+        <div class="home-hero-copy">
+          <p class="home-hero-eyebrow">Eine Plattform, viele Wege</p>
+          <h1 id="_top" data-page-title set:html={title} />
+          {tagline && <div class="home-hero-tagline" set:html={tagline} />}
+          <p class="home-hero-description">
+            MedNerds macht medizinische Inhalte schnell auffindbar, verständlich
+            strukturiert und offen zugänglich. Die Plattform wächst Schritt für
+            Schritt mit ihrer Community.
+          </p>
+        </div>
+        {
+          actions.length > 0 && (
+            <div class="home-hero-actions">
+              {actions.map(
+                ({ attrs: { class: className, ...attrs } = {}, icon, link: href, text, variant }) => (
+                  <LinkButton {href} {variant} icon={icon?.name} class:list={[className]} {...attrs}>
+                    {text}
+                    {icon?.html && <Fragment set:html={icon.html} />}
+                  </LinkButton>
+                ),
+              )}
+            </div>
+          )
+        }
       </div>
     </div>
   ) : (
@@ -19,26 +45,72 @@ const isHomepage = Astro.locals.starlightRoute.id === '';
 }
 
 <style>
-  /* Keep Starlight's title, CTA, draft notice and accessibility hooks. */
-  .hero-copy :global(.hero) {
-    display: block;
-    padding: 0;
+  .home-hero-content,
+  .home-hero-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
-  .hero-copy :global(.tagline) {
+  .home-hero-content {
+    gap: clamp(1.5rem, calc(1.5rem + 1vw), 2rem);
+  }
+
+  .home-hero-copy {
+    gap: 1rem;
+  }
+
+  .home-hero-eyebrow,
+  .home-hero-description,
+  .home-hero-copy h1 {
+    margin: 0;
+  }
+
+  .home-hero-eyebrow {
+    color: var(--sl-color-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .home-hero-copy h1 {
+    color: var(--sl-color-white);
+    font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 5vw), var(--sl-text-6xl));
+    font-weight: 600;
+    line-height: var(--sl-line-height-headings);
+  }
+
+  .home-hero-tagline {
     max-width: 30ch;
+    color: var(--sl-color-gray-2);
+    font-size: clamp(var(--sl-text-base), calc(0.0625rem + 2vw), var(--sl-text-xl));
+  }
+
+  .home-hero-description {
+    max-width: 58ch;
+    color: var(--sl-color-gray-2);
+    font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+    line-height: 1.7;
+  }
+
+  .home-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 2rem;
   }
 
   @media (min-width: 48rem) {
-    .hero-copy :global(.stack) {
+    .home-hero-content,
+    .home-hero-copy {
+      align-items: flex-start;
       text-align: start;
     }
 
-    .hero-copy :global(.copy) {
-      align-items: flex-start;
-    }
-
-    .hero-copy :global(.actions) {
+    .home-hero-actions {
       justify-content: flex-start;
     }
   }
