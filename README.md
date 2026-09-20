@@ -55,6 +55,7 @@ Repository klonen und Abhängigkeiten installieren:
 git clone https://github.com/NodalDev/MedNerds.git
 cd MedNerds
 npm install
+```
 
 ## Lizenzierung
 
