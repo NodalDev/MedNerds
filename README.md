@@ -55,3 +55,54 @@ Repository klonen und Abhängigkeiten installieren:
 git clone https://github.com/NodalDev/MedNerds.git
 cd MedNerds
 npm install
+
+## Lizenzierung
+
+MedNerds verwendet unterschiedliche Lizenzen für Quellcode, eigene Inhalte und weitere Bestandteile des Projekts.
+
+### Quellcode
+
+Von MedNerds selbst entwickelte Softwarebestandteile und Quellcode dieses Repositorys stehen, soweit nicht anders angegeben, unter der **MIT License**.
+
+Die vollständigen Lizenzbedingungen findest du in der Datei [`LICENSE`](./LICENSE).
+
+### Medizinische und redaktionelle Inhalte
+
+Von MedNerds erstellte medizinische, naturwissenschaftliche und redaktionelle Inhalte stehen, soweit nicht ausdrücklich anders angegeben, unter der:
+
+**Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**
+
+Diese Lizenz erlaubt das Teilen und Bearbeiten der betreffenden Inhalte unter anderem unter folgenden Bedingungen:
+
+- angemessene Namensnennung
+- Hinweis auf die Lizenz
+- Kennzeichnung vorgenommener Änderungen
+- ausschließlich nichtkommerzielle Nutzung
+- Weitergabe von Bearbeitungen unter CC BY-NC-SA 4.0 oder einer zulässigen kompatiblen Lizenz
+
+Weitere Informationen:
+
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+### Ausnahmen
+
+Die MIT- und CC-BY-NC-SA-Lizenzen gelten nicht automatisch für sämtliche Dateien oder Inhalte dieses Repositorys.
+
+Insbesondere können ausgenommen sein:
+
+- das MedNerds-Logo und charakteristische Branding-Elemente
+- Bilder, Fotografien und andere Medien Dritter
+- zitierte Publikationen, Leitlinien und wissenschaftliche Quellen
+- Datensätze Dritter
+- Inhalte mit ausdrücklich abweichender Lizenzangabe
+- personenbezogene Daten und Nutzerinhalte
+
+Eine konkrete Lizenz- oder Rechteangabe bei einem bestimmten Inhalt oder einer Datei hat Vorrang vor diesen allgemeinen Hinweisen.
+
+Ausführliche Informationen zur Lizenzierung und Weiterverwendung findest du unter:
+
+**https://mednerds.ch/urheberrecht/**
+
+Bei Fragen zu Lizenzen und Nutzungsrechten:
+
+**legal@mednerds.ch**
