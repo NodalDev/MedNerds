@@ -1,11 +1,13 @@
 ---
 import TableOfContents from '@astrojs/starlight/components/TableOfContents.astro';
+import { pageLayoutOptions, resolvePageLayout } from '../data/page-layouts';
 
-const { toc } = Astro.locals.starlightRoute;
+const { toc, entry } = Astro.locals.starlightRoute;
+const { showToc } = pageLayoutOptions[resolvePageLayout(entry.data.pageLayout)];
 ---
 
 {
-  toc && (
+  showToc && toc && (
     <div class="right-sidebar-panel sl-hidden lg:sl-block">
       <div class="sl-container">
         <TableOfContents />

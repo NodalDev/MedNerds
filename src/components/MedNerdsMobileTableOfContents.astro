@@ -1,12 +1,14 @@
 ---
 import DefaultMobileTableOfContents from '@astrojs/starlight/components/MobileTableOfContents.astro';
+import { pageLayoutOptions, resolvePageLayout } from '../data/page-layouts';
 
-const { toc } = Astro.locals.starlightRoute;
+const { toc, entry } = Astro.locals.starlightRoute;
+const { showToc } = pageLayoutOptions[resolvePageLayout(entry.data.pageLayout)];
 const hasMeaningfulTableOfContents = (toc?.items.length ?? 0) > 1;
 ---
 
 {
-  hasMeaningfulTableOfContents && (
+  showToc && hasMeaningfulTableOfContents && (
     <div class="content-table-of-contents print:hidden">
       <DefaultMobileTableOfContents />
     </div>
