@@ -1,49 +1,57 @@
-# Starlight Starter Kit: Basics
+# MedNerds
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+**Freies medizinisches Wissen – verständlich, fundiert und offen zugänglich.**
 
-```
-npm create astro@latest -- --template starlight
-```
+MedNerds ist eine unabhängige medizinische Lern- und Wissensplattform.  
+Ziel ist es, medizinisches Wissen strukturiert aufzubereiten und für Studium, klinischen Alltag und eigenständiges Lernen zugänglich zu machen.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+> **Status:** MedNerds befindet sich aktuell in aktiver Entwicklung.
 
-## 🚀 Project Structure
+## Bereiche
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+MedNerds besteht aus mehreren Bereichen mit unterschiedlichen Schwerpunkten:
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
-```
+- **MedDocs** – strukturiertes medizinisches Wissen zum Lernen, Verstehen und Nachschlagen
+- **MedBlog** – medizinische Beiträge, Hintergründe und aktuelle Themen
+- **MedLearn** – interaktive Lerninhalte und Übungen
+- **MedCases** – klinische Fälle und fallbasiertes Lernen
+- **MedTools** – praktische medizinische Werkzeuge
+- **MedNerds Basel** – lokale Community und Austausch
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+Der aktuelle Entwicklungsschwerpunkt liegt auf **MedDocs** und der technischen Grundlage der Plattform.
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+## MedDocs
 
-Static assets, like favicons, can be placed in the `public/` directory.
+MedDocs bildet die medizinische Wissensbasis von MedNerds.
 
-## 🧞 Commands
+Aktuell entstehen Inhalte unter anderem zu:
 
-All commands are run from the root of the project, from a terminal:
+- EKG
+- Echokardiographie
+- Sonographie
+- Notfallmedizin
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Die Inhalte werden schrittweise erweitert und strukturiert miteinander verknüpft.
 
-## 👀 Want to learn more?
+## Technologie
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+Die Website ist als weitgehend statische und performante Webanwendung aufgebaut.
+
+Zum Einsatz kommen unter anderem:
+
+- [Astro](https://astro.build/)
+- [Starlight](https://starlight.astro.build/)
+- [React](https://react.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- TypeScript
+
+## Lokale Entwicklung
+
+Voraussetzung ist eine aktuelle Node.js-Installation.
+
+Repository klonen und Abhängigkeiten installieren:
+
+```bash
+git clone https://github.com/NodalDev/MedNerds.git
+cd MedNerds
+npm install

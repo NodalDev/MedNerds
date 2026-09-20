@@ -1,22 +1,33 @@
+# MedNerds – Agent Instructions
+
+## Project
+
+MedNerds is an Astro/Starlight medical knowledge platform.
+
 ## Development
 
-When starting the dev server, use background mode:
+Run:
 
-```
-astro dev --background
-```
+npm run build
+npx astro check
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+## Rules
 
-## Documentation
+- Make minimal, targeted changes.
+- Do not perform unrelated refactors.
+- Do not install new dependencies unless explicitly requested.
+- Preserve existing MedNerds design tokens and architecture.
+- Do not modify Starlight internals such as `.content-panel`,
+  `.sl-container`, or `.main-pane` without explicit instruction.
+- Prefer existing components and shared data structures.
+- Do not edit generated files in `dist/`.
 
-Full documentation: https://docs.astro.build
+## Astro check in Codex
 
-Consult these guides before working on related tasks:
+If `npx astro check` fails only inside the Codex Windows sandbox with:
 
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+source-map-js/lib/source-map-generator.js
+require is not defined
+
+do not modify dependencies or Astro/Vite configuration because of this
+error. Request permission to run the check outside the sandbox instead.
