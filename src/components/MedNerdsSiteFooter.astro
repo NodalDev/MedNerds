@@ -18,8 +18,10 @@ const productLinks = [
 const participationLinks = [
   { label: 'Mitmachen', href: '/mitmachen/' },
   { label: 'Wissen beitragen', href: '/wissen-beitragen/' },
-  { label: 'Fehler melden', href: '/fehler-melden/' },
+  { label: 'Fehler melden', href: 'https://github.com/NodalDev/MedNerds/issues' },
+  { label: 'Roadmap', href: 'https://github.com/users/NodalDev/projects/8' },
   { label: 'Spenden', href: '/spenden/' },
+  { label: 'FAQ', href: '/FAQ/' },
 ] as const;
 ---
 
@@ -45,13 +47,11 @@ const participationLinks = [
           </h2>
 
           <p>
-            Die Inhalte von MedNerds dienen ausschließlich der Information
-            und medizinischen Fortbildung. Sie ersetzen keine individuelle
-            ärztliche Untersuchung, Diagnose oder Behandlung. Trotz
-            sorgfältiger Erstellung kann keine Gewähr für Vollständigkeit,
-            Aktualität und Fehlerfreiheit übernommen werden. Bei Beschwerden
-            oder in einem Notfall wende dich bitte an medizinisches
-            Fachpersonal beziehungsweise den örtlichen Notruf.
+            Die Inhalte von MedNerds werden mit grosser Sorgfalt erstellt
+            und vor Veröffentlichung mehrfach überprüft. Dennoch kann keine
+            Gewähr für Vollständigkeit, Aktualität und Fehlerfreiheit übernommen
+            werden. Die Informationen richten sich an Fachpersonen und sollten
+            immer kritisch beurteilt werden. 
           </p>
         </div>
 
@@ -143,7 +143,7 @@ const participationLinks = [
       >
         <h2>Informationen</h2>
 
-        <a href="/ueber-uns/">Über MedNerds</a>
+        <a href="/ueber-mednerds/">Über MedNerds</a>
         <a href="/haftungsausschluss/">Haftungsausschluss</a>
         <a href="/nutzungsbedingungen/">Nutzungsbedingungen</a>
         <a href="/urheberrecht/">Urheberrecht</a>
@@ -161,7 +161,7 @@ const participationLinks = [
   <div class="mn-copyright">
     <div class="mn-site-footer-inner mn-copyright-inner">
       <small>
-        Logo und Konzeption MedNerds © {year} MedNerds Basel
+        Logo und Konzeption © {year} MedNerds Basel
       </small>
     </div>
   </div>

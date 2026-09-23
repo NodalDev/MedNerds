@@ -1,0 +1,467 @@
+---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+import { productLinks, productStatusLabels } from '../data/product-navigation';
+
+const productOrder = ['meddocs', 'medblog', 'medlearn', 'medcases', 'medtools'] as const;
+const platformProducts = productOrder.flatMap((id) =>
+  productLinks.filter(({ product }) => product === id)
+);
+
+const motivations = [
+  {
+    title: 'Unsere Vision',
+    text: 'Medizinisches Wissen soll offen zugänglich sein und eigenständiges, vertieftes Lernen ermöglichen – unabhängig vom Zugang zu einzelnen Kursen oder Lehrbüchern.',
+  },
+  {
+    title: 'Unsere Mission',
+    text: 'Wir bauen frei zugängliche Lern- und Wissensangebote auf: verständlich erklärt, sinnvoll strukturiert und mit nachvollziehbaren Quellen. Interaktive Formate sollen das Lernen ergänzen.',
+  },
+  {
+    title: 'Warum MedNerds?',
+    text: 'Medizinisches Lernen verteilt sich auf viele Quellen. MedNerds möchte Grundlagen, klinische Fragen und praktische Anwendung verbinden, damit aus Fakten ein Zusammenhang wird.',
+  },
+] as const;
+
+---
+
+<div class="mn-about not-content">
+  <div class="about-intro">
+    <br>
+    <p class="about-lead">
+      MedNerds ist eine frei zugängliche Plattform für medizinisches Wissen,
+      Lernen und klinisches Denken.
+    </p>
+    <p>
+      Wir möchten komplexe Inhalte verständlich, strukturiert und wissenschaftlich
+      fundiert aufbereiten – für Studium, Ausbildung und klinischen Alltag.
+    </p>
+    <br>
+  </div>
+
+  <section class="about-section" aria-labelledby="about-purpose-title">
+    <div class="section-heading">
+      <p class="section-label">Ausgangspunkt</p>
+      <h2 id="about-purpose-title">Warum wir MedNerds aufbauen</h2>
+    </div>
+    <div class="motivation-grid">
+      {motivations.map(({ title, text }) => (
+        <article class="motivation-card">
+          <h3>{title}</h3>
+          <p>{text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="about-section" aria-labelledby="about-products-title">
+    <div class="section-heading">
+      <p class="section-label">Lernwege</p>
+      <h2 id="about-products-title">Wissen ist mehr als Nachschlagen</h2>
+      <p>
+        Die Bereiche von MedNerds verbinden Nachschlagen, aktives Lernen,
+        klinisches Denken und praktische Anwendung. Sie wachsen schrittweise.
+      </p>
+    </div>
+    <ul class="product-list">
+      {platformProducts.map((product) => (
+        <li>
+          <a class="product-link" href={product.href}>
+            <span class="product-icon"><MedNerdsIcon name={product.icon} size="lg" /></span>
+            <span class="product-copy">
+              <span class="product-name">{product.label}</span>
+              <span class="product-description">{product.description}</span>
+            </span>
+            <span class="product-end">
+              <span class="product-status">{productStatusLabels[product.status]}</span>
+              <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="about-section about-split" aria-labelledby="about-audience-title">
+    <div class="section-heading">
+      <p class="section-label">Menschen</p>
+      <h2 id="about-audience-title">Für wen ist MedNerds?</h2>
+    </div>
+    <div class="section-copy">
+      <p>
+        MedNerds richtet sich besonders an Medizinstudierende, Ärztinnen und Ärzte
+        in Weiterbildung sowie andere Gesundheitsfachpersonen und medizinisch
+        Interessierte.
+      </p>
+    </div>
+  </section>
+
+  <section class="about-section about-split" aria-labelledby="about-quality-title">
+    <div class="section-heading">
+      <p class="section-label">Vertrauen</p>
+      <h2 id="about-quality-title">Medizinische Qualität und Transparenz</h2>
+    </div>
+    <div class="section-copy">
+      <p>
+        Wir arbeiten daran, Quellen und Aktualisierungen direkt bei den
+        Inhalten nachvollziehbar zu machen. Angaben zu Autorenschaft und
+        fachlicher Prüfung sind Teil der weiteren redaktionellen Entwicklung.
+      </p>
+    </div>
+  </section>
+
+  <section class="about-section about-split" aria-labelledby="about-open-title">
+    <div class="section-heading">
+      <p class="section-label">Offenheit</p>
+      <h2 id="about-open-title">Offen entwickelt, klar lizenziert</h2>
+    </div>
+    <div class="section-copy">
+      <p>
+        Die technische Entwicklung ist auf GitHub einsehbar. 
+        Unser eigener Quellcode steht, soweit nicht anders
+        angegeben, unter der MIT-Lizenz. Eigene medizinische und redaktionelle
+        Inhalte veröffentlichen wir grundsätzlich unter CC BY-NC-SA 4.0.
+      </p>
+    </div>
+  </section>
+
+  <section class="about-section about-split" aria-labelledby="about-community-title">
+    <div class="section-heading">
+      <p class="section-label">Zusammenarbeit</p>
+      <h2 id="about-community-title">Plattform und Community</h2>
+    </div>
+    <div class="section-copy">
+      <p>
+        MedNerds ist die digitale Wissens- und Lernplattform. MedNerds Basel
+        ist der Verein welcher hinter dem Projekt steht und sich für 
+      </p>
+      <a class="text-action" href="/mednerds-basel/">
+        Mehr über MedNerds Basel erfahren
+        <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+      </a>
+    </div>
+  </section>
+
+  <div class="about-next-steps">
+    <section class="next-step" aria-labelledby="about-faq-title">
+      <h2 id="about-faq-title">Noch Fragen?</h2>
+      <p>
+        Antworten zu Nutzung, Inhalten, Lizenzen und zur Weiterentwicklung
+        sammeln wir künftig in einer FAQ.
+      </p>
+      <a class="text-action" href="/FAQ/">
+        Zu den FAQ
+        <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+      </a>
+    </section>
+    <section class="next-step" aria-labelledby="about-support-title">
+      <h2 id="about-support-title">MedNerds unterstützen</h2>
+      <p>
+        MedNerds soll frei zugänglich bleiben. Unterstützung hilft bei
+        technischer Infrastruktur, neuen Inhalten und der Weiterentwicklung.
+      </p>
+      <a class="text-action" href="/spenden/">
+        MedNerds unterstützen
+        <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+      </a>
+    </section>
+  </div>
+
+</div>
+
+<style>
+  .mn-about {
+    color: var(--sl-color-gray-2);
+  }
+
+  .mn-about :is(h2, h3, p, ul) {
+    margin: 0;
+  }
+
+  .mn-about :is(h2, h3) {
+    color: var(--sl-color-white);
+  }
+
+  .mn-about a {
+    color: var(--sl-color-accent);
+    text-underline-offset: 0.2em;
+  }
+
+  .mn-about a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 4px;
+    border-radius: 0.25rem;
+  }
+
+  .about-intro {
+    display: grid;
+    gap: 0.875rem;
+    max-width: 70ch;
+    padding-block: 0.25rem 1.5rem;
+  }
+
+  .about-intro p {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .about-intro .about-lead {
+    max-width: 55ch;
+    color: var(--sl-color-white);
+    font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+    font-weight: 550;
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  .about-intro .about-motto {
+    margin-top: 0.25rem;
+    color: var(--sl-color-accent);
+    font-size: 0.8125rem;
+    font-weight: 650;
+    letter-spacing: 0.025em;
+  }
+
+  .about-motto span {
+    padding-inline: 0.35rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .about-section {
+    padding-block: clamp(2.25rem, 5vw, 3.5rem);
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .section-heading {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-label {
+    color: var(--sl-color-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(1.5rem, 2.7vw, 2rem);
+    font-weight: 650;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  .section-heading > p:last-child:not(.section-label) {
+    max-width: 67ch;
+    line-height: 1.65;
+  }
+
+  .motivation-grid,
+  .about-next-steps {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .motivation-card,
+  .next-step {
+    min-width: 0;
+    padding: 1.4rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.75rem;
+    background: var(--mn-surface);
+  }
+
+  .motivation-card h3 {
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .motivation-card p {
+    margin-top: 0.65rem;
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .product-list {
+    padding: 0;
+    list-style: none;
+    border-block: 1px solid var(--sl-color-hairline);
+  }
+
+  .product-list li + li {
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .product-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+    padding: 1rem 0.6rem;
+    border-radius: 0.4rem;
+    text-decoration: none;
+    transition: background-color 160ms ease;
+  }
+
+  .product-link:hover {
+    background: var(--mn-surface);
+  }
+
+  .product-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.55rem;
+    background: var(--mn-surface);
+    color: var(--sl-color-accent);
+  }
+
+  .product-copy {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .product-name {
+    color: var(--sl-color-white);
+    font-weight: 650;
+  }
+
+  .product-description {
+    color: var(--sl-color-gray-2);
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  .product-end {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-inline-start: auto;
+    color: var(--sl-color-accent);
+  }
+
+  .product-status {
+    color: var(--sl-color-gray-3);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .about-split .section-copy {
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+    max-width: 68ch;
+  }
+
+  .section-copy p,
+  .next-step p {
+    line-height: 1.7;
+  }
+
+  .text-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: fit-content;
+    margin-top: 0.2rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .text-action:hover,
+  .about-final-nav a:hover {
+    text-decoration: underline;
+  }
+
+  .about-next-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-block: clamp(2.25rem, 5vw, 3.5rem);
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .next-step {
+    display: grid;
+    align-content: start;
+    gap: 0.85rem;
+  }
+
+  .next-step h2 {
+    font-size: 1.25rem;
+    font-weight: 650;
+  }
+
+  .about-final-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .about-final-nav > span {
+    color: var(--sl-color-gray-3);
+    font-size: 0.875rem;
+  }
+
+  .about-final-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  @media (min-width: 50rem) {
+    .motivation-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .about-split {
+      display: grid;
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: 2rem;
+    }
+
+    .about-split .section-heading {
+      margin-bottom: 0;
+    }
+  }
+
+  @media (max-width: 49.999rem) {
+    .motivation-grid,
+    .about-next-steps {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 34rem) {
+    .product-link {
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .product-end {
+      gap: 0;
+    }
+
+    .product-status {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-link {
+      transition: none;
+    }
+  }
+</style>
