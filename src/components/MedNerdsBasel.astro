@@ -1,0 +1,360 @@
+---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+
+const topics = [
+  'EKG',
+  'Echo',
+  'Sonographie',
+  'Notfallmedizin',
+  'Intensivmedizin',
+  'Anästhesiologie',
+  'Kardiologie',
+  '+ weitere klinische Themen',
+] as const;
+
+const activities = [
+  {
+    title: 'Wissen teilen',
+    description: 'Freie medizinische Lerninhalte',
+    icon: 'tabler:book-2',
+  },
+  {
+    title: 'Gemeinsam üben',
+    description: 'Workshops, Skills & Simulationen',
+    icon: 'tabler:stethoscope',
+  },
+  {
+    title: 'Austausch',
+    description: 'Fälle diskutieren und voneinander lernen',
+    icon: 'tabler:messages',
+  },
+  {
+    title: 'Wissen weitergeben',
+    description: 'Peer Learning, Tutoring & Mentoring',
+    icon: 'tabler:users-group',
+  },
+] as const;
+---
+
+<div class="mn-basel not-content">
+  <div class="basel-intro">
+    <p class="basel-lead">Gemeinsam Medizin lernen.</p>
+    <p>
+      Der Verein hinter MedNerds – für offene medizinische Bildung, persönlichen
+      Austausch und gemeinsames praktisches Lernen.
+    </p>
+  </div>
+
+  <section class="basel-section" aria-labelledby="basel-pillars-title">
+    <div class="section-heading">
+      <p class="section-label">Digital + persönlich</p>
+      <h2 id="basel-pillars-title">Zwei Wege, gemeinsam zu lernen</h2>
+    </div>
+    <div class="pillar-grid">
+      <article class="pillar-card">
+        <div class="pillar-top">
+          <span class="pillar-icon"><MedNerdsIcon name="tabler:device-desktop" size="lg" /></span>
+          <span class="pillar-label">Digital</span>
+        </div>
+        <h3>MedNerds</h3>
+        <p>Medizinisches Wissen frei und strukturiert zugänglich machen.</p>
+        <a href="/" class="text-link">
+          MedNerds entdecken
+          <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+        </a>
+      </article>
+      <article class="pillar-card">
+        <div class="pillar-top">
+          <span class="pillar-icon"><MedNerdsIcon name="tabler:users-group" size="lg" /></span>
+          <span class="pillar-label">Gemeinsam</span>
+        </div>
+        <h3>Vor Ort & miteinander</h3>
+        <p>Workshops, Fälle, Skills, Simulationen und gemeinsames Lernen.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="basel-section" aria-labelledby="basel-topics-title">
+    <div class="section-heading">
+      <h2 id="basel-topics-title">Was uns interessiert</h2>
+    </div>
+    <ul class="topic-list" aria-label="Medizinische Themen">
+      {topics.map((topic) => <li>{topic}</li>)}
+    </ul>
+  </section>
+
+  <section class="basel-section" aria-labelledby="basel-activities-title">
+    <div class="section-heading">
+      <h2 id="basel-activities-title">Was wir tun</h2>
+    </div>
+    <ul class="activity-grid">
+      {activities.map(({ title, description, icon }) => (
+        <li class="activity-tile">
+          <MedNerdsIcon name={icon} size="lg" />
+          <h3>{title}</h3>
+          <p>{description}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="basel-join" aria-labelledby="basel-join-title">
+    <div>
+      <h2 id="basel-join-title">Teil von MedNerds Basel werden</h2>
+      <p>Für Medizinstudierende, Ärztinnen und Ärzte sowie Gesundheitsfachpersonen.</p>
+    </div>
+    <a class="join-link" href="mailto:mednerds@mednerds.ch?subject=Mitgliedschaft%20bei%20MedNerds%20Basel">
+      Mitgliedschaft anfragen
+      <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+    </a>
+    <nav class="related-links" aria-label="Weitere Informationen zu MedNerds Basel">
+      <a href="/faq/">FAQ</a>
+      <a href="/impressum/">Kontakt</a>
+      <a href="/faq/#finanziell-unterstuetzen">MedNerds unterstützen</a>
+    </nav>
+  </section>
+</div>
+
+<style>
+  .mn-basel {
+    color: var(--sl-color-gray-2);
+  }
+
+  .mn-basel :is(h2, h3, p, ul) {
+    margin: 0;
+  }
+
+  .mn-basel :is(h2, h3) {
+    color: var(--sl-color-white);
+  }
+
+  .mn-basel a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 4px;
+    border-radius: 0.25rem;
+  }
+
+  .basel-intro {
+    display: grid;
+    gap: 0.65rem;
+    max-width: 68ch;
+    padding-block: 0.25rem 1.25rem;
+  }
+
+  .basel-lead {
+    color: var(--sl-color-white);
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .basel-intro > p:last-child {
+    line-height: 1.6;
+  }
+
+  .basel-section {
+    display: grid;
+    gap: 1.1rem;
+    padding-block: 1.4rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .section-heading {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .section-heading h2,
+  .basel-join h2 {
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+    line-height: 1.3;
+  }
+
+  .section-label,
+  .pillar-label {
+    color: var(--sl-color-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .pillar-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+    min-width: 0;
+    padding: 1.35rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.85rem;
+    background: var(--mn-surface);
+  }
+
+  .pillar-top {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .pillar-icon {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.7rem;
+    color: var(--sl-color-accent);
+  }
+
+  .pillar-card h3 {
+    font-size: 1.15rem;
+  }
+
+  .pillar-card p {
+    line-height: 1.5;
+  }
+
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 0.4rem;
+    color: var(--sl-color-accent);
+    font-weight: 650;
+    text-underline-offset: 0.2em;
+  }
+
+  .topic-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .topic-list li {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 999px;
+    background: var(--mn-surface);
+    color: var(--sl-color-white);
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+
+  .activity-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .activity-tile {
+    display: grid;
+    align-content: start;
+    gap: 0.45rem;
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.75rem;
+  }
+
+  .activity-tile :global(.mn-icon) {
+    color: var(--sl-color-accent);
+  }
+
+  .activity-tile h3 {
+    font-size: 0.95rem;
+    line-height: 1.35;
+  }
+
+  .activity-tile p {
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+
+  .basel-join {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    padding: 1.3rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.85rem;
+    background: var(--mn-surface);
+  }
+
+  .basel-join > div {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .basel-join p {
+    line-height: 1.5;
+  }
+
+  .join-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.55rem;
+    background: var(--sl-color-accent);
+    color: var(--sl-color-black);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .join-link:hover {
+    background: var(--sl-color-accent-high);
+  }
+
+  .related-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    width: 100%;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--sl-color-hairline);
+    font-size: 0.875rem;
+  }
+
+  .related-links a {
+    color: var(--sl-color-gray-2);
+    text-underline-offset: 0.2em;
+  }
+
+  .related-links a:hover {
+    color: var(--sl-color-accent);
+  }
+
+  @media (max-width: 56rem) {
+    .activity-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .pillar-grid,
+    .activity-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .pillar-card,
+    .basel-join {
+      padding: 1.1rem;
+    }
+  }
+</style>

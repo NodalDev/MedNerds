@@ -1,11 +1,13 @@
 ---
 import MedNerdsIcon from './MedNerdsIcon.astro';
 import { productLinks, productStatusLabels } from '../data/product-navigation';
+import { featuredFaqQuestions } from '../data/featured-faq';
 
 const productOrder = ['meddocs', 'medblog', 'medlearn', 'medcases', 'medtools'] as const;
 const platformProducts = productOrder.flatMap((id) =>
   productLinks.filter(({ product }) => product === id)
 );
+const faqPreviewQuestions = Object.values(featuredFaqQuestions);
 
 const motivations = [
   {
@@ -81,75 +83,46 @@ const motivations = [
     </ul>
   </section>
 
-  <section class="about-section about-split" aria-labelledby="about-audience-title">
+  <section class="about-section about-faq" aria-labelledby="about-faq-title">
     <div class="section-heading">
-      <p class="section-label">Menschen</p>
-      <h2 id="about-audience-title">Für wen ist MedNerds?</h2>
-    </div>
-    <div class="section-copy">
+      <p class="section-label">FAQ</p>
+      <h2 id="about-faq-title">Noch Fragen zu MedNerds?</h2>
       <p>
-        MedNerds richtet sich besonders an Medizinstudierende, Ärztinnen und Ärzte
-        in Weiterbildung sowie andere Gesundheitsfachpersonen und medizinisch
-        Interessierte.
+        Antworten auf häufige Fragen zur Plattform, zu medizinischen Inhalten,
+        MedNerds Basel und zur offenen Entwicklung findest du in unseren FAQ.
       </p>
     </div>
-  </section>
-
-  <section class="about-section about-split" aria-labelledby="about-quality-title">
-    <div class="section-heading">
-      <p class="section-label">Vertrauen</p>
-      <h2 id="about-quality-title">Medizinische Qualität und Transparenz</h2>
+    <div class="faq-preview">
+      {faqPreviewQuestions.map((item) => (
+        <details id={`about-${item.id}`}>
+          <summary>{item.question}</summary>
+          <div class="faq-preview-answer">
+            <p>{item.answer}</p>
+            <div class="faq-preview-links">
+              {'relatedLink' in item && (
+                <a href={item.relatedLink.href}>{item.relatedLink.label}</a>
+              )}
+              <a href={`/faq/#${item.id}`}>Frage in den FAQ ansehen</a>
+            </div>
+          </div>
+        </details>
+      ))}
     </div>
-    <div class="section-copy">
-      <p>
-        Wir arbeiten daran, Quellen und Aktualisierungen direkt bei den
-        Inhalten nachvollziehbar zu machen. Angaben zu Autorenschaft und
-        fachlicher Prüfung sind Teil der weiteren redaktionellen Entwicklung.
-      </p>
-    </div>
-  </section>
-
-  <section class="about-section about-split" aria-labelledby="about-open-title">
-    <div class="section-heading">
-      <p class="section-label">Offenheit</p>
-      <h2 id="about-open-title">Offen entwickelt, klar lizenziert</h2>
-    </div>
-    <div class="section-copy">
-      <p>
-        Die technische Entwicklung ist auf GitHub einsehbar. 
-        Unser eigener Quellcode steht, soweit nicht anders
-        angegeben, unter der MIT-Lizenz. Eigene medizinische und redaktionelle
-        Inhalte veröffentlichen wir grundsätzlich unter CC BY-NC-SA 4.0.
-      </p>
-    </div>
-  </section>
-
-  <section class="about-section about-split" aria-labelledby="about-community-title">
-    <div class="section-heading">
-      <p class="section-label">Zusammenarbeit</p>
-      <h2 id="about-community-title">Plattform und Community</h2>
-    </div>
-    <div class="section-copy">
-      <p>
-        MedNerds ist die digitale Wissens- und Lernplattform. MedNerds Basel
-        ist der Verein welcher hinter dem Projekt steht und sich für 
-      </p>
-      <a class="text-action" href="/mednerds-basel/">
-        Mehr über MedNerds Basel erfahren
-        <MedNerdsIcon name="tabler:arrow-right" size="sm" />
-      </a>
-    </div>
+    <a class="text-action faq-all-link" href="/faq/">
+      Alle häufigen Fragen ansehen
+      <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+    </a>
   </section>
 
   <div class="about-next-steps">
-    <section class="next-step" aria-labelledby="about-faq-title">
-      <h2 id="about-faq-title">Noch Fragen?</h2>
+    <section class="next-step" aria-labelledby="about-basel-title">
+      <h2 id="about-basel-title">MedNerds Basel</h2>
       <p>
-        Antworten zu Nutzung, Inhalten, Lizenzen und zur Weiterentwicklung
-        sammeln wir künftig in einer FAQ.
+        MedNerds ist die digitale Wissens- und Lernplattform. MedNerds Basel ist
+        die lokale Community und das organisatorische Zuhause des Projekts.
       </p>
-      <a class="text-action" href="/FAQ/">
-        Zu den FAQ
+      <a class="text-action" href="/mednerds-basel/">
+        Mehr über MedNerds Basel erfahren
         <MedNerdsIcon name="tabler:arrow-right" size="sm" />
       </a>
     </section>
@@ -159,8 +132,8 @@ const motivations = [
         MedNerds soll frei zugänglich bleiben. Unterstützung hilft bei
         technischer Infrastruktur, neuen Inhalten und der Weiterentwicklung.
       </p>
-      <a class="text-action" href="/spenden/">
-        MedNerds unterstützen
+      <a class="text-action" href="/faq/#finanziell-unterstuetzen">
+        Mehr über Unterstützung erfahren
         <MedNerdsIcon name="tabler:arrow-right" size="sm" />
       </a>
     </section>
@@ -354,16 +327,79 @@ const motivations = [
     white-space: nowrap;
   }
 
-  .about-split .section-copy {
-    display: grid;
-    align-content: start;
-    gap: 0.9rem;
-    max-width: 68ch;
+  .faq-preview {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.75rem;
+    background: var(--mn-surface);
+    overflow: hidden;
   }
 
-  .section-copy p,
+  .faq-preview details + details {
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .faq-preview summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    color: var(--sl-color-white);
+    font-weight: 600;
+    line-height: 1.5;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .faq-preview summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-preview summary::after {
+    content: '+';
+    flex: none;
+    color: var(--sl-color-accent);
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .faq-preview details[open] summary::after {
+    content: '−';
+  }
+
+  .faq-preview summary:hover {
+    background: var(--mn-surface-hover);
+  }
+
+  .faq-preview summary:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -4px;
+  }
+
+  .faq-preview-answer {
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  .faq-preview-answer p,
   .next-step p {
     line-height: 1.7;
+  }
+
+  .faq-preview-answer p {
+    max-width: 75ch;
+  }
+
+  .faq-preview-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .faq-all-link {
+    margin-top: 1.25rem;
   }
 
   .text-action {
@@ -376,8 +412,7 @@ const motivations = [
     text-decoration: none;
   }
 
-  .text-action:hover,
-  .about-final-nav a:hover {
+  .text-action:hover {
     text-decoration: underline;
   }
 
@@ -398,42 +433,9 @@ const motivations = [
     font-weight: 650;
   }
 
-  .about-final-nav {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--sl-color-hairline);
-  }
-
-  .about-final-nav > span {
-    color: var(--sl-color-gray-3);
-    font-size: 0.875rem;
-  }
-
-  .about-final-nav a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
   @media (min-width: 50rem) {
     .motivation-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .about-split {
-      display: grid;
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-      gap: 2rem;
-    }
-
-    .about-split .section-heading {
-      margin-bottom: 0;
     }
   }
 
@@ -445,6 +447,14 @@ const motivations = [
   }
 
   @media (max-width: 34rem) {
+    .faq-preview summary {
+      padding: 0.9rem 1rem;
+    }
+
+    .faq-preview-answer {
+      padding: 0 1rem 1rem;
+    }
+
     .product-link {
       align-items: flex-start;
       gap: 0.75rem;

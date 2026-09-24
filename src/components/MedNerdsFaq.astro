@@ -1,0 +1,378 @@
+---
+import { featuredFaqQuestions } from '../data/featured-faq';
+---
+
+<div class="mn-faq not-content">
+  <p class="faq-intro">
+    Antworten auf häufige Fragen zu MedNerds, unseren Inhalten, der Nutzung der
+    Plattform und dem Projekt dahinter.
+  </p>
+
+  <nav class="faq-navigation" aria-label="FAQ-Kategorien">
+    <span class="faq-navigation-label">Themen</span>
+    <ul>
+      <li><a href="#allgemein">Allgemein</a></li>
+      <li><a href="#inhalte-qualitaet">Inhalte &amp; Qualität</a></li>
+      <li><a href="#mednerds-basel">MedNerds Basel</a></li>
+      <li><a href="#mitwirken">Mitwirken</a></li>
+      <li><a href="#lizenzen">Lizenzen</a></li>
+      <li><a href="#spenden">Spenden</a></li>
+      <li><a href="#datenschutz">Datenschutz</a></li>
+    </ul>
+  </nav>
+
+  <section id="allgemein" class="faq-category" aria-labelledby="allgemein-title">
+    <h2 id="allgemein-title">MedNerds allgemein</h2>
+    <div class="faq-questions">
+      <details id="was-ist-mednerds">
+        <summary>Was ist MedNerds?</summary>
+        <div class="faq-answer">
+          <p>
+            MedNerds ist eine frei zugängliche Plattform für medizinisches Wissen,
+            Lernen und klinisches Denken. Die verschiedenen Bereiche verbinden
+            strukturierte Wissensinhalte, Lernformate, klinische Fälle und
+            praktische Werkzeuge. Das Angebot wächst schrittweise.
+          </p>
+        </div>
+      </details>
+      <details id={featuredFaqQuestions.audience.id}>
+        <summary>{featuredFaqQuestions.audience.question}</summary>
+        <div class="faq-answer">
+          <p>{featuredFaqQuestions.audience.answer}</p>
+        </div>
+      </details>
+      <details id="ist-mednerds-kostenlos">
+        <summary>Ist MedNerds kostenlos?</summary>
+        <div class="faq-answer">
+          <p>
+            Die zentralen Wissens- und Lerninhalte von MedNerds sollen frei
+            zugänglich bleiben.
+          </p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="inhalte-qualitaet" class="faq-category" aria-labelledby="inhalte-qualitaet-title">
+    <h2 id="inhalte-qualitaet-title">Medizinische Inhalte &amp; Qualität</h2>
+    <div class="faq-questions">
+      <details id={featuredFaqQuestions.sources.id}>
+        <summary>{featuredFaqQuestions.sources.question}</summary>
+        <div class="faq-answer">
+          <p>{featuredFaqQuestions.sources.answer}</p>
+        </div>
+      </details>
+      <details id="medizinische-beratung">
+        <summary>Ersetzt MedNerds medizinische Beratung?</summary>
+        <div class="faq-answer">
+          <p>
+            Nein. MedNerds dient der medizinischen Bildung und Information und
+            ersetzt keine individuelle ärztliche Beratung, Untersuchung oder
+            Behandlung. Mehr dazu steht im <a href="/haftungsausschluss/">medizinischen Hinweis und Haftungsausschluss</a>.
+          </p>
+        </div>
+      </details>
+      <details id="fachlichen-fehler-melden">
+        <summary>Wie kann ich einen fachlichen Fehler melden?</summary>
+        <div class="faq-answer">
+          <p>
+            Hinweise zu fachlichen Fehlern kannst du über die
+            <a href="https://github.com/NodalDev/MedNerds/issues">GitHub-Issues des Projekts</a>
+            melden. Nenne möglichst die betroffene Seite und die Stelle, die
+            überprüft werden sollte.
+          </p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="mednerds-basel" class="faq-category" aria-labelledby="mednerds-basel-title">
+    <h2 id="mednerds-basel-title">MedNerds Basel</h2>
+    <div class="faq-questions">
+      <details id="was-ist-mednerds-basel">
+        <summary>Was ist MedNerds Basel?</summary>
+        <div class="faq-answer">
+          <p>
+            MedNerds Basel ist die lokale Community und das organisatorische
+            Zuhause hinter der Plattform. Der Bereich befindet sich im Aufbau.
+            Mehr erfährst du auf der <a href="/mednerds-basel/">Seite zu MedNerds Basel</a>.
+          </p>
+        </div>
+      </details>
+      <details id={featuredFaqQuestions.basel.id}>
+        <summary>{featuredFaqQuestions.basel.question}</summary>
+        <div class="faq-answer">
+          <p>{featuredFaqQuestions.basel.answer}</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="mitwirken" class="faq-category" aria-labelledby="mitwirken-title">
+    <h2 id="mitwirken-title">Mitwirken &amp; Community</h2>
+    <div class="faq-questions">
+      <details id="bei-mednerds-mitwirken">
+        <summary>Wie kann ich bei MedNerds mitwirken?</summary>
+        <div class="faq-answer">
+          <p>
+            Ideen, Korrekturen, Themenvorschläge und technische Hinweise kannst
+            du über die <a href="https://github.com/NodalDev/MedNerds/issues">GitHub-Issues</a>
+            einbringen. So lassen sich Vorschläge offen besprechen und prüfen.
+          </p>
+        </div>
+      </details>
+      <details id="medizinische-inhalte-beitragen">
+        <summary>Kann ich medizinische Inhalte beitragen?</summary>
+        <div class="faq-answer">
+          <p>
+            Vorschläge für medizinische Inhalte sind willkommen. Beschreibe dein
+            Thema zunächst in einem <a href="https://github.com/NodalDev/MedNerds/issues">GitHub-Issue</a>.
+            Ob und in welcher Form ein Beitrag veröffentlicht wird, hängt von der
+            redaktionellen Prüfung ab.
+          </p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="lizenzen" class="faq-category" aria-labelledby="lizenzen-title">
+    <h2 id="lizenzen-title">Lizenzen &amp; Weiterverwendung</h2>
+    <div class="faq-questions">
+      <details id={featuredFaqQuestions.licensing.id}>
+        <summary>{featuredFaqQuestions.licensing.question}</summary>
+        <div class="faq-answer">
+          <p>
+            {featuredFaqQuestions.licensing.answer}
+            <a href={featuredFaqQuestions.licensing.relatedLink.href}>
+              {featuredFaqQuestions.licensing.relatedLink.label}
+            </a>.
+          </p>
+        </div>
+      </details>
+      <details id="lizenz-quellcode">
+        <summary>Unter welcher Lizenz steht der Quellcode?</summary>
+        <div class="faq-answer">
+          <p>
+            Der von MedNerds selbst entwickelte Quellcode steht unter der
+            MIT-Lizenz, sofern nicht anders angegeben. Diese Lizenz gilt nicht
+            automatisch für Texte, Bilder, Logos oder Inhalte Dritter. Weitere
+            Angaben findest du unter <a href="/urheberrecht/">Urheberrecht und Lizenzen</a>.
+          </p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="spenden" class="faq-category" aria-labelledby="spenden-title">
+    <h2 id="spenden-title">Spenden &amp; Unterstützung</h2>
+    <div class="faq-questions">
+      <details id="finanziell-unterstuetzen">
+        <summary>Kann ich MedNerds finanziell unterstützen?</summary>
+        <div class="faq-answer">
+          <p>
+            Finanzielle Unterstützung soll helfen, die technische Infrastruktur,
+            neue Inhalte und die Weiterentwicklung des Projekts zu tragen. Eine
+            Spendenmöglichkeit auf der Website ist derzeit noch nicht eingerichtet.
+          </p>
+        </div>
+      </details>
+      <details id="verwendung-von-spenden">
+        <summary>Wofür werden Spenden verwendet?</summary>
+        <div class="faq-answer">
+          <p>
+            Künftige Unterstützung soll insbesondere Infrastruktur, Entwicklung,
+            Inhaltserstellung und Projektaktivitäten ermöglichen. Konkrete
+            Spendeninformationen folgen mit einer entsprechenden Möglichkeit zur
+            Unterstützung.
+          </p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="datenschutz" class="faq-category" aria-labelledby="datenschutz-title">
+    <h2 id="datenschutz-title">Datenschutz &amp; Sicherheit</h2>
+    <div class="faq-questions">
+      <details id="personenbezogene-daten">
+        <summary>Welche personenbezogenen Daten verarbeitet MedNerds?</summary>
+        <div class="faq-answer">
+          <p>
+            Bei der Nutzung der Website können unter anderem technische Daten
+            verarbeitet werden. Welche Daten betroffen sind und zu welchen
+            Zwecken sie verarbeitet werden, erläutert die
+            <a href="/datenschutz/">Datenschutzerklärung</a>.
+          </p>
+        </div>
+      </details>
+      <details id="gesundheitsdaten">
+        <summary>Werden Gesundheitsdaten gespeichert?</summary>
+        <div class="faq-answer">
+          <p>
+            Die derzeitige Website bietet keine Funktion zum Anlegen medizinischer
+            Profile oder Speichern von Gesundheitsakten. Angaben zur aktuellen
+            Datenverarbeitung findest du in der <a href="/datenschutz/">Datenschutzerklärung</a>.
+          </p>
+        </div>
+      </details>
+    </div>
+  </section>
+</div>
+
+<style>
+  .mn-faq {
+    max-width: 64rem;
+    color: var(--sl-color-gray-2);
+  }
+
+  .mn-faq :is(h2, p, ul) {
+    margin: 0;
+  }
+
+  .faq-intro {
+    max-width: 65ch;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(1rem, 1.5vw, 1.125rem);
+    line-height: 1.7;
+    text-wrap: pretty;
+  }
+
+  .faq-navigation {
+    display: grid;
+    gap: 0.875rem;
+    padding: 1rem 0 1.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .faq-navigation-label {
+    color: var(--sl-color-gray-3);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .faq-navigation ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .faq-navigation a {
+    display: inline-block;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 999px;
+    color: var(--sl-color-gray-2);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+
+  .faq-navigation a:hover {
+    border-color: var(--sl-color-accent);
+    background: var(--mn-surface);
+  }
+
+  .mn-faq a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+  }
+
+  .faq-questions summary:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -4px;
+  }
+
+  .faq-category {
+    padding-block: clamp(2rem, 4vw, 3rem);
+    border-top: 1px solid var(--sl-color-hairline);
+    scroll-margin-top: calc(var(--sl-nav-height) + 1rem);
+  }
+
+  .faq-category h2 {
+    margin-bottom: 1.25rem;
+    color: var(--sl-color-white);
+    font-size: clamp(1.35rem, 2vw, 1.65rem);
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  .faq-questions {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.75rem;
+    background: var(--mn-surface);
+    overflow: hidden;
+  }
+
+  .faq-questions details + details {
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .faq-questions details {
+    scroll-margin-top: calc(var(--sl-nav-height) + 1rem);
+  }
+
+  .faq-questions summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    color: var(--sl-color-white);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .faq-questions summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-questions summary::after {
+    content: '+';
+    flex: none;
+    color: var(--sl-color-accent);
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .faq-questions details[open] summary::after {
+    content: '−';
+  }
+
+  .faq-questions summary:hover {
+    background: var(--mn-surface-hover);
+  }
+
+  .faq-answer {
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  .faq-answer p {
+    max-width: 75ch;
+    line-height: 1.7;
+  }
+
+  .faq-answer a {
+    color: var(--sl-color-accent);
+    text-underline-offset: 0.2em;
+  }
+
+  @media (max-width: 50rem) {
+    .faq-questions summary {
+      padding: 0.9rem 1rem;
+    }
+
+    .faq-answer {
+      padding: 0 1rem 1rem;
+    }
+  }
+</style>
