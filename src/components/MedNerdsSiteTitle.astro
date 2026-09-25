@@ -1,6 +1,6 @@
 ---
-import mainLight from '../assets/Logos/MedNerds - horizontal - hell.svg?url';
-import mainDark from '../assets/Logos/MedNerds - horizontal - dunkel.svg?url';
+import mainLight from '../assets/Logos/MedNerds - horizontal - hell.webp?url';
+import mainDark from '../assets/Logos/MedNerds - horizontal - dunkel.webp?url';
 import ProductLogo from './ProductLogo.astro';
 import { getActiveProduct } from '../data/product-navigation';
 
@@ -10,8 +10,8 @@ const activeProduct = getActiveProduct(pathname);
 
 <div class="brand-lockup">
   <a href="/" class="main-brand" aria-label="MedNerds Startseite">
-    <img class="brand-light" src={mainLight} width="1321" height="288" alt="MedNerds" />
-    <img class="brand-dark" src={mainDark} width="1321" height="288" alt="MedNerds" />
+    <img class="brand-light" src={mainLight} width="661" height="144" alt="MedNerds" />
+    <img class="brand-dark" src={mainDark} width="661" height="144" alt="MedNerds" />
   </a>
   {
     activeProduct && (

@@ -1,6 +1,6 @@
 ---
 import MedNerdsIcon from './MedNerdsIcon.astro';
-import medNerdsLogo from '../assets/Logos/MedNerds - icon.svg?url';
+import medNerdsLogo from '../assets/Logos/MedNerds - icon.webp?url';
 import {
   productLinks,
   productStatusLabels,
@@ -78,7 +78,7 @@ const roadmapProducts = productLinks.filter(
           ))
         }
         <div class="mn-product-grid-logo" aria-hidden="true">
-          <img src={medNerdsLogo} alt="" loading="lazy" decoding="async" />
+          <img src={medNerdsLogo} width="513" height="512" alt="" loading="lazy" decoding="async" />
         </div>
       </div>
     </div>
@@ -474,7 +474,7 @@ const roadmapProducts = productLinks.filter(
 
     .mn-product-grid-logo img {
       display: block;
-      width: min(72%, 12rem);
+      width: min(78%, 13.5rem);
       height: auto;
       opacity: 0.92;
     }

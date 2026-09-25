@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import medToolsLight from '../assets/SubLogos/MedTools hell.svg?url';
-import medToolsDark from '../assets/SubLogos/MedTools dunkel.svg?url';
+import medToolsLight from '../assets/SubLogos/MedTools hell.webp?url';
+import medToolsDark from '../assets/SubLogos/MedTools dunkel.webp?url';
 
 export default function ArticleActions() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,8 +37,8 @@ export default function ArticleActions() {
         onClick={() => setIsOpen((open) => !open)}
       >
         <span className="product-logo" aria-hidden="true">
-          <img className="brand-light" src={medToolsLight} width="963" height="230" alt="" />
-          <img className="brand-dark" src={medToolsDark} width="963" height="230" alt="" />
+          <img className="brand-light" src={medToolsLight} width="482" height="115" alt="" />
+          <img className="brand-dark" src={medToolsDark} width="482" height="115" alt="" />
         </span>
         <span aria-hidden="true" className="text-xs">
           {isOpen ? '▲' : '▼'}

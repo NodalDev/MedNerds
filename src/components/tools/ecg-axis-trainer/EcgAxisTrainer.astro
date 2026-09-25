@@ -1,0 +1,10 @@
+---
+import Trainer from './EcgAxisTrainer';
+import type { EcgAxisTrainerProps } from './EcgAxisTrainer';
+
+type Props = Omit<EcgAxisTrainerProps, 'onAnswer' | 'onAngleChange'>;
+
+const props = Astro.props;
+---
+
+<Trainer {...props} client:visible />

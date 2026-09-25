@@ -12,7 +12,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'MedNerds',
-      favicon: '/favicon.svg',
+      favicon: '/favicon-32.png',
       head: [
         { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' } },
         { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' } },

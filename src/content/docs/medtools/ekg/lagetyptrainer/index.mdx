@@ -1,0 +1,9 @@
+---
+title: EKG-Lagetyptrainer
+description: Interaktiver Trainer zum Verständnis und Üben der elektrischen Herzachse und der Lagetypen im EKG.
+template: splash
+---
+
+import EcgAxisTrainer from '../../../../../components/tools/ecg-axis-trainer/EcgAxisTrainer.astro';
+
+<EcgAxisTrainer initialMode="explore" enabledModes={['explore', 'quiz']} variant="full" />

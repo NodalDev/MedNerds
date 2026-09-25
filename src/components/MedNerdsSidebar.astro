@@ -2,7 +2,7 @@
 import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
 import MedNerdsIcon from './MedNerdsIcon.astro';
 import { sidebarIcons } from '../data/sidebar-icons';
-import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.svg?url';
+import medNerdsOverviewIcon from '../assets/Logos/MedNerds - icon.webp?url';
 import { withSidebarBadges } from '../data/sidebar-badges';
 
 const isMedDocs = Astro.url.pathname.startsWith('/meddocs/');
@@ -42,6 +42,8 @@ if (isMedDocs) {
       label === 'Übersicht' ? (
         <img
           src={medNerdsOverviewIcon}
+          width="513"
+          height="512"
           alt=""
           aria-hidden="true"
           draggable="false"

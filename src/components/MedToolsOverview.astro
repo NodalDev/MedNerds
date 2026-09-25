@@ -1,0 +1,99 @@
+---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+
+const tools = [
+  {
+    title: 'EKG-Lagetyptrainer',
+    description: 'Elektrische Herzachse erkunden und Lagetypen anhand der Extremitätenableitungen üben.',
+    href: '/medtools/ekg/lagetyptrainer/',
+    icon: 'tabler:activity-heartbeat',
+  },
+] as const;
+---
+
+<section class="mn-tools-overview not-content" aria-labelledby="mn-tools-title">
+  <h2 id="mn-tools-title">Tools</h2>
+  <div class="tool-list">
+    {tools.map((tool) => (
+      <a class="tool-card" href={tool.href}>
+        <span class="tool-icon" aria-hidden="true"><MedNerdsIcon name={tool.icon} size="lg" /></span>
+        <span class="tool-copy">
+          <strong>{tool.title}</strong>
+          <span>{tool.description}</span>
+        </span>
+        <MedNerdsIcon name="tabler:arrow-right" size="sm" aria-hidden="true" />
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .mn-tools-overview {
+    display: grid;
+    gap: 1rem;
+    margin-block: 1.5rem;
+  }
+
+  .mn-tools-overview h2 {
+    margin: 0;
+    color: var(--sl-color-white);
+  }
+
+  .tool-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 1rem;
+  }
+
+  .tool-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    min-height: 8rem;
+    padding: 1.25rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.8rem;
+    background: var(--mn-surface);
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+
+  .tool-card:hover {
+    border-color: var(--mn-tools);
+    background: var(--mn-surface-hover);
+  }
+
+  .tool-card:focus-visible {
+    outline: 2px solid var(--mn-tools);
+    outline-offset: 3px;
+  }
+
+  .tool-icon {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.6rem;
+    background: color-mix(in srgb, var(--mn-tools) 12%, transparent);
+    color: var(--mn-tools);
+  }
+
+  .tool-copy {
+    display: grid;
+    gap: 0.4rem;
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .tool-copy strong {
+    color: var(--sl-color-white);
+    font-size: 1.05rem;
+  }
+
+  .tool-card > :global(.mn-icon) {
+    align-self: center;
+    color: var(--mn-tools);
+  }
+</style>

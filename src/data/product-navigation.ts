@@ -50,7 +50,7 @@ export const productLinks = [
     icon: 'tabler:tools',
     description:
       'Praktische medizinische Werkzeuge und interaktive Hilfsmittel.',
-    status: 'planned',
+    status: 'building',
   },
   {
     label: 'MedNerds Basel',

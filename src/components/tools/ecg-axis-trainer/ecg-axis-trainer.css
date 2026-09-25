@@ -1,0 +1,334 @@
+.ecg-axis-trainer {
+  --axis-grid-minor: rgba(211, 113, 122, 0.15);
+  --axis-grid-major: rgba(211, 113, 122, 0.32);
+  --axis-trace: var(--sl-color-white);
+  --axis-label: var(--sl-color-gray-1);
+  --axis-left: #8296df;
+  --axis-indifferent: #68c69b;
+  --axis-vertical: #dfc568;
+  --axis-right: #dfa469;
+  --axis-extreme-right: #d98977;
+  --axis-northwest: #bb8196;
+  --axis-extreme-left: #a88bcc;
+
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  max-width: 72rem;
+  color: var(--sl-color-gray-2);
+}
+
+:root[data-theme='light'] .ecg-axis-trainer {
+  --axis-grid-minor: rgba(180, 87, 99, 0.16);
+  --axis-grid-major: rgba(180, 87, 99, 0.36);
+}
+
+.ecg-axis-trainer :is(h2, h3, p) {
+  margin: 0;
+}
+
+.ecg-axis-trainer :is(h2, h3) {
+  color: var(--sl-color-white);
+}
+
+.ecg-axis-trainer :is(button, a):focus-visible {
+  outline: 2px solid var(--mn-tools);
+  outline-offset: 3px;
+}
+
+.axis-tool-head,
+.axis-quiz-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+
+.axis-tool-head h2 {
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.axis-tool-kicker {
+  margin-bottom: 0.2rem !important;
+  color: var(--mn-tools);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.axis-mode-switch {
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.25rem;
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 0.7rem;
+  background: var(--mn-surface);
+}
+
+.axis-mode-switch button,
+.axis-answers button,
+.axis-next {
+  min-height: 2.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  color: var(--sl-color-white);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+}
+
+.axis-mode-switch button {
+  padding: 0.5rem 0.85rem;
+}
+
+.axis-mode-switch button[aria-pressed='true'] {
+  border-color: var(--sl-color-hairline);
+  background: var(--mn-surface-hover);
+  color: var(--mn-tools);
+}
+
+.axis-mode-switch button:hover,
+.axis-answers button:hover,
+.axis-next:hover {
+  border-color: var(--mn-tools);
+}
+
+.axis-panel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+@media (min-width: 52.001rem) {
+  .ecg-axis-trainer[data-mode='quiz'] .axis-control-panel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .ecg-axis-trainer[data-mode='quiz'] .axis-ecg-panel {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+.axis-control-panel,
+.axis-ecg-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 0.85rem;
+  background: var(--mn-surface);
+}
+
+.ecg-axis-trainer[data-mode='quiz'] .axis-control-panel {
+  align-self: start;
+}
+
+.axis-panel-heading h3 {
+  font-size: 1.05rem;
+}
+
+.axis-panel-heading p {
+  margin-top: 0.25rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.axis-circle {
+  display: block;
+  width: min(100%, 28rem);
+  height: auto;
+  margin: auto;
+  outline: none;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.axis-circle:focus-visible .axis-center {
+  stroke: var(--mn-tools);
+  stroke-width: 2.5;
+}
+
+.axis-circle:focus-visible .axis-arrowhead {
+  stroke: var(--mn-tools);
+  stroke-width: 2;
+}
+
+.axis-sector {
+  opacity: 0.85;
+  transition: opacity 120ms ease;
+}
+
+.axis-sector[data-active='true'] {
+  opacity: 1;
+}
+
+.axis-sector--left { fill: var(--axis-left); }
+.axis-sector--indifferent { fill: var(--axis-indifferent); }
+.axis-sector--vertical { fill: var(--axis-vertical); }
+.axis-sector--right { fill: var(--axis-right); }
+.axis-sector--extreme-right { fill: var(--axis-extreme-right); }
+.axis-sector--northwest { fill: var(--axis-northwest); }
+.axis-sector--extreme-left { fill: var(--axis-extreme-left); }
+
+.axis-sector-divider {
+  stroke: var(--sl-color-bg);
+  stroke-width: 1.5;
+}
+
+.axis-lead line {
+  stroke: var(--sl-color-gray-1);
+  stroke-opacity: 0.75;
+  stroke-width: 1.25;
+  stroke-dasharray: 3 4;
+}
+
+.axis-lead text {
+  fill: var(--sl-color-white);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.axis-center {
+  fill: var(--sl-color-white);
+}
+
+.axis-direction {
+  stroke: var(--sl-color-white);
+  stroke-linecap: round;
+  stroke-width: 3.5;
+}
+
+.axis-arrowhead {
+  fill: var(--sl-color-white);
+  pointer-events: none;
+}
+
+.axis-handle-target {
+  fill: transparent;
+  cursor: grab;
+  touch-action: none;
+}
+
+.axis-handle-target:active {
+  cursor: grabbing;
+}
+
+.axis-current-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.75rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--sl-color-hairline);
+}
+
+.axis-current-value > span:first-child {
+  font-size: 0.85rem;
+}
+
+.axis-current-value strong {
+  color: var(--sl-color-white);
+  font-size: 1.05rem;
+}
+
+.axis-angle {
+  margin-inline-start: auto;
+  color: var(--mn-tools);
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+.axis-ecg-frame {
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 0.55rem;
+  background: var(--sl-color-bg);
+}
+
+.axis-ecg-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  font-family: inherit;
+}
+
+.axis-answers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.axis-answers button {
+  padding: 0.65rem;
+  border-color: var(--sl-color-hairline);
+  background: var(--sl-color-bg);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.axis-counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.9rem;
+}
+
+.axis-counters strong {
+  margin-inline-start: 0.2rem;
+  color: var(--sl-color-white);
+  font-variant-numeric: tabular-nums;
+}
+
+.axis-next {
+  padding: 0.5rem 0.8rem;
+  border-color: var(--sl-color-hairline);
+}
+
+.axis-feedback {
+  min-height: 1.5em;
+  color: var(--sl-color-gray-2);
+  font-size: 0.9rem;
+}
+
+.axis-feedback[data-correct='true'] { color: var(--sl-color-green); }
+.axis-feedback[data-correct='false'] { color: var(--sl-color-red); }
+
+.axis-attribution {
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.axis-attribution a {
+  color: var(--sl-color-accent);
+  text-underline-offset: 0.2em;
+}
+
+.ecg-axis-trainer[data-variant='embedded'] {
+  max-width: 52rem;
+}
+
+.ecg-axis-trainer[data-variant='dialog'] {
+  max-width: 58rem;
+}
+
+@media (max-width: 52rem) {
+  .axis-panel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .axis-circle {
+    width: min(100%, 22rem);
+  }
+}

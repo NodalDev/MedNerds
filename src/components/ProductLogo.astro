@@ -1,24 +1,24 @@
 ---
-import medDocsLight from '../assets/SubLogos/MedDocs hell.svg?url';
-import medDocsDark from '../assets/SubLogos/MedDocs dunkel.svg?url';
-import medLearnLight from '../assets/SubLogos/MedLearn hell.svg?url';
-import medLearnDark from '../assets/SubLogos/MedLearn dunkel.svg?url';
-import medCasesLight from '../assets/SubLogos/MedCases hell.svg?url';
-import medCasesDark from '../assets/SubLogos/MedCases dunkel.svg?url';
-import medBlogLight from '../assets/SubLogos/MedBlog hell.svg?url';
-import medBlogDark from '../assets/SubLogos/MedBlog dunkel.svg?url';
-import baselLight from '../assets/SubLogos/MedNerds Basel.svg?url';
-import baselDark from '../assets/SubLogos/MedNerds Basel dunkel.svg?url';
-import medToolsLight from '../assets/Sublogos/MedTools hell.svg?url';
-import medToolsDark from '../assets/Sublogos/MedTools dunkel.svg?url';
+import medDocsLight from '../assets/SubLogos/MedDocs hell.webp?url';
+import medDocsDark from '../assets/SubLogos/MedDocs dunkel.webp?url';
+import medLearnLight from '../assets/SubLogos/MedLearn hell.webp?url';
+import medLearnDark from '../assets/SubLogos/MedLearn dunkel.webp?url';
+import medCasesLight from '../assets/SubLogos/MedCases hell.webp?url';
+import medCasesDark from '../assets/SubLogos/MedCases dunkel.webp?url';
+import medBlogLight from '../assets/SubLogos/MedBlog hell.webp?url';
+import medBlogDark from '../assets/SubLogos/MedBlog dunkel.webp?url';
+import baselLight from '../assets/SubLogos/MedNerds Basel.webp?url';
+import baselDark from '../assets/SubLogos/MedNerds Basel dunkel.webp?url';
+import medToolsLight from '../assets/SubLogos/MedTools hell.webp?url';
+import medToolsDark from '../assets/SubLogos/MedTools dunkel.webp?url';
 
 const logos = {
-  meddocs: { light: medDocsLight, dark: medDocsDark, width: 940 },
-  medlearn: { light: medLearnLight, dark: medLearnDark, width: 987 },
-  medcases: { light: medCasesLight, dark: medCasesDark, width: 1049 },
-  medblog: { light: medBlogLight, dark: medBlogDark, width: 867 },
-  medtools: { light: medToolsLight, dark: medToolsDark, width: 460 },
-  'mednerds-basel': { light: baselLight, dark: baselDark, width: 1373 },
+  meddocs: { light: medDocsLight, dark: medDocsDark, width: 471 },
+  medlearn: { light: medLearnLight, dark: medLearnDark, width: 494 },
+  medcases: { light: medCasesLight, dark: medCasesDark, width: 525 },
+  medblog: { light: medBlogLight, dark: medBlogDark, width: 434 },
+  medtools: { light: medToolsLight, dark: medToolsDark, width: 482 },
+  'mednerds-basel': { light: baselLight, dark: baselDark, width: 687 },
 };
 
 interface Props {
@@ -29,6 +29,6 @@ const logo = logos[Astro.props.product];
 ---
 
 <span class="product-logo" aria-hidden="true">
-  <img class="brand-light" src={logo.light} width={logo.width} height="230" alt="" />
-  <img class="brand-dark" src={logo.dark} width={logo.width} height="230" alt="" />
+  <img class="brand-light" src={logo.light} width={logo.width} height="115" alt="" />
+  <img class="brand-dark" src={logo.dark} width={logo.width} height="115" alt="" />
 </span>
