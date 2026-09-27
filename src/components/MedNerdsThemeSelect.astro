@@ -1,0 +1,225 @@
+---
+import DefaultThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+---
+
+<mednerds-theme-hint>
+  <DefaultThemeSelect />
+  <div class="theme-hint" inert>
+    <div>
+      <strong>Schon den Dark Mode entdeckt?</strong>
+      <p>Probier ihn mal aus.</p>
+    </div>
+    <button type="button" aria-label="Dark-Mode-Hinweis schließen">×</button>
+  </div>
+</mednerds-theme-hint>
+
+<script>
+  const storageKey = 'mednerds-darkmode-hint-seen';
+  let seenThisVisit = false;
+
+  class MedNerdsThemeHint extends HTMLElement {
+    private cleanup?: () => void;
+
+    connectedCallback() {
+      // The same ThemeSelect is used in the mobile drawer, without a coachmark.
+      if (!this.closest('.mednerds-header')) return;
+      const bubble = this.querySelector<HTMLElement>('.theme-hint');
+      const closeButton = bubble?.querySelector('button');
+      if (!bubble || !closeButton) return;
+
+      const desktop = window.matchMedia('(min-width: 50rem)');
+      const root = document.documentElement;
+      const listeners = new AbortController();
+      let delayTimer = 0;
+      let expiryTimer = 0;
+
+      const hasSeen = () => {
+        try {
+          return seenThisVisit || localStorage.getItem(storageKey) === 'true';
+        } catch {
+          return seenThisVisit;
+        }
+      };
+      const canShow = () => desktop.matches && root.dataset.theme === 'light' && !hasSeen();
+      const clearTimers = () => {
+        window.clearTimeout(delayTimer);
+        window.clearTimeout(expiryTimer);
+        delayTimer = expiryTimer = 0;
+      };
+      const hide = (remember: boolean) => {
+        clearTimers();
+        if (document.activeElement === closeButton) {
+          this.querySelector('select')?.focus({ preventScroll: true });
+        }
+        this.removeAttribute('data-visible');
+        bubble.inert = true;
+        if (remember) {
+          seenThisVisit = true;
+          try {
+            localStorage.setItem(storageKey, 'true');
+          } catch {
+            // Storage may be unavailable; still remember for this page visit.
+          }
+        }
+      };
+      const schedule = () => {
+        clearTimers();
+        if (!canShow()) return;
+        delayTimer = window.setTimeout(() => {
+          delayTimer = 0;
+          if (!this.isConnected || !canShow()) return;
+          bubble.inert = false;
+          this.setAttribute('data-visible', '');
+          expiryTimer = window.setTimeout(() => hide(true), 8000);
+        }, 2000);
+      };
+      const observer = new MutationObserver(() => {
+        if (root.dataset.theme !== 'light') hide(this.hasAttribute('data-visible'));
+      });
+      observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+
+      closeButton.addEventListener('click', () => hide(true), { signal: listeners.signal });
+      desktop.addEventListener('change', () => {
+        if (!desktop.matches) hide(this.hasAttribute('data-visible'));
+      }, { signal: listeners.signal });
+      window.addEventListener('pagehide', () => hide(false), { signal: listeners.signal });
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) schedule();
+      }, { signal: listeners.signal });
+      this.cleanup = () => {
+        hide(false);
+        observer.disconnect();
+        listeners.abort();
+      };
+      document.addEventListener('astro:before-swap', () => this.cleanup?.(), {
+        once: true,
+        signal: listeners.signal,
+      });
+      if (document.readyState === 'complete') schedule();
+      else window.addEventListener('load', schedule, { once: true, signal: listeners.signal });
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+      this.cleanup = undefined;
+    }
+  }
+
+  if (!customElements.get('mednerds-theme-hint')) {
+    customElements.define('mednerds-theme-hint', MedNerdsThemeHint);
+  }
+</script>
+
+<style>
+  mednerds-theme-hint {
+    display: contents;
+  }
+
+  .theme-hint {
+    display: none;
+  }
+
+  @media (min-width: 50rem) {
+    mednerds-theme-hint {
+      display: block;
+      position: relative;
+    }
+
+    .theme-hint {
+      position: absolute;
+      inset-block-start: calc(100% + 0.75rem);
+      inset-inline-end: 0;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.25rem;
+      width: 17.5rem;
+      padding: 0.875rem;
+      border: 1px solid var(--sl-color-hairline);
+      border-radius: 0.75rem;
+      background: var(--sl-color-black);
+      color: var(--sl-color-text);
+      box-shadow: 0 4px 16px color-mix(in srgb, var(--sl-color-white) 8%, transparent);
+      font-size: var(--sl-text-sm);
+      line-height: 1.45;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease, visibility 0s linear 160ms;
+    }
+
+    .theme-hint::before {
+      content: '';
+      position: absolute;
+      inset-block-start: -0.3rem;
+      inset-inline-end: 2rem;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-block-start: 1px solid var(--sl-color-hairline);
+      border-inline-start: 1px solid var(--sl-color-hairline);
+      background: inherit;
+      transform: rotate(45deg);
+    }
+
+    [data-visible] > .theme-hint {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+      transition-delay: 0s;
+    }
+
+    .theme-hint strong {
+      color: var(--sl-color-white);
+      font-weight: 600;
+    }
+
+    .theme-hint p {
+      margin: 0.25rem 0 0;
+    }
+
+    .theme-hint button {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      padding: 0;
+      border: 0;
+      border-radius: 0.25rem;
+      background: transparent;
+      color: var(--sl-color-gray-3);
+      font-size: 1.125rem;
+      cursor: pointer;
+    }
+
+    .theme-hint button:hover {
+      background: var(--mn-surface-hover);
+      color: var(--sl-color-white);
+    }
+
+    .theme-hint button:focus-visible {
+      outline: 2px solid var(--sl-color-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  :global(:root[data-theme='dark']) .theme-hint {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-hint,
+    [data-visible] > .theme-hint {
+      transform: none;
+      transition: none;
+    }
+  }
+
+  @media print {
+    .theme-hint {
+      display: none;
+    }
+  }
+</style>

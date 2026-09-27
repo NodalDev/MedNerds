@@ -21,14 +21,14 @@ const topics = [
     description: 'Anatomie, Schallfenster und Grundlagen der Beurteilung von Herzstruktur und Funktion.',
   },
   {
-    title: 'Sonographie',
-    href: '/meddocs/sonographie/',
-    description: 'Untersuchungstechnik, Orientierung im Ultraschallbild und typische Befunde.',
-  },
-  {
     title: 'Notfallmedizin',
     href: '/meddocs/notfallmedizin/',
     description: 'Strukturierte Ersteinschätzung, akute Krankheitsbilder und Grundlagen der Versorgung.',
+  },
+  {
+    title: 'Ultraschall',
+    href: '/meddocs/sonographie/',
+    description: 'Untersuchungstechnik, Orientierung im Ultraschallbild und typische Befunde.',
   },
 ] as const satisfies readonly {
   title: keyof typeof sidebarIcons;

@@ -17,10 +17,11 @@ type BadgeAssignment = (
 // Hier Status zuweisen oder eine Zeile entfernen, um ihren Badge auszublenden.
 // Gruppen: vollständiger Pfad der Sidebar-Labels; Links: genaue Ziel-URL.
 export const sidebarBadges: readonly BadgeAssignment[] = [
+  { group: ['Anästhesie'], badge: 'planned' },
   { group: ['EKG'], badge: 'planned' },
   { group: ['Echokardiographie'], badge: 'new' },
-  { group: ['Sonographie'], badge: 'soon' },
   { group: ['Notfallmedizin'], badge: 'top' },
+  { group: ['Ultraschall'], badge: 'soon' },
   { group: ['Diverses'], badge: 'popular' },
   // { href: '/meddocs/echokardiographie/', badge: 'new' },
 ];

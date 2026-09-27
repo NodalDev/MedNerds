@@ -1,0 +1,425 @@
+---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+import ProductLogo from './ProductLogo.astro';
+import { getActiveProduct, productLinks } from '../data/product-navigation';
+
+const pathname = Astro.url.pathname;
+const activeProduct = getActiveProduct(pathname);
+---
+
+<mednerds-product-navigation>
+  <nav aria-label="MedNerds Bereiche">
+    <ul class="products" role="list">
+      {productLinks.map(({ label, href, product, description, children }) => (
+        <li class="product-item" data-product-id={product}>
+          <div class="product-trigger">
+            <a
+              class="product-link product-root"
+              data-product={product}
+              href={href}
+              aria-current={activeProduct?.href === href ? (pathname === href ? 'page' : 'location') : undefined}
+            >
+              {label}
+            </a>
+            <button
+              class="product-expand product-link"
+              data-product={product}
+              type="button"
+              aria-label={`${label}: Navigation anzeigen`}
+              aria-expanded="false"
+              aria-controls={`product-flyout-${product}`}
+              hidden
+            >
+              <MedNerdsIcon name="tabler:chevron-down" size="xs" />
+            </button>
+          </div>
+          <!-- Im DOM direkt nach dem Auslöser: Tab erreicht erst das Flyout,
+               dann den nächsten Bereich. Keine Menürollen für normale Links. -->
+          <section class:list={['flyout', { 'flyout--simple': children.length === 0 }]} id={`product-flyout-${product}`} aria-labelledby={`product-title-${product}`} hidden>
+            <div class:list={['flyout-content', { 'has-children': children.length > 0 }]}>
+              <div class="product-identity">
+                <h2 id={`product-title-${product}`}>
+                  <span class="sr-only">{label}</span>
+                  <ProductLogo product={product} />
+                </h2>
+                <p>{description}</p>
+                <a class="product-open" href={href}>
+                  {label} öffnen
+                  <MedNerdsIcon name="tabler:arrow-right" size="sm" />
+                </a>
+              </div>
+              {children.length > 0 && (
+                <div class="product-children">
+                  <h3>{product === 'meddocs' ? 'Fachgebiete' : 'Tools'}</h3>
+                  <ul class="child-links" role="list">
+                    {children.map((child) => (
+                      <li>
+                        <a href={child.href} aria-current={pathname === child.href ? 'page' : undefined}>
+                          <MedNerdsIcon name={child.icon} size="lg" />
+                          <span>{child.label}</span>
+                          <MedNerdsIcon name="tabler:arrow-up-right" size="xs" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </section>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</mednerds-product-navigation>
+
+<script>
+  class MedNerdsProductNavigation extends HTMLElement {
+    private events = new AbortController();
+    private openItem: HTMLElement | null = null;
+    private restoringFocus = false;
+
+    connectedCallback() {
+      this.events = new AbortController();
+      const { signal } = this.events;
+      const desktop = window.matchMedia('(min-width: 50rem)');
+      const hover = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+      this.querySelectorAll<HTMLElement>('.product-item').forEach((item) => {
+        const rootLink = item.querySelector<HTMLAnchorElement>('.product-root');
+        const button = item.querySelector<HTMLButtonElement>('.product-expand');
+        if (!rootLink || !button) return;
+        button.hidden = false;
+
+        item.addEventListener('pointerenter', () => {
+          // Beim Lesen per Tastatur darf ein Hover keine fokussierten Links verstecken.
+          if (hover.matches && !this.querySelector('.flyout:focus-within')) this.open(item);
+        }, { signal });
+        rootLink.addEventListener('focus', () => {
+          if (!this.restoringFocus && desktop.matches) this.open(item);
+        }, { signal });
+        button.addEventListener('focus', () => {
+          // Auch rückwärts tabben öffnet den passenden Bereich. Ein Tap
+          // wird erst vom Click-Handler verarbeitet, damit er nicht doppelt toggelt.
+          if (desktop.matches && button.matches(':focus-visible')) this.open(item);
+        }, { signal });
+        button.addEventListener('click', () => {
+          if (desktop.matches) this.openItem === item ? this.close() : this.open(item);
+        }, { signal });
+      });
+
+      this.addEventListener('pointerleave', () => {
+        if (!this.contains(document.activeElement)) this.close();
+      }, { signal });
+      this.addEventListener('focusout', (event) => {
+        if (!(event.relatedTarget instanceof Node) || !this.contains(event.relatedTarget)) this.close();
+      }, { signal });
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !this.openItem) return;
+        event.preventDefault();
+        const rootLink = this.contains(document.activeElement)
+          ? this.openItem.querySelector<HTMLAnchorElement>('.product-root')
+          : null;
+        this.close();
+        this.restoringFocus = true;
+        rootLink?.focus({ preventScroll: true });
+        this.restoringFocus = false;
+      }, { signal });
+      document.addEventListener('pointerdown', (event) => {
+        if (event.target instanceof Node && !this.contains(event.target)) this.close();
+      }, { signal });
+      desktop.addEventListener('change', () => this.close(), { signal });
+    }
+
+    disconnectedCallback() {
+      this.events.abort();
+    }
+
+    private open(item: HTMLElement) {
+      if (item === this.openItem) return;
+      const entering = !this.openItem;
+      this.close();
+      const panel = item.querySelector<HTMLElement>('.flyout');
+      if (!panel) return;
+      panel.toggleAttribute('data-entering', entering);
+      panel.hidden = false;
+      item.querySelector('.product-expand')?.setAttribute('aria-expanded', 'true');
+      this.openItem = item;
+      this.setAttribute('data-open', '');
+    }
+
+    private close() {
+      const panel = this.openItem?.querySelector<HTMLElement>('.flyout');
+      if (panel) panel.hidden = true;
+      this.openItem?.querySelector('.product-expand')?.setAttribute('aria-expanded', 'false');
+      this.openItem = null;
+      this.removeAttribute('data-open');
+    }
+  }
+
+  if (!customElements.get('mednerds-product-navigation')) {
+    customElements.define('mednerds-product-navigation', MedNerdsProductNavigation);
+  }
+</script>
+
+<style>
+  mednerds-product-navigation,
+  nav {
+    display: block;
+    height: 100%;
+    min-width: 0;
+  }
+
+  nav {
+    position: relative;
+  }
+
+  .products,
+  .child-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .products {
+    display: flex;
+    align-items: stretch;
+    gap: clamp(0.5rem, 1.5vw, 1.5rem);
+    height: 100%;
+  }
+
+  .product-trigger {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+  }
+
+  .product-root {
+    display: inline-flex;
+    align-items: center;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    color: var(--sl-color-gray-2);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+
+  .product-root[aria-current] {
+    border-bottom-color: var(--product-color);
+    color: var(--product-color);
+  }
+
+  .product-expand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--sl-color-gray-3);
+    cursor: pointer;
+    transition: color 160ms ease;
+  }
+
+  .product-expand[hidden],
+  .flyout[hidden] {
+    display: none;
+  }
+
+  .product-trigger:hover .product-link,
+  .product-link:focus-visible,
+  .product-expand[aria-expanded='true'] {
+    color: var(--product-color);
+  }
+
+  :is(.product-link, .product-open, .child-links a):focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+  }
+
+  .flyout {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 100%;
+    max-height: calc(100dvh - var(--sl-nav-height) - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0 0 0.875rem 0.875rem;
+    background: var(--mn-surface);
+    color: var(--sl-color-gray-2);
+  }
+
+  .flyout[data-entering] {
+    animation: flyout-enter 160ms ease-out;
+  }
+
+  .flyout--simple {
+    max-inline-size: 28rem;
+  }
+
+  .flyout-content {
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+  }
+
+  .has-children {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 2rem;
+  }
+
+  .product-identity {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    max-width: 36ch;
+    min-width: 0;
+  }
+
+  .product-identity h2 {
+    --product-logo-height: 1.65rem;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .product-identity p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .product-open {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    color: var(--sl-color-accent);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .product-open:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .product-children {
+    min-width: 0;
+    padding-inline-start: 2rem;
+    border-inline-start: 1px solid var(--sl-color-hairline);
+  }
+
+  .product-children h3 {
+    margin: 0 0 0.75rem;
+    color: var(--sl-color-gray-3);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .child-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
+  }
+
+  .child-links a {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 3rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    color: var(--sl-color-gray-1);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+
+  .child-links a > span {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .child-links a:hover {
+    background: var(--mn-surface-hover);
+    color: var(--sl-color-accent);
+  }
+
+  .child-links a > :global(.mn-icon:first-child) {
+    color: var(--sl-color-accent);
+  }
+
+  .child-links a > :global(.mn-icon:last-child) {
+    color: var(--sl-color-gray-3);
+  }
+
+  @media (max-width: 63.999rem) {
+    .products {
+      gap: 0.5rem;
+    }
+
+    .product-root {
+      font-size: 0.8125rem;
+    }
+
+    .has-children {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+      gap: 1.25rem;
+    }
+
+    .product-children {
+      padding-inline-start: 1.25rem;
+    }
+
+    .child-links {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.25rem;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .product-expand {
+      width: 2.75rem;
+    }
+
+    .products {
+      gap: 0.25rem;
+    }
+  }
+
+  @media (pointer: coarse) and (max-width: 55.999rem) {
+    .product-item:last-child .product-root {
+      max-inline-size: min-content;
+      white-space: normal;
+      line-height: 1.25;
+    }
+  }
+
+  @keyframes flyout-enter {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flyout[data-entering] {
+      animation: none;
+    }
+
+    .product-root,
+    .product-expand,
+    .child-links a {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,456 @@
+---
+title: Beispielartikel – Starlight Showcase
+description: Visuelle Übersicht der wichtigsten Inhalts- und UI-Elemente in MedDocs.
+draft: true
+sidebar.hidden: true
+pagefind: false
+sidebar:
+  label: Beispielartikel
+  order: 20
+---
+
+import {
+  Aside,
+  Badge,
+  Card,
+  CardGrid,
+  Code,
+  FileTree,
+  Icon,
+  LinkButton,
+  LinkCard,
+  Steps,
+  TabItem,
+  Tabs,
+} from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import demoImage from '../../../../assets/Logos/MedNerds - icon.webp';
+
+Diese Seite zeigt Markdown, MDX und die vorhandenen Starlight-Komponenten im
+normalen MedDocs-Design. Alle Texte und Beispiele sind rein demonstrativ;
+sie enthalten keine medizinischen Aussagen.
+
+## Überschriften: Ebene H2
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat
+a ante venenatis dapibus posuere velit aliquet.
+
+### Überschrift: Ebene H3
+
+Sed posuere consectetur est at lobortis. Donec ullamcorper nulla non metus
+auctor fringilla. Dieser kurze Absatz zeigt den Abstand unter einer H3.
+
+#### Überschrift: Ebene H4
+
+Maecenas faucibus mollis interdum. Aenean lacinia bibendum nulla sed consectetur.
+Die feinere Überschriftenebene gliedert Inhalte innerhalb eines Unterabschnitts.
+
+## Textformatierung
+
+Normaler Fließtext steht neben **fett hervorgehobenem Text**, *kursivem Text*
+und ***fett-kursivem Text***. Ein ~~gestrichener Ausdruck~~ und
+`Inline-Code` ergänzen den Vergleich. Lorem ipsum dolor sit amet, consectetur
+adipiscing elit.
+
+Ein [interner Link zur Diverses-Übersicht](/meddocs/diverses/) und ein
+[externer Link zum MedNerds-Repository](https://github.com/NodalDev/MedNerds)
+zeigen die Linkdarstellung innerhalb eines Absatzes.
+
+Dieser Satz beginnt in einer Quelltextzeile.
+Die nächste Quelltextzeile bleibt Teil desselben Absatzes: ein weicher Umbruch.
+
+Diese Demo-Zeile endet mit einem bewussten harten Umbruch.<br />
+Diese zweite Zeile gehört weiterhin zum selben Absatz.
+
+### Weitere native Textauszeichnungen
+
+Die Taste <kbd>Enter</kbd>, ein <mark>markierter Begriff</mark>,
+ein Index wie Demo<sub>2</sub> und eine hochgestellte Ziffer wie Demo<sup>3</sup>
+zeigen zusätzliche HTML-Auszeichnungen. Die Abkürzung
+<abbr title="Markdown mit Komponenten">MDX</abbr> besitzt eine ausgeschriebene Erklärung.
+
+## Listen
+
+### Ungeordnete und verschachtelte Liste
+
+- Ebene 1: Lorem ipsum
+- Ebene 1: Dolor sit amet
+  - Ebene 2: Consectetur adipiscing
+  - Ebene 2: Integer posuere
+    - Ebene 3: Aenean lacinia
+    - Ebene 3: Donec ullamcorper
+- Ebene 1: Zurück auf der obersten Ebene
+
+### Geordnete Liste
+
+1. Punkt eins: Datei auswählen.
+2. Punkt zwei: Beispieltext ansehen.
+3. Punkt drei: Darstellung vergleichen.
+
+### Gemischte Liste mit Inline-Code
+
+1. Die Datei `beispielartikel.mdx` öffnen.
+   - Den Eintrag `title` ansehen.
+   - Den Eintrag `description` ansehen.
+2. Einen Demo-Absatz auswählen.
+3. Zur [Übersicht](/meddocs/diverses/) zurückkehren.
+
+### Aufgabenliste
+
+- [x] Demo-Datei vorhanden
+- [x] Beispieltext eingefügt
+- [ ] Weitere eigene Beispiele ausprobieren
+
+## Blockquote
+
+> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+>
+> Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
+> Dieser zweite Absatz zeigt ein mehrzeiliges Blockquote mit **Hervorhebung**.
+
+---
+
+## Horizontale Trennlinie
+
+Die Linie oberhalb dieses Abschnitts ist ein normales Markdown-`hr`.
+Lorem ipsum dolor sit amet. Abstände und Farben stammen aus dem bestehenden Design.
+
+## Hinweise und Callouts
+
+Die vier verfügbaren Aside-Typen verwenden die bereits im Projekt eingesetzte
+Direktiv-Syntax.
+
+:::note[Hinweis – Note]
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Dies ist ein neutraler Hinweis mit einem [internen Link](/meddocs/).
+:::
+
+:::tip[Tipp – Tip]
+Sed posuere consectetur est at lobortis.
+Dieser Demo-Tipp zeigt die Darstellung einer kurzen Empfehlung.
+:::
+
+:::caution[Achtung – Caution]
+Maecenas faucibus mollis interdum.
+Dieser Demo-Text dient ausschließlich dem Vergleich von Fläche, Icon und Überschrift.
+:::
+
+:::danger[Warnung – Danger]
+Aenean lacinia bibendum nulla sed consectetur.
+Auch dieser auffällige Hinweis enthält keine fachliche Warnung oder medizinische Aussage.
+:::
+
+## Tabelle
+
+| Element | Beispiel | Status |
+| :--- | :--- | :---: |
+| Überschrift | H2–H4 | Aktiv |
+| Text | **Fett**, *kursiv*, `Code` | Aktiv |
+| Aside | Note / Tip / Caution / Danger | Aktiv |
+| Tabelle | Markdown mit Kopfzeile | Aktiv |
+| Navigation | [Diverses](/meddocs/diverses/) | Aktiv |
+| Codeblock | TypeScript und Diff | Aktiv |
+
+## Lokales Bild
+
+Das folgende Bild ist das vorhandene MedNerds-Markenicon. Es wird lokal
+eingebunden; seine Darstellung nutzt die normalen Inhaltsregeln.
+
+<Image
+  src={demoImage}
+  alt="MedNerds-Markenicon: stilisiertes Gehirn aus symmetrischen blauen Flächen."
+  loading="lazy"
+/>
+
+## Codeblöcke
+
+### Einfacher Codeblock
+
+```ts
+const example = 'MedNerds';
+console.log(example);
+```
+
+### Codeblock mit Titel
+
+```ts title="beispiel.ts"
+const page = {
+  title: 'Beispielartikel',
+  mode: 'demo',
+};
+
+console.log(page.title);
+```
+
+### Zeilenhervorhebung
+
+Die zweite und vierte Zeile sind hervorgehoben.
+
+```ts title="hervorhebung.ts" {2,4}
+const title = 'Beispielartikel';
+const mode = 'showcase';
+const sectionCount = 3;
+console.log({ title, mode, sectionCount });
+```
+
+### Hervorgehobener Ausdruck
+
+```ts title="ausdruck.ts" "MedNerds"
+const project = 'MedNerds';
+const message = `Willkommen bei ${project}`;
+console.log(message);
+```
+
+### Diff mit hinzugefügter und entfernter Zeile
+
+```diff title="textänderung.diff"
+- const heading = 'Alter Demo-Titel';
++ const heading = 'Neuer Demo-Titel';
+  console.log(heading);
+```
+
+### Terminal-Beispiel
+
+```sh title="Terminal"
+npx astro check
+npm run build
+```
+
+### Code als MDX-Komponente
+
+Auch die exportierte `Code`-Komponente rendert über Expressive Code.
+
+<Code
+  code={'{\n  "project": "MedNerds",\n  "example": true\n}'}
+  lang="json"
+  title="demo.json"
+/>
+
+## Tabs
+
+<Tabs>
+<TabItem label="Variante A">
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Diese Variante zeigt einen kurzen Absatz mit **Hervorhebung**.
+
+</TabItem>
+<TabItem label="Variante B">
+
+- Ein erster Demo-Punkt
+- Ein zweiter Demo-Punkt mit `Inline-Code`
+- Ein [Link zur Übersicht](/meddocs/diverses/)
+
+</TabItem>
+<TabItem label="Variante C">
+
+```ts title="tab-beispiel.ts"
+const variant = 'C';
+console.log(`Demo-Variante ${variant}`);
+```
+
+</TabItem>
+</Tabs>
+
+## Steps
+
+<Steps>
+
+1. **Datei öffnen**
+
+   Die Demo-Datei `beispielartikel.mdx` auswählen.
+   Lorem ipsum dolor sit amet.
+
+2. **Inhalt bearbeiten**
+
+   Einen neutralen Beispieltext einfügen und die Formatierung ansehen.
+   Sed posuere consectetur est at lobortis.
+
+3. **Speichern**
+
+   Die Datei speichern und die Darstellung in der Vorschau vergleichen.
+   Donec ullamcorper nulla non metus auctor fringilla.
+
+</Steps>
+
+## Cards und CardGrid
+
+Die ersten beiden Cards nutzen vorhandene Starlight-Icons, die auch in
+den Standard-Asides vorkommen. Die anderen zeigen Cards ohne Icon.
+
+<CardGrid>
+  <Card title="Lernen" icon="rocket">
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Ein kurzer Demo-Text für die erste Karte.
+
+  </Card>
+  <Card title="Nachschlagen" icon="information">
+
+Sed posuere consectetur est at lobortis.
+Ein weiterer Text mit **Hervorhebung**.
+
+  </Card>
+  <Card title="Verstehen">
+
+Maecenas faucibus mollis interdum.
+Diese Karte zeigt die Variante ohne Icon.
+
+  </Card>
+  <Card title="Wiederholen">
+
+Aenean lacinia bibendum nulla sed consectetur.
+Vier Karten machen die Aufteilung des Grids sichtbar.
+
+  </Card>
+</CardGrid>
+
+## LinkCards
+
+<CardGrid>
+  <LinkCard
+    title="Diverses öffnen"
+    description="Ein echtes internes Linkziel für dieses Demonstrationsbeispiel."
+    href="/meddocs/diverses/"
+  />
+  <LinkCard
+    title="MedDocs öffnen"
+    description="Zur vorhandenen Bereichsübersicht zurückkehren."
+    href="/meddocs/"
+  />
+</CardGrid>
+
+## Badges
+
+### Varianten
+
+<Badge text="Default" />{' '}
+<Badge text="Note" variant="note" />{' '}
+<Badge text="Tip" variant="tip" />{' '}
+<Badge text="Success" variant="success" />{' '}
+<Badge text="Caution" variant="caution" />{' '}
+<Badge text="Danger" variant="danger" />
+
+### Größen
+
+<Badge text="Klein" size="small" />{' '}
+<Badge text="Mittel" size="medium" />{' '}
+<Badge text="Groß" size="large" />
+
+## LinkButtons
+
+<LinkButton href="/meddocs/diverses/" icon="right-arrow">
+  Primärer Link
+</LinkButton>
+<LinkButton href="/meddocs/" variant="secondary" icon="right-arrow">
+  Sekundärer Link
+</LinkButton>
+<LinkButton href="/meddocs/diverses/" variant="minimal">
+  Reduzierter Link
+</LinkButton>
+
+## Icons
+
+Ein dekoratives Icon neben sichtbarem Text:
+
+<p><Icon name="right-arrow" /> Zum nächsten Demo-Abschnitt.</p>
+
+Ein Icon mit eigenem zugänglichem Namen:
+
+<p>
+  <Icon name="information" label="Information zum Demonstrationsbeispiel" />
+  Informationen zum Beispiel.
+</p>
+
+## FileTree
+
+Diese reduzierte Beispielstruktur zeigt die vorhandene FileTree-Komponente.
+Sie ist keine vollständige Auflistung des Repositorys.
+
+<FileTree>
+
+- MedNerds/
+  - src/
+    - content/
+      - docs/
+        - meddocs/
+          - diverses/
+            - **beispielartikel.mdx**
+    - components/
+  - public/
+  - package.json
+
+</FileTree>
+
+## Aufklappbare Informationen
+
+<details>
+  <summary>Weitere Informationen</summary>
+  <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Dieser native Details-Block zeigt den geöffneten und geschlossenen Zustand.
+  </p>
+  <p>
+    Ein <a href="/meddocs/diverses/">interner Link</a> bleibt auch hier regulär erreichbar.
+  </p>
+</details>
+
+## Kombinierte Elemente
+
+### Aside mit Liste
+
+<Aside type="note" title="Mehrere Elemente in einem Hinweis">
+
+Lorem ipsum dolor sit amet. Die folgende Liste ergänzt den Demo-Hinweis:
+
+- Ein einfacher Listenpunkt
+- Ein Punkt mit **Hervorhebung** und `Inline-Code`
+- Ein [interner Link](/meddocs/diverses/)
+
+</Aside>
+
+### Card mit Link
+
+<Card title="Ein Beispiel mit Querverweis">
+
+Sed posuere consectetur est at lobortis.
+Diese Card enthält einen [Link zur MedDocs-Übersicht](/meddocs/)
+und einen kurzen Hinweis auf die Datei `beispielartikel.mdx`.
+
+</Card>
+
+### Tab mit Code und Liste
+
+<Tabs>
+<TabItem label="Beispielcode">
+
+```ts title="kombination.ts" {2}
+const entries = ['Alpha', 'Beta', 'Gamma'];
+const firstEntry = entries[0];
+console.log(firstEntry);
+```
+
+</TabItem>
+<TabItem label="Beschreibung">
+
+1. `entries` enthält drei Demo-Bezeichnungen.
+2. `firstEntry` wählt den ersten Eintrag aus.
+3. Der Beispielcode dient nur dem Vergleich der Darstellung.
+
+</TabItem>
+</Tabs>
+
+### Tabelle unter einer H3
+
+| Kombination | Enthaltene Elemente |
+| --- | --- |
+| Hinweis | Absatz, Liste, **Hervorhebung**, Link |
+| Card | Fließtext, Link, `Inline-Code` |
+| Tab | Codeblock mit Titel und Zeilenhervorhebung |
+| Tabelle | Kopfzeile, Textformatierung, mehrere Zeilen |
+
+## Abschluss
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Die Beispiele bleiben bewusst im Standard-Rendering, damit Änderungen am
+MedNerds-Design hier unmittelbar sichtbar werden.

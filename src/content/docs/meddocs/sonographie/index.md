@@ -1,11 +1,11 @@
 ---
-title: Sonographie
-description: Übersicht des Sonographie-Bereichs in MedDocs.
+title: Ultraschall
+description: Übersicht des Ultraschall-Bereichs in MedDocs.
 sidebar:
   hidden: true
 ---
 
 :::note[Im Aufbau]
-Hier entsteht die Übersicht für den Sonographie-Bereich. Die fachlichen Inhalte
+Hier entsteht die Übersicht für den Ultraschall-Bereich. Die fachlichen Inhalte
 werden später ergänzt und redaktionell geprüft.
 :::

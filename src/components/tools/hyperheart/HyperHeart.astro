@@ -1,0 +1,9 @@
+---
+import Tool from './HyperHeart';
+import type { HyperHeartProps } from './HyperHeart';
+
+type Props = Omit<HyperHeartProps, 'onPhaseChange'>;
+const props = Astro.props;
+---
+
+<Tool {...props} client:visible />

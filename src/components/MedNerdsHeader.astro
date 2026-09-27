@@ -1,6 +1,7 @@
 ---
 import DefaultHeader from '@astrojs/starlight/components/Header.astro';
-import { getActiveProduct, productLinks } from '../data/product-navigation';
+import { getActiveProduct } from '../data/product-navigation';
+import MedNerdsProductNavigation from './MedNerdsProductNavigation.astro';
 
 const pathname = Astro.url.pathname;
 const activeProduct = getActiveProduct(pathname);
@@ -15,7 +16,7 @@ const activeProduct = getActiveProduct(pathname);
        ======================================== -->
 
   <div class="primary-row">
-    <div class="primary-inner">
+    <div class="primary-inner header-shell">
       <DefaultHeader>
         <slot />
       </DefaultHeader>
@@ -26,29 +27,11 @@ const activeProduct = getActiveProduct(pathname);
        Produktnavigation
        ======================================== -->
 
-  <nav class="product-nav" aria-label="MedNerds Bereiche">
-    <div class="desktop-product-links sl-flex">
-      {
-        productLinks.map(({ label, href }) => {
-          const isActive = pathname.startsWith(href);
-
-          return (
-            <a
-              href={href}
-              data-product={href.split('/')[1]}
-              class:list={{
-                'product-link': true,
-                active: isActive,
-              }}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              {label}
-            </a>
-          );
-        })
-      }
+  <div class="product-row">
+    <div class="header-shell">
+      <MedNerdsProductNavigation />
     </div>
-  </nav>
+  </div>
 </div>
 
 <script>
@@ -62,7 +45,9 @@ const activeProduct = getActiveProduct(pathname);
   let animationFrame = 0;
 
   const setProductNavHidden = (hidden: boolean) => {
-    const shouldHide = desktopProductNav.matches && window.scrollY > 24 && hidden;
+    const navigation = header?.querySelector('mednerds-product-navigation');
+    const interacting = navigation?.hasAttribute('data-open') || navigation?.contains(document.activeElement);
+    const shouldHide = desktopProductNav.matches && window.scrollY > 24 && hidden && !interacting;
     root.toggleAttribute('data-product-nav-hidden', shouldHide);
   };
 
@@ -152,7 +137,7 @@ const activeProduct = getActiveProduct(pathname);
    * Logo und Theme-Button rücken dadurch
    * symmetrisch vom Browserrand nach innen.
    */
-  .primary-inner {
+  .header-shell {
     box-sizing: border-box;
 
     width: 100%;
@@ -194,108 +179,12 @@ const activeProduct = getActiveProduct(pathname);
      Produktnavigation
      ======================================== */
 
-  .product-nav {
+  .product-row {
     display: none;
     min-width: 0;
-    width: calc(100% + 2 * var(--sl-nav-pad-x));
-    margin-inline: calc(-1 * var(--sl-nav-pad-x));
-    padding-inline: var(--sl-nav-pad-x);
-    overflow: hidden;
-
-    border-top:
-      1px solid
-      var(--sl-color-hairline);
-
+    border-top: 1px solid var(--sl-color-hairline);
     background: var(--sl-color-bg-nav);
-
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-
-    transition:
-      transform 200ms cubic-bezier(0.2, 0, 0, 1),
-      opacity 160ms ease,
-      visibility 0s linear;
-  }
-
-  .desktop-product-links {
-    height: 100%;
-  }
-
-  .product-link {
-    position: relative;
-
-    display: inline-flex;
-    flex: 0 0 auto;
-
-    align-items: center;
-
-    margin-block: 0.35rem;
-
-    padding:
-      0
-      0.75rem;
-
-    border: 1px solid transparent;
-    border-radius: 0.55rem;
-
-    color:
-      var(--sl-color-gray-2);
-
-    font-size:
-      var(--sl-text-base);
-
-    font-weight: 600;
-
-    text-decoration: none;
-
-    transition:
-      color 150ms ease,
-      border-color 150ms ease,
-      background-color 150ms ease;
-  }
-
-  .product-link:hover {
-    color:
-      var(--product-color);
-
-    background:
-      color-mix(
-        in oklch,
-        var(--product-color) 6%,
-        transparent
-      );
-
-    border-color:
-      color-mix(
-        in oklch,
-        var(--product-color) 18%,
-        transparent
-      );
-  }
-
-  .product-link:focus-visible {
-    outline: 2px solid var(--product-color);
-    outline-offset: 2px;
-  }
-
-  .product-link.active {
-    color:
-      var(--product-color);
-
-    background:
-      color-mix(
-        in oklch,
-        var(--product-color) 10%,
-        transparent
-      );
-
-    border-color:
-      color-mix(
-        in oklch,
-        var(--product-color) 28%,
-        transparent
-      );
+    transition: opacity 160ms ease, visibility 0s linear;
   }
 
   /* ========================================
@@ -303,6 +192,12 @@ const activeProduct = getActiveProduct(pathname);
      ======================================== */
 
   @media (min-width: 50rem) {
+    /* Full-width Zeilen; der Inhalt behält die bisherigen äußeren Abstände. */
+    .primary-row,
+    .product-row {
+      padding-inline: var(--sl-nav-pad-x);
+    }
+
     .mednerds-header {
       grid-template-rows: 4.35rem 3.15rem;
 
@@ -312,7 +207,7 @@ const activeProduct = getActiveProduct(pathname);
         cubic-bezier(0.2, 0, 0, 1);
     }
 
-    .product-nav {
+    .product-row {
       display: block;
     }
 
@@ -397,12 +292,6 @@ const activeProduct = getActiveProduct(pathname);
       width: auto;
     }
 
-    .desktop-product-links {
-      align-items: center;
-
-      gap: 0.1rem;
-    }
-
     :global(html[data-product-nav-hidden]) {
       --sl-nav-height: 4.35rem;
     }
@@ -411,13 +300,13 @@ const activeProduct = getActiveProduct(pathname);
       grid-template-rows: 4.35rem 0;
     }
 
-    :global(html[data-product-nav-hidden]) .product-nav {
+    :global(html[data-product-nav-hidden]) .product-row {
+      border-top-width: 0;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(-0.65rem);
       visibility: hidden;
 
-      transition-delay: 0s, 0s, 200ms;
+      transition-delay: 0s, 200ms;
     }
 
     :global(html[data-product-nav-ready] .page > .header) {
@@ -481,7 +370,7 @@ const activeProduct = getActiveProduct(pathname);
   }
 
   @media (max-width: 49.999rem) {
-    .primary-inner {
+    .header-shell {
       padding-inline: 0;
     }
 
@@ -490,26 +379,9 @@ const activeProduct = getActiveProduct(pathname);
     }
   }
 
-  @media (min-width: 72rem) {
-    /*
-     * Produktnavigation vorerst unverändert.
-     *
-     * Diese ziehen wir erst im nächsten Schritt
-     * auf dieselbe Shell-Breite.
-     */
-    .desktop-product-links {
-      padding-inline-start:
-        calc(
-          var(--sl-sidebar-width) +
-          0.35rem
-        );
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .mednerds-header,
-    .product-nav,
-    .product-link,
+    .product-row,
     :global(html[data-product-nav-ready] .page > .header),
     :global(html[data-product-nav-ready] .main-frame),
     :global(html[data-product-nav-ready] .sidebar),

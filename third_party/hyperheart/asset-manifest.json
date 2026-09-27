@@ -1,0 +1,429 @@
+{
+  "source": "_reference/hyperheart-original/hyperheart.js",
+  "sourceSha256": "be88908c8528e5a8eebdafbf8e7e8604f02d2f3bebd25fd33cca0d633d2e3f61",
+  "atlas": "_reference/hyperheart-original/HyperHeart_html5_atlas_1.png",
+  "atlasSha256": "e5fb995ff0fd2e682654c45a9254c3acb5dacff7cfbcf95d2bc78d63e96f2c54",
+  "backgroundRemoval": "Exact RGB 0,102,102; four-connected to crop border; alpha only; no tolerance.",
+  "assets": [
+    {
+      "phase": "atrial-systole",
+      "visual": "heart",
+      "symbol": "atrialheart5",
+      "frameIndex": 0,
+      "rect": [
+        0,
+        0,
+        237,
+        280
+      ],
+      "removedPixels": 24995,
+      "file": "heart/atrial-systole.png",
+      "sha256": "6493e13d06eaf72fd6c82005048a9a13166ff3dc316034d078e10a825d180894"
+    },
+    {
+      "phase": "atrial-systole",
+      "visual": "wiggers",
+      "symbol": "atrsyswig2",
+      "frameIndex": 3,
+      "rect": [
+        239,
+        0,
+        237,
+        280
+      ],
+      "removedPixels": 17497,
+      "file": "wiggers/atrial-systole.png",
+      "sha256": "a8b82f58dbe13219c184db381277dfb2763c5df5e1032a9d7f2c5774a7f94a74"
+    },
+    {
+      "phase": "atrial-systole",
+      "visual": "ecg",
+      "symbol": "atrsyselectro",
+      "frameIndex": 1,
+      "rect": [
+        1434,
+        282,
+        237,
+        100
+      ],
+      "removedPixels": 11829,
+      "file": "ecg/atrial-systole.png",
+      "sha256": "7b99d83c0b13b9d8bcd2375aa639707cebb1289ada77bc47729dc3c7365d95ae"
+    },
+    {
+      "phase": "atrial-systole",
+      "visual": "sounds",
+      "symbol": "atrsyssound1",
+      "frameIndex": 2,
+      "rect": [
+        1673,
+        282,
+        237,
+        100
+      ],
+      "removedPixels": 12179,
+      "file": "sounds/atrial-systole.png",
+      "sha256": "a069eaebe505c1b7c11175e43b34b99187f64626f2807d5b24e67a6c3a395bce"
+    },
+    {
+      "phase": "isovolumetric-contraction",
+      "visual": "heart",
+      "symbol": "isocontrcthrt1",
+      "frameIndex": 4,
+      "rect": [
+        478,
+        0,
+        237,
+        280
+      ],
+      "removedPixels": 25616,
+      "file": "heart/isovolumetric-contraction.png",
+      "sha256": "4696828c1404541730d1daa6a4242f2012a4534cc7a82f25ab9b99f126c509a0"
+    },
+    {
+      "phase": "isovolumetric-contraction",
+      "visual": "wiggers",
+      "symbol": "isovolcontrctwig1",
+      "frameIndex": 6,
+      "rect": [
+        717,
+        0,
+        237,
+        280
+      ],
+      "removedPixels": 17619,
+      "file": "wiggers/isovolumetric-contraction.png",
+      "sha256": "b03bc7ea9076cf7857c8c9474a896496f6d389d1805bb53b7bd21d592afc729c"
+    },
+    {
+      "phase": "isovolumetric-contraction",
+      "visual": "ecg",
+      "symbol": "isovolcelectro1",
+      "frameIndex": 5,
+      "rect": [
+        1434,
+        384,
+        237,
+        100
+      ],
+      "removedPixels": 11819,
+      "file": "ecg/isovolumetric-contraction.png",
+      "sha256": "fc85fdfa7c0f4f6acd73f99a6b3ab02df722ac9d64dc429c583bb168b25a3125"
+    },
+    {
+      "phase": "isovolumetric-contraction",
+      "visual": "sounds",
+      "symbol": "isovolsound1",
+      "frameIndex": 11,
+      "rect": [
+        1673,
+        486,
+        237,
+        100
+      ],
+      "removedPixels": 12181,
+      "file": "sounds/isovolumetric-contraction.png",
+      "sha256": "7e45ef91ee1f304b7d46637588a3ae7406f52dd1c6b4e0547d2d6e51373bd1ba"
+    },
+    {
+      "phase": "rapid-ejection",
+      "visual": "heart",
+      "symbol": "rapejecheart1",
+      "frameIndex": 13,
+      "rect": [
+        1434,
+        0,
+        237,
+        280
+      ],
+      "removedPixels": 25245,
+      "file": "heart/rapid-ejection.png",
+      "sha256": "d45ec429e2e083dacd81a5357e09a879d1da7653705dccf82308f66969565435"
+    },
+    {
+      "phase": "rapid-ejection",
+      "visual": "wiggers",
+      "symbol": "rapejecwig1",
+      "frameIndex": 14,
+      "rect": [
+        1673,
+        0,
+        237,
+        280
+      ],
+      "removedPixels": 17729,
+      "file": "wiggers/rapid-ejection.png",
+      "sha256": "4ee528a31ae445eb85aaacb305efe6d208fe40e95ff03c86020f9bb301875729"
+    },
+    {
+      "phase": "rapid-ejection",
+      "visual": "ecg",
+      "symbol": "rapejecelectro1",
+      "frameIndex": 12,
+      "rect": [
+        0,
+        564,
+        237,
+        100
+      ],
+      "removedPixels": 11824,
+      "file": "ecg/rapid-ejection.png",
+      "sha256": "4c2f6a87b9260c5f48d9bfe8bd2d887d5de8dd919123b35881ee7e92708ec0ce"
+    },
+    {
+      "phase": "rapid-ejection",
+      "visual": "sounds",
+      "symbol": "rapidejectsound1",
+      "frameIndex": 15,
+      "rect": [
+        239,
+        564,
+        237,
+        100
+      ],
+      "removedPixels": 12178,
+      "file": "sounds/rapid-ejection.png",
+      "sha256": "6aca808cac81eebc3415d7b826ffd382b119f6763c4a87927b1ac14aee144009"
+    },
+    {
+      "phase": "reduced-ejection",
+      "visual": "heart",
+      "symbol": "redejectheart1",
+      "frameIndex": 21,
+      "rect": [
+        478,
+        282,
+        237,
+        280
+      ],
+      "removedPixels": 25761,
+      "file": "heart/reduced-ejection.png",
+      "sha256": "846015a3f9cb352dbe127c89ed46853427d646ab3fcc7380ebb9220d9bf86707"
+    },
+    {
+      "phase": "reduced-ejection",
+      "visual": "wiggers",
+      "symbol": "redejectwig1",
+      "frameIndex": 23,
+      "rect": [
+        717,
+        282,
+        237,
+        280
+      ],
+      "removedPixels": 17395,
+      "file": "wiggers/reduced-ejection.png",
+      "sha256": "8b18c6da520c3000058d89491f567d8696ed112b98241cc2efd69c7c1cd39eee"
+    },
+    {
+      "phase": "reduced-ejection",
+      "visual": "ecg",
+      "symbol": "redejectelectro1",
+      "frameIndex": 20,
+      "rect": [
+        956,
+        564,
+        237,
+        100
+      ],
+      "removedPixels": 11838,
+      "file": "ecg/reduced-ejection.png",
+      "sha256": "46e48ec0edbfb73e5aa0f1773140d70aa1e49bb7da9b5b54ceeebf06a038314d"
+    },
+    {
+      "phase": "reduced-ejection",
+      "visual": "sounds",
+      "symbol": "redejectsound1",
+      "frameIndex": 22,
+      "rect": [
+        1195,
+        564,
+        237,
+        100
+      ],
+      "removedPixels": 12178,
+      "file": "sounds/reduced-ejection.png",
+      "sha256": "e63ad6fc0c41589529f4990f167bfcbaa4bcdcb6dfd9bc1b03d83619ff2b7d96"
+    },
+    {
+      "phase": "isovolumetric-relaxation",
+      "visual": "heart",
+      "symbol": "isovolrelheart1",
+      "frameIndex": 8,
+      "rect": [
+        956,
+        0,
+        237,
+        280
+      ],
+      "removedPixels": 25971,
+      "file": "heart/isovolumetric-relaxation.png",
+      "sha256": "d69bb2c60f94061473cd5110e6cc3b0f4f5b77fe461bbef7a8c146c7cb1ceda5"
+    },
+    {
+      "phase": "isovolumetric-relaxation",
+      "visual": "wiggers",
+      "symbol": "isovolrelwig1",
+      "frameIndex": 10,
+      "rect": [
+        1195,
+        0,
+        237,
+        280
+      ],
+      "removedPixels": 11573,
+      "file": "wiggers/isovolumetric-relaxation.png",
+      "sha256": "51ef375e8ecf8bd635b47a8ce091a3351400b4c7cfb1059fe307157fb860279b"
+    },
+    {
+      "phase": "isovolumetric-relaxation",
+      "visual": "ecg",
+      "symbol": "isovolrelelectro1",
+      "frameIndex": 7,
+      "rect": [
+        1673,
+        384,
+        237,
+        100
+      ],
+      "removedPixels": 11818,
+      "file": "ecg/isovolumetric-relaxation.png",
+      "sha256": "55800d34969987fc78d4ba692bf6d366a1e81311d80d6b1ea68ec00bbd62b6bd"
+    },
+    {
+      "phase": "isovolumetric-relaxation",
+      "visual": "sounds",
+      "symbol": "isovolrelsound1",
+      "frameIndex": 9,
+      "rect": [
+        1434,
+        486,
+        237,
+        100
+      ],
+      "removedPixels": 12178,
+      "file": "sounds/isovolumetric-relaxation.png",
+      "sha256": "d55159cd8a08891eb1cd3f2e4f8820275d94d1830cb6a5d03c3e8a6001382f60"
+    },
+    {
+      "phase": "rapid-ventricular-filling",
+      "visual": "heart",
+      "symbol": "rapventfillheart1",
+      "frameIndex": 17,
+      "rect": [
+        0,
+        282,
+        237,
+        280
+      ],
+      "removedPixels": 25759,
+      "file": "heart/rapid-ventricular-filling.png",
+      "sha256": "3c05c35d51d4c0eb84273ca063714b2c3de3c1c2869e302d946394dca8a6978c"
+    },
+    {
+      "phase": "rapid-ventricular-filling",
+      "visual": "wiggers",
+      "symbol": "rapventfillwig1",
+      "frameIndex": 19,
+      "rect": [
+        239,
+        282,
+        237,
+        280
+      ],
+      "removedPixels": 11573,
+      "file": "wiggers/rapid-ventricular-filling.png",
+      "sha256": "47e09fefb8c1517922cf1522a633ead4adaa6a10a55995e6cb9eda89a16de73c"
+    },
+    {
+      "phase": "rapid-ventricular-filling",
+      "visual": "ecg",
+      "symbol": "rapventfillelectro1",
+      "frameIndex": 16,
+      "rect": [
+        478,
+        564,
+        237,
+        100
+      ],
+      "removedPixels": 11868,
+      "file": "ecg/rapid-ventricular-filling.png",
+      "sha256": "40a82f808a479d50e256f9a8d170902b35e9b104a2dfc91bca001635acbaaca5"
+    },
+    {
+      "phase": "rapid-ventricular-filling",
+      "visual": "sounds",
+      "symbol": "rapventfillsound1",
+      "frameIndex": 18,
+      "rect": [
+        717,
+        564,
+        237,
+        100
+      ],
+      "removedPixels": 12177,
+      "file": "sounds/rapid-ventricular-filling.png",
+      "sha256": "627eff9fa8e8e3612c0cbe6b150023961ae7d1f21982a615958b9bca07d899be"
+    },
+    {
+      "phase": "reduced-ventricular-filling",
+      "visual": "heart",
+      "symbol": "redventfillheart1",
+      "frameIndex": 25,
+      "rect": [
+        956,
+        282,
+        237,
+        280
+      ],
+      "removedPixels": 25278,
+      "file": "heart/reduced-ventricular-filling.png",
+      "sha256": "275c965ca9e04fffb7d93376a8334bbdd01660e9a6de50832754fec4b590bc98"
+    },
+    {
+      "phase": "reduced-ventricular-filling",
+      "visual": "wiggers",
+      "symbol": "redventfillwig1",
+      "frameIndex": 27,
+      "rect": [
+        1195,
+        282,
+        237,
+        280
+      ],
+      "removedPixels": 11573,
+      "file": "wiggers/reduced-ventricular-filling.png",
+      "sha256": "7401a91f67f32b730eb9f8b3de522b382a3b993cdf56190dc782a82d7d6cfeef"
+    },
+    {
+      "phase": "reduced-ventricular-filling",
+      "visual": "ecg",
+      "symbol": "redventfillelectro1",
+      "frameIndex": 24,
+      "rect": [
+        1434,
+        588,
+        237,
+        100
+      ],
+      "removedPixels": 11864,
+      "file": "ecg/reduced-ventricular-filling.png",
+      "sha256": "e153b29823c40ca42b31adca1f976b7592b7f16025ac9be8366fb3f6b357e5cd"
+    },
+    {
+      "phase": "reduced-ventricular-filling",
+      "visual": "sounds",
+      "symbol": "redventfillsound1",
+      "frameIndex": 26,
+      "rect": [
+        1673,
+        588,
+        237,
+        100
+      ],
+      "removedPixels": 12176,
+      "file": "sounds/reduced-ventricular-filling.png",
+      "sha256": "a6a4f4ef081bf90b62243a694d99071d3adcf14cc0835129d498ec1a8ca8b699"
+    }
+  ]
+}

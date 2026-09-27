@@ -1,4 +1,14 @@
+import type { ComponentProps } from 'astro/types';
+import type MedNerdsIcon from '../components/MedNerdsIcon.astro';
+import { sidebarIcons } from './sidebar-icons';
+
 export type ProductStatus = 'active' | 'building' | 'planned';
+
+export interface ProductNavigationItem {
+  label: string;
+  href: string;
+  icon: ComponentProps<typeof MedNerdsIcon>['name'];
+}
 
 export const productStatusLabels: Record<ProductStatus, string> = {
   active: 'Aktiv',
@@ -15,6 +25,15 @@ export const productLinks = [
     description:
       'Strukturiertes medizinisches Wissen mit klaren Kapiteln, Quellen und Querverweisen.',
     status: 'building',
+    children: [
+      { label: 'Übersicht', href: '/meddocs/', icon: sidebarIcons.Übersicht },
+      { label: 'Anästhesie', href: '/meddocs/anaesthesie/', icon: sidebarIcons.Anästhesie },
+      { label: 'EKG', href: '/meddocs/ekg/', icon: sidebarIcons.EKG },
+      { label: 'Echokardiographie', href: '/meddocs/echokardiographie/', icon: sidebarIcons.Echokardiographie },
+      { label: 'Notfallmedizin', href: '/meddocs/notfallmedizin/', icon: sidebarIcons.Notfallmedizin },
+      { label: 'Ultraschall', href: '/meddocs/sonographie/', icon: sidebarIcons.Ultraschall },
+      { label: 'Diverses', href: '/meddocs/diverses/', icon: sidebarIcons.Diverses },
+    ],
   },
   {
     label: 'MedBlog',
@@ -24,6 +43,7 @@ export const productLinks = [
     description:
       'Neuigkeiten, Einordnungen und Beiträge aus der MedNerds-Community.',
     status: 'planned',
+    children: [],
   },
   {
     label: 'MedLearn',
@@ -33,6 +53,7 @@ export const productLinks = [
     description:
       'Lernpfade, Quizfragen und Wiederholungen für nachhaltiges Lernen.',
     status: 'planned',
+    children: [],
   },
   {
     label: 'MedCases',
@@ -42,6 +63,7 @@ export const productLinks = [
     description:
       'Realistische Fallbeispiele, die Wissen mit klinischen Entscheidungen verbinden.',
     status: 'planned',
+    children: [],
   },
   {
     label: 'MedTools',
@@ -51,6 +73,10 @@ export const productLinks = [
     description:
       'Praktische medizinische Werkzeuge und interaktive Hilfsmittel.',
     status: 'building',
+    children: [
+      { label: 'EKG-Lagetyptrainer', href: '/medtools/ekg/lagetyptrainer/', icon: 'tabler:activity-heartbeat' },
+      { label: 'Interaktiver Herzzyklus', href: '/medtools/kardiologie/herzzyklus/', icon: 'tabler:heart' },
+    ],
   },
   {
     label: 'MedNerds Basel',
@@ -60,6 +86,7 @@ export const productLinks = [
     description:
       'Die Community und das organisatorische Zuhause der offenen Plattform.',
     status: 'active',
+    children: [],
   },
 ] as const satisfies readonly {
   label: string;
@@ -68,8 +95,9 @@ export const productLinks = [
   icon: string;
   description: string;
   status: ProductStatus;
+  children: readonly ProductNavigationItem[];
 }[];
 
 export function getActiveProduct(pathname: string) {
-  return productLinks.find(({ href }) => pathname.startsWith(href));
+  return productLinks.find(({ href }) => pathname === href.slice(0, -1) || pathname.startsWith(href));
 }

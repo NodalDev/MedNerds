@@ -33,6 +33,7 @@ export default defineConfig({
       customCss: ['./src/styles/global.css'],
       components: {
         Header: './src/components/MedNerdsHeader.astro',
+        ThemeSelect: './src/components/MedNerdsThemeSelect.astro',
         MobileMenuFooter: './src/components/MedNerdsMobileMenuFooter.astro',
         SiteTitle: './src/components/MedNerdsSiteTitle.astro',
         SocialIcons: './src/components/MedNerdsSocialIcons.astro',
@@ -50,6 +51,14 @@ export default defineConfig({
         {
           label: 'Übersicht',
           link: '/meddocs/',
+        },
+        {
+          label: 'Anästhesie',
+          collapsed: true,
+          items: [
+            { label: 'Übersicht', link: '/meddocs/anaesthesie/' },
+            { autogenerate: { directory: 'meddocs/anaesthesie' } },
+          ],
         },
         {
           label: 'EKG',
@@ -81,19 +90,19 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Sonographie',
-          collapsed: true,
-          items: [
-            { label: 'Übersicht', link: '/meddocs/sonographie/' },
-            { autogenerate: { directory: 'meddocs/sonographie' } },
-          ],
-        },
-        {
           label: 'Notfallmedizin',
           collapsed: true,
           items: [
             { label: 'Übersicht', link: '/meddocs/notfallmedizin/' },
             { autogenerate: { directory: 'meddocs/notfallmedizin' } },
+          ],
+        },
+        {
+          label: 'Ultraschall',
+          collapsed: true,
+          items: [
+            { label: 'Übersicht', link: '/meddocs/sonographie/' },
+            { autogenerate: { directory: 'meddocs/sonographie' } },
           ],
         },
         {
@@ -107,7 +116,7 @@ export default defineConfig({
       ],
     }),
     react(),
-    icon({ include: { tabler: ['*'], healthicons: ['*'] } }),
+    icon({ include: { tabler: ['*'], healthicons: ['*'], 'simple-icons': ['*'] } }),
   ],
   vite: {
     plugins: [tailwindcss()],

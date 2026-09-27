@@ -120,7 +120,6 @@
   
   --mn-shell-max-width: 84rem;
   --mn-shell-padding-x: clamp(1.5rem, 4vw, 4rem);
-  --mn-page-shell-max: 120rem;
   --mn-left-rail-width: 19rem;
   --mn-left-rail-collapsed-width: 4.5rem;
   --mn-right-rail-width: 19rem;
@@ -510,8 +509,9 @@
 
   /*
    * Ebene 1:
-   * EKG, Echokardiographie, Sonographie, ...
+   * Übersicht und die Hauptgruppen EKG, Echokardiographie, Sonographie, ...
    */
+  .sidebar-content .top-level > li > a > span:first-child,
   .sidebar-content .top-level > li > details > summary .large {
     font-size: 0.85rem;
     font-weight: 600;
@@ -519,7 +519,9 @@
 
     letter-spacing: 0.045em;
     text-transform: uppercase;
+  }
 
+  .sidebar-content .top-level > li > details > summary .large {
     color: var(--sl-color-gray-1);
   }
 

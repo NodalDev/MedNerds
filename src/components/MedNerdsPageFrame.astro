@@ -224,11 +224,12 @@ const activeProduct = getActiveProduct(Astro.url.pathname);
 
     @media (min-width: 50rem) {
       /*
-       * Mobilen Menü-Abstand wieder entfernen.
+       * Desktop-Zeilen nutzen die volle Headerbreite. Ihre Inhaltsabstände
+       * und den Separator zwischen sichtbaren Zeilen verwaltet der Header.
        */
       .page--with-navigation-drawer .header {
-        padding-inline-end:
-          var(--sl-nav-pad-x);
+        padding-inline: 0;
+        border-bottom: 0;
       }
 
       /* ----------------------------------------
@@ -249,10 +250,9 @@ const activeProduct = getActiveProduct(Astro.url.pathname);
 
         align-items: stretch;
 
+        /* Die linke Rail gehört an den Viewportrand. Die Inhaltsbreite
+         * begrenzen weiterhin die vorhandenen Artikel-Container. */
         width: 100%;
-        max-width: var(--mn-page-shell-max);
-
-        margin-inline: auto;
 
         min-width: 0;
 
