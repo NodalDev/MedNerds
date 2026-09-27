@@ -1,0 +1,37 @@
+---
+import { articleDateTime, formatArticleDate, type ArticleMetadata } from '../lib/meddocs/article-metadata';
+
+interface Props {
+  metadata: ArticleMetadata;
+}
+
+const { metadata } = Astro.props;
+---
+
+<ul class="article-meta" role="list">
+  <li>{metadata.authors.map(({ name }) => name).join(', ')}</li>
+  <li>Veröffentlicht <time datetime={articleDateTime(metadata.published)}>{formatArticleDate(metadata.published)}</time></li>
+  {metadata.updated && (
+    <li>Aktualisiert <time datetime={articleDateTime(metadata.updated)}>{formatArticleDate(metadata.updated)}</time></li>
+  )}
+</ul>
+
+<style>
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem 0.75rem;
+    margin: 0.875rem 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .article-meta li + li::before {
+    content: '·';
+    margin-inline-end: 0.75rem;
+  }
+</style>

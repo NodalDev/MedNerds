@@ -1,0 +1,8 @@
+---
+import MedDocsArticleInfo from './MedDocsArticleInfo.astro';
+import { getMedDocsArticleMetadata } from '../lib/meddocs/article-metadata';
+
+const metadata = getMedDocsArticleMetadata(Astro.locals.starlightRoute.entry);
+---
+
+{metadata && <MedDocsArticleInfo metadata={metadata} />}

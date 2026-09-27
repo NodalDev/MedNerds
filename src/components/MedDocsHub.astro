@@ -40,7 +40,7 @@ const topics = [
 <div class="meddocs-hub not-content">
   <div class="hub-intro">
     <p class="hub-lead">
-      Strukturiertes medizinisches Wissen zum Lernen, Verstehen und schnellen Nachschlagen.
+      Strukturiertes medizinisches Wissen zum Lernen und Nachschlagen.
     </p>
     <p class="hub-description">
       Das offene medizinische Nachschlagewerk von MedNerds verbindet Grundlagen,
@@ -48,22 +48,12 @@ const topics = [
     </p>
   </div>
 
-  <section class="hub-principles" aria-labelledby="hub-principles-title">
-    <h2 id="hub-principles-title">Wofür MedDocs da ist</h2>
-    <ul class="principle-list" role="list">
-      {principles.map(({ label, icon }) => (
-        <li>
-          <MedNerdsIcon name={icon} size="md" />
-          <span>{label}</span>
-        </li>
-      ))}
-    </ul>
-  </section>
+  <br>
 
   <section class="hub-topics" aria-labelledby="hub-topics-title">
     <div class="hub-section-heading">
       <h2 id="hub-topics-title">Fachgebiete</h2>
-      <p>Diese vier Bereiche stehen aktuell im Fokus.</p>
+      <p>Diese Bereiche stehen aktuell im Fokus:</p>
     </div>
     <ul class="topic-grid" role="list">
       {topics.map(({ title, href, description }, index) => (
