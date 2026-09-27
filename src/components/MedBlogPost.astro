@@ -1,0 +1,49 @@
+---
+import { Image } from 'astro:assets';
+import MedDocsArticleMeta from './MedDocsArticleMeta.astro';
+import { medBlogTypes, medBlogAreas } from '../data/medblog';
+import { getMedBlogMetadata, type MedBlogPost } from '../lib/medblog/posts';
+
+interface Props { post: MedBlogPost; }
+const { post } = Astro.props;
+const { data } = post;
+const type = medBlogTypes[data.type];
+---
+
+<div class="blog-post-header not-content">
+  <nav aria-label="Breadcrumb">
+    <a href="/medblog/">MedBlog</a><span aria-hidden="true"> / </span>
+    <a href={`/medblog/${type.segment}/`}>{type.plural}</a>
+  </nav>
+  <p class="post-classification">{type.label} · {data.areas.map((area) => medBlogAreas[area].label).join(' / ')}</p>
+  <p class="post-description">{data.description}</p>
+  <MedDocsArticleMeta metadata={getMedBlogMetadata(post)} />
+  {data.draft && <p class="draft-notice">Entwurf – dieser Beitrag ist nur lokal sichtbar.</p>}
+  {data.tags.length > 0 && <ul class="post-tags" role="list" aria-label="Themen">{data.tags.map((tag) => <li>{tag}</li>)}</ul>}
+  {data.image && <Image class="post-image" data-fit={data.image.fit} src={data.image.src} alt={data.image.alt} widths={[480, 960, 1440]} sizes="(min-width: 72rem) 960px, 100vw" loading="eager" />}
+</div>
+
+<div class="blog-post-body"><slot /></div>
+
+<div class="blog-post-footer not-content">
+  {data.cta && <a class="post-cta" href={data.cta.href}>{data.cta.label} <span aria-hidden="true">→</span></a>}
+  <a href={`/medblog/${type.segment}/`}>Weitere {type.plural}</a>
+</div>
+
+<style>
+  .blog-post-header, .blog-post-body, .blog-post-footer { max-width: 70ch; margin-inline: auto; }
+  .blog-post-header { margin-bottom: 2rem; }
+  nav { margin-bottom: 1rem; color: var(--sl-color-gray-3); font-size: var(--sl-text-sm); }
+  a { color: var(--sl-color-accent); text-underline-offset: 0.2em; }
+  a:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; }
+  p, ul { margin: 0; }
+  .post-classification { color: var(--sl-color-accent); font-size: var(--sl-text-xs); font-weight: 600; }
+  .post-description { margin-top: 0.75rem; color: var(--sl-color-gray-2); font-size: 1.125rem; line-height: 1.6; }
+  .draft-notice { margin-top: 1rem; color: var(--sl-color-gray-3); font-size: var(--sl-text-sm); }
+  .post-tags { display: flex; flex-wrap: wrap; gap: 0.5rem 0.875rem; padding: 0; margin-top: 1rem; color: var(--sl-color-gray-3); font-size: var(--sl-text-xs); list-style: none; }
+  .post-tags li::before { content: '#'; }
+  .post-image { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; margin-top: 1.5rem; border-radius: 0.75rem; }
+  .post-image[data-fit='contain'] { object-fit: contain; padding: 1.5rem; background: var(--mn-surface); }
+  .blog-post-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.5rem; margin-top: 2.5rem; border-top: 1px solid var(--sl-color-hairline); font-size: var(--sl-text-sm); }
+  .post-cta { padding: 0.75rem 1rem; border: 1px solid var(--sl-color-accent); border-radius: 0.5rem; background: var(--sl-color-accent-low); font-weight: 600; text-decoration: none; }
+</style>

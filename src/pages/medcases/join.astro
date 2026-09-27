@@ -1,0 +1,17 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import OsceJoin from '../../components/medcases/OsceJoin';
+import { publicCases } from '../../data/medcases/cases';
+import '../../styles/medcases.css';
+---
+
+<StarlightPage hasSidebar={false} frontmatter={{
+  title: 'OSCE beitreten',
+  description: 'Mit einem sechsstelligen Fallcode zu einer MedCases-OSCE-Simulation beitreten.',
+  pageLayout: 'hub',
+  tableOfContents: false,
+  pagefind: false,
+  head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' } }],
+}}>
+  <div class="osce"><p class="osce-intro">Gib den Fallcode vom Prüfergerät ein oder scanne den QR-Code.</p><OsceJoin cases={publicCases} client:load /></div>
+</StarlightPage>

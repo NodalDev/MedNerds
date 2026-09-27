@@ -1,0 +1,26 @@
+---
+import { render } from 'astro:content';
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import MedBlogPost from '../../../components/MedBlogPost.astro';
+import { getMedBlogPosts, type MedBlogPost as Post } from '../../../lib/medblog/posts';
+import { medBlogTypes } from '../../../data/medblog';
+
+export async function getStaticPaths() {
+  return (await getMedBlogPosts()).map((post) => ({
+    params: { type: medBlogTypes[post.data.type].segment, slug: post.id },
+    props: { post },
+  }));
+}
+interface Props { post: Post; }
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<StarlightPage hasSidebar={false} frontmatter={{
+  title: post.data.title,
+  description: post.data.description,
+  pageLayout: 'hub',
+  tableOfContents: false,
+}}>
+  <MedBlogPost post={post}><Content /></MedBlogPost>
+</StarlightPage>

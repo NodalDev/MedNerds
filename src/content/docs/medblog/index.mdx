@@ -1,17 +1,11 @@
 ---
 title: MedBlog
-description: Neuigkeiten und Beiträge aus der MedNerds-Community.
+description: Neuigkeiten, Hintergründe und Updates aus MedNerds.
 template: splash
-hero:
-  tagline: Medizinische Themen einordnen, diskutieren und gemeinsam weiterdenken.
-  actions:
-    - text: Zu MedDocs
-      link: /meddocs/
-      icon: right-arrow
+pageLayout: hub
+tableOfContents: false
 ---
 
-## Aus der Community
+import MedBlogHub from '../../../components/MedBlogHub.astro';
 
-Im MedBlog werden später Projektneuigkeiten, medizinische Einordnungen und
-Beiträge aus der Community veröffentlicht. Kommentare werden in einer späteren
-Etappe über MedNerds-Accounts und Supabase ergänzt.
+<MedBlogHub />

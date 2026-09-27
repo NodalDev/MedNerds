@@ -4,8 +4,14 @@ import { docsSchema, i18nSchema } from '@astrojs/starlight/schema';
 import { z } from 'astro/zod';
 import { pageLayouts } from './data/page-layouts';
 import { articleMetadataSchema } from './lib/meddocs/article-metadata-schema';
+import { glob } from 'astro/loaders';
+import { medBlogSchema } from './lib/medblog/schema';
 
 export const collections = {
+  medblog: defineCollection({
+    loader: glob({ pattern: '*.{md,mdx}', base: './src/content/medblog' }),
+    schema: medBlogSchema,
+  }),
 	docs: defineCollection({
 		loader: docsLoader(),
 		schema: docsSchema({

@@ -2,7 +2,7 @@
 import { articleDateTime, formatArticleDate, type ArticleMetadata } from '../lib/meddocs/article-metadata';
 
 interface Props {
-  metadata: ArticleMetadata;
+  metadata: Pick<ArticleMetadata, 'authors' | 'published' | 'updated'>;
 }
 
 const { metadata } = Astro.props;

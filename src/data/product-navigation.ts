@@ -61,9 +61,12 @@ export const productLinks = [
     product: 'medcases',
     icon: 'healthicons:clinical-f-outline',
     description:
-      'Realistische Fallbeispiele, die Wissen mit klinischen Entscheidungen verbinden.',
-    status: 'planned',
-    children: [],
+      'OSCE-Prüfungssituationen gemeinsam mit Prüfling, Schauspielpatient und Prüfer trainieren.',
+    status: 'building',
+    children: [
+      { label: 'OSCE-Fälle', href: '/medcases/', icon: 'healthicons:clinical-f-outline' },
+      { label: 'Mit Fallcode beitreten', href: '/medcases/join/', icon: 'tabler:qrcode' },
+    ],
   },
   {
     label: 'MedTools',

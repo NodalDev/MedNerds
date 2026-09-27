@@ -1,0 +1,20 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import MedBlogHub from '../../../components/MedBlogHub.astro';
+import { medBlogTypes, medBlogTypeIds, type MedBlogType } from '../../../data/medblog';
+
+export function getStaticPaths() {
+  return medBlogTypeIds.map((type) => ({ params: { type: medBlogTypes[type].segment }, props: { type } }));
+}
+interface Props { type: MedBlogType; }
+const { type } = Astro.props;
+---
+
+<StarlightPage hasSidebar={false} frontmatter={{
+  title: medBlogTypes[type].plural,
+  description: `${medBlogTypes[type].plural} aus MedNerds.`,
+  pageLayout: 'hub',
+  tableOfContents: false,
+}}>
+  <MedBlogHub type={type} />
+</StarlightPage>
