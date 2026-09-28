@@ -91,23 +91,32 @@ const participationLinks = [
           />
         </span>
 
-        <p>
-          Freies medizinisches Wissen – verständlich,
-          fundiert und offen zugänglich.
-        </p>
-
-        <p>
+        <div class="mn-footer-license">
+          <p>
+            Eigene Texte und Bilder stehen, sofern nicht anders angegeben, unter <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de">CC BY-NC-SA 4.0</a>.
+          </p>
           <img
             src={licenseLogo}
-            width="120"
-            height="42"
+            width="88"
+            height="31"
             alt="Creative Commons BY-NC-SA 4.0"
           />
-        </p>
+        </div>
 
-        <p>
-          Eigene Texte und Bilder stehen, sofern nicht anders angegeben, unter <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de">CC BY-NC-SA 4.0</a>.
-        </p>
+        <a class="mn-footer-netlify" href="https://www.netlify.com">
+          <img
+            class="netlify-badge-dark"
+            src="https://www.netlify.com/assets/badges/netlify-badge-color-accent.svg"
+            alt="Deploys by Netlify"
+            loading="lazy"
+          />
+          <img
+            class="netlify-badge-light"
+            src="https://www.netlify.com/assets/badges/netlify-badge-color-bg.svg"
+            alt="Deploys by Netlify"
+            loading="lazy"
+          />
+        </a>
       </div>
 
       <nav
@@ -404,15 +413,55 @@ const participationLinks = [
     height: auto;
   }
 
-  .mn-footer-brand p {
-    max-width: 26rem;
+  .mn-footer-license {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
 
-    margin: 1rem 0 0;
-
+  .mn-footer-license p {
+    min-width: 0;
+    margin: 0;
     color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+  }
 
-    font-size: var(--sl-text-base);
-    line-height: 1.7;
+  .mn-footer-license img {
+    display: block;
+    width: 5.5rem;
+    height: auto;
+  }
+
+  .mn-footer-netlify {
+    display: inline-block;
+    max-width: 100%;
+    margin-top: 2rem;
+    line-height: 0;
+  }
+
+  .mn-footer-netlify img {
+    display: block;
+    width: 7.25rem;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .mn-footer-netlify .netlify-badge-light,
+  :global(:root[data-theme='light']) .mn-footer-netlify .netlify-badge-dark {
+    display: none;
+  }
+
+  :global(:root[data-theme='light']) .mn-footer-netlify .netlify-badge-light {
+    display: block;
+  }
+
+  .mn-footer-netlify:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 0.2rem;
+    border-radius: 0.2rem;
   }
 
   /* ----------------------------------------

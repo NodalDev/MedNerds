@@ -20,13 +20,16 @@ MedNerds Basel ist ein grundsätzlich kostenloses medizinisches Informations- un
 
 Verantwortlich für die Bearbeitung von Personendaten ist:
 
-**MedNerds Basel**  
+**Verein MedNerds Basel**
+
 [Strasse und Hausnummer]  
 [PLZ Basel]  
 Schweiz
 
 **E-Mail:** privacy@mednerds.ch  
 **Website:** mednerds.ch
+
+Der Verein MedNerds Basel trägt und betreibt diese Website und ist für die hier beschriebene Bearbeitung von Personendaten verantwortlich.
 
 ### Datenschutzkontakt
 
@@ -74,18 +77,25 @@ Dabei können insbesondere IP-Adresse, Zeitpunkt des Zugriffs, angeforderte Seit
 
 Diese Daten werden benötigt, um die Website auszuliefern, technische Fehler zu erkennen, Angriffe und Missbrauch abzuwehren und die Sicherheit und Stabilität unseres Angebots zu gewährleisten.
 
-Serverprotokolle werden grundsätzlich für **30 Tage** gespeichert und anschliessend gelöscht oder anonymisiert, sofern keine längere Aufbewahrung zur Untersuchung eines Sicherheitsvorfalls oder aufgrund einer gesetzlichen Verpflichtung erforderlich ist.
+Die Aufbewahrungsdauer technischer Zugriffs- und Sicherheitsprotokolle hängt vom eingesetzten Dienst und Tarif sowie von den jeweiligen Einstellungen ab. Eine feste Frist für die von Netlify geführten Protokolle wird nach Prüfung der konkreten Konfiguration ergänzt. Daten zu Sicherheitsvorfällen können bei Bedarf länger aufbewahrt werden.
 
 ### Hosting
 
-Unsere Website wird gehostet durch:
+Unsere Website wird über **Netlify** gehostet und ausgeliefert. Netlify verarbeitet dafür insbesondere technische Zugriffsdaten. Die Auslieferung kann über ein internationales Netzwerk erfolgen; eine Beschränkung sämtlicher Zugriffsdaten auf die Schweiz oder die EU besteht damit nicht.
 
-**[Hostinganbieter]**  
-[Anschrift / Land]
+### Domain und DNS
 
-Die Server befinden sich in **[Schweiz / EU / konkrete Länder]**.
+**Infomaniak** verwaltet unsere Domain und die zugehörigen DNS-Einträge. Bei DNS-Anfragen können technisch notwendige Verbindungsdaten verarbeitet werden.
 
-Der Hostinganbieter bearbeitet Daten in unserem Auftrag, soweit dies für die Bereitstellung und Absicherung der Website erforderlich ist.
+### Medienspeicherung
+
+Eigene Bilder, Videos und weitere Medien speichern wir in **Cloudflare R2**. Für den verwendeten Speicherbereich ist die **EU-Jurisdiktion** aktiviert; diese begrenzt den Speicherort der dort abgelegten Objekte auf die EU. Beim Abruf von Medien können ausserdem technische Verbindungsdaten verarbeitet werden. Die EU-Jurisdiktion bedeutet nicht, dass sämtliche Zugriffs- und Metadaten ausschliesslich in der EU bearbeitet werden.
+
+Medien bleiben gespeichert, solange sie für die Veröffentlichung benötigt werden oder bis eine dafür konfigurierte Lifecycle-Regel greift. Nach Ablauf einer solchen Regel entfernt R2 die betroffenen Objekte üblicherweise innerhalb von 24 Stunden; bei bestehenden Objekten kann es länger dauern. Zwischengespeicherte Kopien können bis zum Ablauf ihrer Cache-Frist verfügbar bleiben. Eine feste Aufbewahrungsfrist für separate Medien-Backups geben wir erst an, wenn deren Einrichtung und Löschverhalten geprüft sind.
+
+### Backend und Datenbank
+
+Für Funktionen mit Backend- oder Datenbankverarbeitung verwenden wir **Supabase** mit der Projektregion **Zürich, Schweiz**. Welche Personendaten dort gespeichert werden, hängt von der jeweils genutzten Funktion ab, etwa einem Benutzerkonto. Technische Betriebs-, Support- und Metadaten können auch ausserhalb der Projektregion bearbeitet werden. Die Aufbewahrung von Datenbanksicherungen richtet sich nach dem eingesetzten Supabase-Tarif und den aktivierten Backup-Funktionen.
 
 ## 6. Kontaktaufnahme
 
@@ -98,6 +108,8 @@ Wir verwenden diese Daten zur Bearbeitung deiner Anfrage und für damit unmittel
 Bitte sende uns über gewöhnliche Kontaktformulare oder unverschlüsselte E-Mails keine medizinischen Unterlagen oder anderen besonders sensiblen Personendaten, sofern dies nicht ausdrücklich erforderlich und dafür ein geeigneter Übermittlungsweg vorgesehen ist.
 
 Anfragen werden grundsätzlich so lange gespeichert, wie dies zur Bearbeitung erforderlich ist. Darüber hinaus können Daten aufbewahrt werden, wenn dies zur Dokumentation einer Kommunikation, zur Wahrung berechtigter Interessen oder aufgrund gesetzlicher Pflichten erforderlich ist.
+
+Unsere E-Mail-Kommunikation läuft über **Infomaniak**. Nachrichten im aktiven Postfach können je nach Zweck der Kommunikation mehrere Jahre aufbewahrt werden. Gelöschte Nachrichten können, sofern der gebuchte Infomaniak-Tarif diese Sicherung vorsieht und die Nachricht bereits in einer täglichen Sicherung enthalten war, noch **bis zu 30 Tage** aus einem Backup wiederherstellbar sein.
 
 ## 7. Benutzerkonten
 
@@ -123,7 +135,7 @@ Du kannst die Löschung deines Benutzerkontos über **Kontoeinstellungen** veran
 
 Nach der Löschung werden die mit dem Konto verbundenen Personendaten grundsätzlich gelöscht oder anonymisiert, soweit keine weitere Aufbewahrung aufgrund gesetzlicher Verpflichtungen, offener Rechtsansprüche, Sicherheitsvorfälle oder anderer zulässiger Gründe erforderlich ist.
 
-Daten in Sicherungskopien können noch für einen begrenzten Zeitraum von **[90 Tagen]** bestehen bleiben und werden im Rahmen des regulären Backup-Zyklus überschrieben.
+Daten in Sicherungskopien können noch bis zum Ablauf der für den eingesetzten Supabase-Tarif und die aktivierten Backup-Funktionen geltenden Fristen bestehen bleiben. Eine konkrete Frist wird nach Prüfung dieser Einstellungen ergänzt.
 
 ## 8. E-Learning und Lernfortschritt
 
@@ -201,23 +213,17 @@ Technische Serverstatistiken können ausschliesslich zur Gewährleistung von Sic
 
 ## 12. Externe Inhalte und eingebettete Dienste
 
-Auf unserer Website können Inhalte externer Anbieter eingebunden sein, beispielsweise Videos, Karten, Schriftarten, Codebeispiele oder andere Medien.
+Auf unserer Website können Inhalte externer Anbieter eingebunden sein, beispielsweise Karten, Schriftarten, Codebeispiele oder andere Medien. Eigene Medien stellen wir über den in Abschnitt 5 beschriebenen Cloudflare-R2-Speicher bereit.
 
 Bei einer direkten Einbettung kann bereits beim Laden der betreffenden Seite eine Verbindung zu Servern des externen Anbieters hergestellt werden. Dabei kann der Anbieter insbesondere deine IP-Adresse und technische Browserinformationen erhalten.
 
-Wir versuchen, externe Inhalte nach Möglichkeit datensparsam einzubinden.
-
-Folgende Dienste werden eingesetzt:
-
-**Youtube**
-
-**Vimeo**
+Wir versuchen, externe Inhalte nach Möglichkeit datensparsam einzubinden. Werden weitere externe Dienste direkt eingebettet, ergänzen wir die Angaben zu deren Datenbearbeitung vor ihrem Einsatz.
 
 ## 13. Spam-, Bot- und Missbrauchsschutz
 
-Zum Schutz von Registrierung, Login, Kommentaren und Formularen können wir **z. B. Cloudflare Turnstile / hCaptcha / anderee Systeme** verwenden.
+Für Registrierungs-, Login- und Formularfunktionen ist der Einsatz von **Cloudflare Turnstile** vorgesehen. Sobald Turnstile aktiviert ist, können zur Erkennung und Abwehr automatisierter oder missbräuchlicher Zugriffe insbesondere die IP-Adresse, technische Browser- und Verbindungsmerkmale sowie Informationen über die aufgerufene Website an Cloudflare übermittelt werden. Unser Zweck dieser Bearbeitung ist ausschliesslich der Schutz der betreffenden Funktionen vor Missbrauch.
 
-Dabei können Daten verarbeitet werden, um automatisierte Zugriffe, Spam und Missbrauch zu erkennen.
+Cloudflare kann die dabei gewonnenen technischen Signale nach Massgabe seiner [Turnstile-Datenschutzhinweise](https://www.cloudflare.com/turnstile-privacy-policy/) auch für eigene Zwecke zur Verbesserung der Missbrauchserkennung bearbeiten. Die Einbindung und die dazugehörigen Angaben werden bei Aktivierung anhand der tatsächlichen Konfiguration überprüft.
 
 ## 14. Newsletter und Benachrichtigungen
 
@@ -247,17 +253,18 @@ Soweit ein Dienstleister Personendaten in unserem Auftrag bearbeitet, treffen wi
 
 Unsere wesentlichen Dienstleister sind:
 
-**[Hosting – Anbieter – Land]**  
-**[E-Mail – Anbieter – Land]**  
-**[Backup – Anbieter – Land]**  
-**[Analytics – Anbieter – Land]**  
-**[Captcha/Security – Anbieter – Land]**
+- **Infomaniak (Schweiz):** Domain, DNS und E-Mail.
+- **Netlify:** Hosting und Auslieferung der Website.
+- **Cloudflare:** R2-Speicher für Medien mit EU-Jurisdiktion; Turnstile als vorgesehener Missbrauchsschutz.
+- **Supabase:** Backend und Datenbank in der Projektregion Zürich.
+
+Für Sicherungen der E-Mail- und Datenbankdaten gelten die jeweiligen Funktionen von Infomaniak und Supabase; ein zusätzlicher, eigenständiger Backup-Dienst wird hier nicht behauptet.
 
 ## 17. Bekanntgabe von Daten ins Ausland
 
-Personendaten können ausserhalb der Schweiz bearbeitet werden, wenn ein von uns eingesetzter Dienstleister dort seinen Sitz oder seine technische Infrastruktur hat.
+Personendaten können ausserhalb der Schweiz bearbeitet werden, wenn ein von uns eingesetzter Dienstleister dort seinen Sitz oder seine technische Infrastruktur hat. Dies betrifft insbesondere die internationale Auslieferung der Website über Netlify sowie technische Zugriffs- und Sicherheitsdaten bei Cloudflare. Die Speicherung von R2-Objekten in der EU und die Supabase-Projektregion Zürich schliessen eine Bearbeitung anderer Daten, etwa Betriebs- oder Supportdaten, in weiteren Ländern nicht aus.
 
-Wir prüfen in solchen Fällen die datenschutzrechtlichen Voraussetzungen der Datenübermittlung.
+Wir prüfen in solchen Fällen die datenschutzrechtlichen Voraussetzungen der Datenübermittlung und vereinbaren erforderliche Schutzmassnahmen.
 
 ## 18. Besonders schützenswerte Personendaten
 
@@ -278,6 +285,8 @@ Trotz angemessener Sicherheitsmassnahmen kann bei Datenübertragungen über das 
 ## 20. Aufbewahrungsdauer
 
 Wir bewahren Personendaten grundsätzlich nur so lange auf, wie dies für den jeweiligen Bearbeitungszweck erforderlich ist oder gesetzliche beziehungsweise berechtigte Aufbewahrungsgründe bestehen.
+
+Für E-Mails, Medien und Sicherungskopien gelten ergänzend die Angaben in den Abschnitten 5 bis 7. Noch offene, tarif- oder konfigurationsabhängige Fristen werden nach Prüfung der tatsächlich eingesetzten Einstellungen konkretisiert.
 
 Falls eine längere Aufbewahrung zur Durchsetzung, Ausübung oder Abwehr von Rechtsansprüchen, zur Untersuchung eines Sicherheitsvorfalls oder aufgrund gesetzlicher Pflichten erforderlich ist, können betroffene Daten entsprechend länger aufbewahrt werden.
 
@@ -357,7 +366,7 @@ Massgeblich ist die jeweils auf dieser Website veröffentlichte aktuelle Fassung
 
 Bei wesentlichen Änderungen, die registrierte Nutzerinnen und Nutzer unmittelbar betreffen, können wir zusätzlich in geeigneter Weise auf die Änderung hinweisen.
 
-**Letzte Aktualisierung: 16. September 2026**
+**Letzte Aktualisierung: 28. September 2026**
 
 ## 29. Weitere rechtliche Informationen
 
