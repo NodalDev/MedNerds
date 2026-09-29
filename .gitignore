@@ -17,6 +17,9 @@ pnpm-debug.log*
 .env
 .env.production
 .env.*
+.dev.vars*
+.wrangler/
+workers/medcases-realtime/worker-configuration.d.ts
 
 # macOS-specific files
 .DS_Store

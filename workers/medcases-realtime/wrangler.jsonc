@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "mednerds-medcases-realtime",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-29",
+  "workers_dev": false,
+  "durable_objects": {
+    "bindings": [
+      { "name": "MEDCASE_SESSIONS", "class_name": "MedCaseSession" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["MedCaseSession"] }
+  ]
+}

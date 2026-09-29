@@ -7,7 +7,10 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "realtime:dev": "wrangler dev --config workers/medcases-realtime/wrangler.jsonc --var ENVIRONMENT:development",
+    "realtime:typecheck": "wrangler types --config workers/medcases-realtime/wrangler.jsonc workers/medcases-realtime/worker-configuration.d.ts && tsc --project workers/medcases-realtime/tsconfig.json --noEmit",
+    "realtime:test": "node --experimental-strip-types scripts/test-medcases-realtime.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
@@ -20,6 +23,7 @@
     "astro": "^7.3.2",
     "astro-icon": "^1.2.0",
     "qrcode-generator": "^2.0.4",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sharp": "^0.35.3",
@@ -32,6 +36,7 @@
   "devDependencies": {
     "@iconify-json/healthicons": "^1.2.13",
     "@iconify-json/simple-icons": "^1.2.97",
-    "@iconify-json/tabler": "^1.2.38"
+    "@iconify-json/tabler": "^1.2.38",
+    "wrangler": "^4.143.1"
   }
 }
