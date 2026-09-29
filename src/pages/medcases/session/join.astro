@@ -1,0 +1,19 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import RealtimeObserver from '../../../components/medcases/RealtimeObserver';
+import '../../../styles/medcases.css';
+---
+
+<StarlightPage hasSidebar={false} frontmatter={{
+  title: 'Live-Session beitreten',
+  description: 'Mit einem temporären Session-Code einem synchronisierten OSCE-Timer beitreten.',
+  pageLayout: 'hub',
+  tableOfContents: false,
+  pagefind: false,
+  head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' } }],
+}}>
+  <div class="osce">
+    <p class="osce-intro">Gib den Session-Code ein oder öffne den Link vom Prüfergerät. Diese Ansicht zeigt den Timer nur lesend.</p>
+    <RealtimeObserver client:load />
+  </div>
+</StarlightPage>

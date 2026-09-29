@@ -1,15 +1,28 @@
-# MedCases Realtime – Phase 6A
+# MedCases Realtime – Phases 6B/6C
 
-This Worker is a local technical prototype. It does not replace the existing static MedCases pages and must not be deployed as a public session service. Run it with `npm run realtime:dev` and test the pure state logic with `npm run realtime:test`. `npm run realtime:typecheck` generates local Worker runtime types and checks the isolated Worker TypeScript project. Wrangler stores local Durable Object data under `.wrangler/`, which Git ignores.
+This Worker remains a **local technical prototype**. Run `npm run realtime:dev`, `npm run realtime:test`, and `npm run realtime:typecheck`. Wrangler stores local SQLite-backed Durable Object data under the Git-ignored `.wrangler/` directory. Only `GET /health` exists unless the local script explicitly sets `ENVIRONMENT=development`. Do not deploy this Worker as a public session service: session creation still needs a deliberate abuse/rate-limit strategy.
 
-`GET /health` is the only route available without the explicit `ENVIRONMENT=development` value supplied by the local npm script. Development-only routes are:
+## Local session flow
 
-- `POST /__dev/sessions/<sessionId>` with JSON `sessionId`, `caseId`, `durationSeconds`, and `warningRemainingSeconds` to initialize a test session;
-- `GET /__dev/sessions/<sessionId>/connect?role=examiner|observer` for WebSocket connections;
-- `GET /__dev/sessions/<sessionId>/state` to inspect persisted test state.
+1. `POST /sessions` with JSON `{"caseId":"case-2bf98914ed","durationSeconds":780,"warningRemainingSeconds":120}` returns a random opaque `sessionId`, a six-character `joinCode`, an `examinerCapability`, and `expiresAtMs`.
+2. `POST /sessions/join` with JSON `{"joinCode":"K7P4MX"}` resolves an active code to its `sessionId` and expiry. Lowercase input is accepted. The code never grants Examiner rights.
+3. Connect to `GET /sessions/<sessionId>/connect` as a WebSocket. No snapshot arrives before the first valid authentication message. Send `{"type":"session.authenticate","role":"observer"}` for read-only access, or `{"type":"session.authenticate","role":"examiner","capability":"<examinerCapability>"}` for timer controls.
+4. `GET /__dev/sessions/<sessionId>/state` exposes only public state for local tests. The old `?role=examiner` query parameter is ignored for authorization.
 
-Session IDs must match `session_` plus 20 lowercase hexadecimal characters and should be generated with a cryptographically secure random generator. These routes have **no production authentication**. Query-selected roles are only a local test mechanism and must never become production authorization. Browser origins are restricted to the local Astro development origins; non-browser clients without an Origin header are accepted only while the development routes are enabled.
+The session ID uses 128 random bits. The join code uses six unbiased symbols from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`; one SQLite-backed `JoinCodeEntry` Durable Object per code atomically reserves the mapping to a session ID. Collisions trigger up to eight new random attempts. Its expiry alarm and the session expiry use the same timestamp. Cleanup checks the expected session ID, so delayed cleanup cannot remove a later reservation.
 
-The Worker stores only an opaque session ID, an opaque case ID, timer timestamps/status, expiry, and released material IDs. It does not store medical case content, personal data, checklists, or notes. The development retention is one hour. The server sends state changes and alarm events, never a per-second countdown; clients can use `serverNowMs` and `time.ping`/`time.pong` to estimate clock offset later. SQLite-backed Durable Object storage and hibernatable WebSockets retain state across object restarts. The static case definition remains in this repository.
+The Examiner capability is a 256-bit random **bearer secret**. The clear value appears only in the creation response; clients must keep it out of URLs, logs, and shared links. The session Durable Object persists only its SHA-256 hash, never the clear capability. WebSocket authentication hashes the supplied capability and compares hashes before granting Examiner controls. Hibernation attachments retain only the authenticated role and connection metadata. Observer can receive snapshots/events and use time sync but cannot change the timer. Session snapshots, join results, and the debug state response contain no capability or hash.
 
-The local integration test is `node scripts/test-medcases-realtime-live.mjs` while Wrangler is running. A persistence check can be run with `persistence-create`, a Wrangler restart, then `persistence-check <sessionId>`. Production session creation, join codes, authenticated role capabilities, and UI integration belong to later phases.
+The default local retention is one hour; the local-only `X-MedNerds-Test-TTL-Ms` header accepts 1000–60000 ms for expiry tests. Development-only `/__dev/join-codes/<code>/reserve|lookup|release` routes let the live test exercise atomic reservation, expiry, reuse, and ownership-safe release directly. The Worker still stores no medical case content, personal information, checklists, or notes. The authoritative timer sends state changes and alarms, not a per-second countdown.
+
+## Phase 6C browser integration
+
+Start `npm run dev` and `npm run realtime:dev` locally. The Examiner case view can create a Live-Session while its local timer is ready; the separate `/medcases/session/join/` page resolves a dynamic code and connects as a read-only Observer. The original `/medcases/join/` static case-code flow remains separate. The Live QR is generated by `QRCodeSVG` and contains only the dynamic join URL and code.
+
+The browser uses `http://127.0.0.1:8787` only in Astro development. `PUBLIC_MEDCASES_REALTIME_URL` can override the public Worker origin; production builds have no localhost fallback and require an explicit URL. For a QR scanned on another device, `PUBLIC_MEDCASES_JOIN_BASE_URL` can override the website origin; otherwise the current browser origin is used. A physical phone cannot reach a QR pointing to `localhost` or `127.0.0.1` on the development computer. Cross-device testing also requires a reachable Worker URL and a matching allowed browser origin in the local Worker; the default setup is intended for two local tabs. No tunnel is created automatically. Session creation on the Worker remains development-only despite this frontend configuration.
+
+The Examiner capability is persisted only in the current tab's `sessionStorage` for reload/reconnect and never enters a URL, QR, log, or durable browser storage. Observer has no timer controls. The browser renders the server's timer state with a local monotonic display anchor and sparse time-sync pings. The final fullscreen/Wake Lock display mode is deferred.
+
+Run `node --experimental-strip-types scripts/test-medcases-realtime-ui.mjs` for frontend helpers. The optional browser harness is `node scripts/test-medcases-realtime-browser.mjs` with local Astro/Worker servers and a headless Chrome CDP endpoint on port 9224.
+
+Run `node scripts/test-medcases-realtime-live.mjs` while Wrangler is running. To test persistence, run `node scripts/test-medcases-realtime-live.mjs persistence-create`, restart Wrangler, then run `node scripts/test-medcases-realtime-live.mjs persistence-check`. The test fixture containing the capability is written outside the repository to the system temporary directory and removed by the check.

@@ -10,9 +10,19 @@ import {
   validSessionConfig,
   DEVELOPMENT_SESSION_TTL_MS,
 } from '../src/lib/medcases/realtime-state.ts';
+import {
+  createExaminerCapability,
+  createJoinCode,
+  createSessionId,
+  equalCapabilityHashes,
+  hashCapability,
+  JOIN_CODE_ALPHABET,
+  normalizeJoinCode,
+  reserveUniqueJoinCode,
+} from '../workers/medcases-realtime/src/identity.ts';
 
 const config = {
-  sessionId: 'session_abcdef1234567890abcd',
+  sessionId: 'session_abcdef1234567890abcdef1234567890',
   caseId: 'case-2bf98914ed',
   durationSeconds: 13,
   warningRemainingSeconds: 2,
@@ -27,6 +37,53 @@ test('strictly validates small control messages and roles', () => {
   assert.deepEqual(parseClientMessage('{"type":"timer.end"}'), { ok: false, code: 'UNKNOWN_MESSAGE_TYPE' });
   assert.equal(mayControlTimer('examiner'), true);
   assert.equal(mayControlTimer('observer'), false);
+  const capability = createExaminerCapability();
+  assert.equal(parseClientMessage('{"type":"session.authenticate","role":"observer"}').ok, true);
+  assert.equal(parseClientMessage(JSON.stringify({ type: 'session.authenticate', role: 'examiner', capability })).ok, true);
+  for (const message of [
+    { type: 'session.authenticate', role: 'examiner' },
+    { type: 'session.authenticate', role: 'examiner', capability: '' },
+    { type: 'session.authenticate', role: 'observer', capability },
+    { type: 'session.authenticate', role: 'admin', capability },
+  ]) assert.equal(parseClientMessage(JSON.stringify(message)).ok, false);
+});
+
+test('cryptographic identifiers, alphabet and capability hashes have strict formats', async () => {
+  const first = createSessionId();
+  const second = createSessionId();
+  assert.match(first, /^session_[a-f0-9]{32}$/);
+  assert.notEqual(first, second);
+  assert.ok(!first.includes(config.caseId));
+  assert.equal(JOIN_CODE_ALPHABET.length, 32);
+  for (let index = 0; index < 50; index++) {
+    const code = createJoinCode();
+    assert.match(code, /^[A-HJ-NP-Z2-9]{6}$/);
+    assert.equal(normalizeJoinCode(code.toLowerCase()), code);
+  }
+  for (const value of ['A0BCDE', 'IABCDE', 'OABCDE', 'ABCDE1', 'ABCD', 'ABCDEF0', null]) {
+    assert.equal(normalizeJoinCode(value), null);
+  }
+  const capability = createExaminerCapability();
+  assert.match(capability, /^[A-Za-z0-9_-]{43}$/);
+  const hash = await hashCapability(capability);
+  assert.match(hash, /^[a-f0-9]{64}$/);
+  assert.notEqual(hash, capability);
+  assert.equal(equalCapabilityHashes(hash, hash), true);
+  assert.equal(equalCapabilityHashes(hash, await hashCapability(createExaminerCapability())), false);
+});
+
+test('join-code reservation retries collisions and stops at its bound', async () => {
+  const attempts = [];
+  const values = ['ABCDEF', 'K7P4MX'];
+  const reserved = await reserveUniqueJoinCode(async (code) => {
+    attempts.push(code);
+    return code === 'K7P4MX';
+  }, () => values.shift(), 2);
+  assert.equal(reserved, 'K7P4MX');
+  assert.deepEqual(attempts, ['ABCDEF', 'K7P4MX']);
+  let count = 0;
+  assert.equal(await reserveUniqueJoinCode(async () => { count++; return false; }, () => 'ABCDEF', 8), null);
+  assert.equal(count, 8);
 });
 
 test('validates IDs and timer configuration, persists only dynamic session state', () => {
@@ -38,6 +95,7 @@ test('validates IDs and timer configuration, persists only dynamic session state
   assert.equal(validSessionConfig({ ...config, diagnosis: 'No medical content' }), false);
   const state = createSession(config, 100_000);
   assert.equal(state.expiresAtMs, 100_000 + DEVELOPMENT_SESSION_TTL_MS);
+  assert.equal(createSession(config, 100_000, 1500).expiresAtMs, 101_500);
   assert.equal(nextAlarmAt(state), state.expiresAtMs);
   assert.deepEqual(JSON.parse(JSON.stringify(state)), state);
   assert.deepEqual(state.releasedMaterialIds, []);

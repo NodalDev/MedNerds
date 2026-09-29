@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import qrcode from 'qrcode-generator';
 import type { MasterCase } from '../../data/medcases/types';
 import { OsceTimerSound } from '../../lib/osce-timer/sound';
-import { joinUrl, validTimerConfig, type TimerCue } from '../../lib/medcases/timer';
+import { joinUrl, validTimerConfig, type TimerCue, type TimerStatus } from '../../lib/medcases/timer';
 import OsceTimer from './OsceTimer';
+import RealtimeExaminer from './RealtimeExaminer';
 
 function JoinQr({ url }: { url: string }) {
   const matrix = useMemo(() => {
@@ -20,6 +21,8 @@ function JoinQr({ url }: { url: string }) {
 
 export default function OsceMaster({ item, origin }: { item: MasterCase; origin: string }) {
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [localStatus, setLocalStatus] = useState<TimerStatus>('ready');
+  const [liveActive, setLiveActive] = useState(false);
   const [checked, setChecked] = useState<Set<string>>(() => new Set());
   const [debriefOpen, setDebriefOpen] = useState(false);
   const audio = useRef<OsceTimerSound | null>(null);
@@ -63,9 +66,10 @@ export default function OsceMaster({ item, origin }: { item: MasterCase; origin:
         {hasDebrief && <section className="osce-panel"><h2>Debriefing</h2><p>Öffne die Auswertung nach dem Durchlauf bewusst selbst.</p><button className="osce-button osce-button--secondary" type="button" aria-expanded={debriefOpen} onClick={() => setDebriefOpen((open) => !open)}>{debriefOpen ? 'Debriefing schließen' : 'Debriefing öffnen'}</button>{debriefOpen && <div className="osce-debrief">{hasScoring && <p><strong>Gesamtscore:</strong> {score} / {total} Punkte</p>}{learningObjectives.length > 0 && <><h3>Lernziele</h3><ul>{learningObjectives.map((line) => <li key={line}>{line}</li>)}</ul></>}{debrief && debrief.keyPoints.length > 0 && <><h3>Kernpunkte</h3><ul>{debrief.keyPoints.map((line) => <li key={line}>{line}</li>)}</ul></>}{debrief && debrief.reflectionQuestions.length > 0 && <><h3>Reflexion</h3><ul>{debrief.reflectionQuestions.map((line) => <li key={line}>{line}</li>)}</ul></>}</div>}</section>}
       </div>
       <aside className="osce-master-grid__side">
-        {timerConfig ? <OsceTimer config={timerConfig} master onCue={playCue} /> : <section className="osce-panel" role="status"><h2>Timer nicht verfügbar</h2><p>Für diesen Fall fehlt eine gültige Timerkonfiguration.</p></section>}
+        {timerConfig ? <>{!liveActive && <OsceTimer config={timerConfig} master onCue={playCue} onStatusChange={setLocalStatus} />}
+          <RealtimeExaminer caseId={item.id} timer={timerConfig} localStatus={localStatus} onActiveChange={setLiveActive} onCue={playCue} /></> : <section className="osce-panel" role="status"><h2>Timer nicht verfügbar</h2><p>Für diesen Fall fehlt eine gültige Timerkonfiguration.</p></section>}
         <section className="osce-panel"><h2>Ton</h2><label className="osce-toggle"><input type="checkbox" checked={soundEnabled} onChange={(event) => setSoundEnabled(event.target.checked)} />Ton aktiviert</label><p className="osce-muted">Nur dieses Prüfergerät gibt Signale aus.</p><div className="osce-actions"><button className="osce-button osce-button--secondary" type="button" onClick={() => testCue('start')}>Startton testen</button><button className="osce-button osce-button--secondary" type="button" onClick={() => testCue('warning')}>Warnung testen</button><button className="osce-button osce-button--secondary" type="button" onClick={() => testCue('end')}>Endton testen</button></div></section>
-        <section className="osce-panel osce-invite"><h2>Teilnehmer beitreten</h2><JoinQr url={url} /><p className="osce-label">Fallcode</p><strong className="osce-join-code">{item.joinCode}</strong><p className="osce-muted">QR-Code scannen oder <a href="/medcases/join/">mednerds.ch/medcases/join</a> öffnen und den Fallcode eingeben.</p><p className="osce-fineprint">Der QR-Code enthält nur den statischen Fallcode. Er erstellt keine Session und überträgt keine Zeitwerte.</p><a className="osce-text-link" href={url}>Beitrittslink öffnen →</a></section>
+        <section className="osce-panel osce-invite"><h2>Statischer Fallbeitritt</h2><JoinQr url={url} /><p className="osce-label">Fallcode</p><strong className="osce-join-code">{item.joinCode}</strong><p className="osce-muted">QR-Code scannen oder <a href="/medcases/join/">mednerds.ch/medcases/join</a> öffnen und den Fallcode eingeben.</p><p className="osce-fineprint">Der QR-Code enthält nur den statischen Fallcode. Er erstellt keine Session und überträgt keine Zeitwerte.</p><a className="osce-text-link" href={url}>Beitrittslink öffnen →</a></section>
       </aside>
     </div>
   </div>;

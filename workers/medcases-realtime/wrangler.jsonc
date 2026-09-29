@@ -6,10 +6,12 @@
   "workers_dev": false,
   "durable_objects": {
     "bindings": [
-      { "name": "MEDCASE_SESSIONS", "class_name": "MedCaseSession" }
+      { "name": "MEDCASE_SESSIONS", "class_name": "MedCaseSession" },
+      { "name": "JOIN_CODE_ENTRIES", "class_name": "JoinCodeEntry" }
     ]
   },
   "migrations": [
-    { "tag": "v1", "new_sqlite_classes": ["MedCaseSession"] }
+    { "tag": "v1", "new_sqlite_classes": ["MedCaseSession"] },
+    { "tag": "v2", "new_sqlite_classes": ["JoinCodeEntry"] }
   ]
 }

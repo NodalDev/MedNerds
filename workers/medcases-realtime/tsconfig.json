@@ -10,5 +10,9 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "../../src/lib/medcases/realtime-*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "../../src/lib/medcases/realtime-protocol.ts",
+    "../../src/lib/medcases/realtime-state.ts"
+  ]
 }

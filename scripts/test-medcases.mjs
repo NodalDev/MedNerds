@@ -40,17 +40,18 @@ assert.equal(validTimerConfig({ durationSeconds: 600, warningRemainingSeconds: 6
 assert.equal(joinUrl('https://mednerds.ch', item.joinCode), 'https://mednerds.ch/medcases/join/?case=K7P4MX');
 
 const root = `dist/medcases/osce/${item.id}`;
-const [landingHtml, publicHtml, candidateHtml, patientHtml, examinerHtml, joinHtml] = await Promise.all([
+const [landingHtml, publicHtml, candidateHtml, patientHtml, examinerHtml, joinHtml, liveJoinHtml] = await Promise.all([
   readFile('dist/medcases/index.html', 'utf8'),
   readFile(`${root}/index.html`, 'utf8'),
   readFile(`${root}/candidate/index.html`, 'utf8'),
   readFile(`${root}/patient/index.html`, 'utf8'),
   readFile(`${root}/examiner/index.html`, 'utf8'),
   readFile('dist/medcases/join/index.html', 'utf8'),
+  readFile('dist/medcases/session/join/index.html', 'utf8'),
 ]);
 assert.match(landingHtml, /data-pagefind-body/);
 assert.match(publicHtml, /data-pagefind-body/);
-for (const html of [joinHtml, candidateHtml, patientHtml, examinerHtml]) {
+for (const html of [joinHtml, liveJoinHtml, candidateHtml, patientHtml, examinerHtml]) {
   assert.match(html, /name="robots" content="noindex, nofollow"/);
   assert.doesNotMatch(html, /data-pagefind-body/);
 }

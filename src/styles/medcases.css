@@ -81,6 +81,13 @@
 .osce-qr { display: block; width: min(100%, 15rem); height: auto; margin-inline: auto; border: 1px solid var(--osce-border); border-radius: 0.35rem; }
 .osce-join-code { display: block; color: var(--osce-accent); font-size: 1.45rem; letter-spacing: 0.18em; }
 .osce-text-link { font-weight: 700; }
+.osce-live-stack { display: grid; min-width: 0; gap: 1rem; }
+.osce-live__status { font-weight: 700; }
+.osce-live__invite { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); align-items: center; gap: 1rem; }
+.osce-live__qr { width: min(100%, 12rem); margin-inline: auto; background: #fff; }
+.osce-live__qr svg { display: block; width: 100%; height: auto; }
+.osce-live__details { display: grid; min-width: 0; justify-items: start; gap: 0.65rem; }
+.osce-live__link { max-width: 100%; overflow-wrap: anywhere; font-size: 0.83rem; }
 
 @media (min-width: 52rem) {
   .osce-master-grid { grid-template-columns: minmax(0, 1fr) minmax(18rem, 21rem); }
@@ -90,6 +97,7 @@
 @media (max-width: 35rem) {
   .osce-join__row > * { flex: 1 1 100%; max-width: none; }
   .osce-actions > .osce-button { flex: 1 1 auto; }
+  .osce-live__invite { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

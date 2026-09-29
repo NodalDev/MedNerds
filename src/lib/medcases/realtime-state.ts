@@ -1,14 +1,11 @@
-import type { SessionState, SessionTimerState, TimerCommand, TimerEventType } from './realtime-protocol.ts';
+import type { CreateSessionRequest, SessionState, SessionTimerState, TimerCommand, TimerEventType } from './realtime-protocol.ts';
 
 /** Local prototype retention. Production policy belongs to a later phase. */
 export const DEVELOPMENT_SESSION_TTL_MS = 60 * 60 * 1000;
 export const MAX_SESSION_DURATION_MS = 30 * 60 * 1000;
 
-export interface SessionConfig {
+export interface SessionConfig extends CreateSessionRequest {
   sessionId: string;
-  caseId: string;
-  durationSeconds: number;
-  warningRemainingSeconds: number;
 }
 
 export interface StateChange {
@@ -18,15 +15,13 @@ export interface StateChange {
 
 export type TimerActionResult = StateChange | { error: 'INVALID_STATE_TRANSITION' };
 
-export function validSessionConfig(value: unknown): value is SessionConfig {
+export function validCreateSessionRequest(value: unknown): value is CreateSessionRequest {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
   const input = value as Record<string, unknown>;
-  if (Object.keys(input).length !== 4) return false;
+  if (Object.keys(input).length !== 3) return false;
   const duration = input.durationSeconds;
   const warning = input.warningRemainingSeconds;
-  return typeof input.sessionId === 'string'
-    && /^session_[a-f0-9]{20}$/.test(input.sessionId)
-    && typeof input.caseId === 'string'
+  return typeof input.caseId === 'string'
     && /^case-[a-f0-9]{10}$/.test(input.caseId)
     && typeof duration === 'number'
     && Number.isSafeInteger(duration)
@@ -38,14 +33,29 @@ export function validSessionConfig(value: unknown): value is SessionConfig {
     && warning < duration;
 }
 
-export function createSession(config: SessionConfig, nowMs: number): SessionState {
+export function validSessionConfig(value: unknown): value is SessionConfig {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  const input = value as Record<string, unknown>;
+  if (Object.keys(input).length !== 4 || typeof input.sessionId !== 'string'
+    || !/^session_[a-f0-9]{32}$/.test(input.sessionId)) return false;
+  return validCreateSessionRequest({
+    caseId: input.caseId,
+    durationSeconds: input.durationSeconds,
+    warningRemainingSeconds: input.warningRemainingSeconds,
+  });
+}
+
+export function createSession(config: SessionConfig, nowMs: number, ttlMs = DEVELOPMENT_SESSION_TTL_MS): SessionState {
   if (!validSessionConfig(config)) throw new RangeError('Invalid session configuration.');
+  if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0 || ttlMs > DEVELOPMENT_SESSION_TTL_MS) {
+    throw new RangeError('Invalid session lifetime.');
+  }
   return {
     version: 1,
     sessionId: config.sessionId,
     caseId: config.caseId,
     createdAtMs: nowMs,
-    expiresAtMs: nowMs + DEVELOPMENT_SESSION_TTL_MS,
+    expiresAtMs: nowMs + ttlMs,
     timer: {
       status: 'ready',
       durationMs: config.durationSeconds * 1000,

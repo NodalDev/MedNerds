@@ -27,7 +27,31 @@ export interface SessionState {
 
 export type ClientMessage =
   | { type: TimerCommand }
-  | { type: 'time.ping'; clientSentAtMs: number };
+  | { type: 'time.ping'; clientSentAtMs: number }
+  | { type: 'session.authenticate'; role: 'observer' }
+  | { type: 'session.authenticate'; role: 'examiner'; capability: string };
+
+export interface CreateSessionRequest {
+  caseId: string;
+  durationSeconds: number;
+  warningRemainingSeconds: number;
+}
+
+export interface CreateSessionResponse {
+  sessionId: string;
+  joinCode: string;
+  examinerCapability: string;
+  expiresAtMs: number;
+}
+
+export interface JoinSessionRequest {
+  joinCode: string;
+}
+
+export interface JoinSessionResponse {
+  sessionId: string;
+  expiresAtMs: number;
+}
 
 export type TimerEventType =
   | 'timer.started'
@@ -49,7 +73,9 @@ export type ErrorCode =
   | 'UNKNOWN_MESSAGE_TYPE'
   | 'FORBIDDEN'
   | 'INVALID_STATE_TRANSITION'
-  | 'SESSION_EXPIRED';
+  | 'SESSION_EXPIRED'
+  | 'AUTH_REQUIRED'
+  | 'AUTH_FAILED';
 
 export type MessageParseResult =
   | { ok: true; message: ClientMessage }
@@ -86,6 +112,16 @@ export function parseClientMessage(payload: string | ArrayBuffer): MessageParseR
       && record.clientSentAtMs >= 0
       ? { ok: true, message: { type: 'time.ping', clientSentAtMs: record.clientSentAtMs } }
       : { ok: false, code: 'INVALID_MESSAGE' };
+  }
+  if (record.type === 'session.authenticate') {
+    if (record.role === 'observer' && Object.keys(record).length === 2) {
+      return { ok: true, message: { type: 'session.authenticate', role: 'observer' } };
+    }
+    if (record.role === 'examiner' && Object.keys(record).length === 3
+      && typeof record.capability === 'string' && /^[A-Za-z0-9_-]{43}$/.test(record.capability)) {
+      return { ok: true, message: { type: 'session.authenticate', role: 'examiner', capability: record.capability } };
+    }
+    return { ok: false, code: 'INVALID_MESSAGE' };
   }
   return { ok: false, code: 'UNKNOWN_MESSAGE_TYPE' };
 }
