@@ -2,7 +2,7 @@ import type { CandidateCase, OsceCase, PatientCase, PublicCase } from './types';
 
 const cases = [
   {
-    id: 'akuter-thoraxschmerz',
+    id: 'case-2bf98914ed',
     joinCode: 'K7P4MX',
     title: 'Akuter Thoraxschmerz',
     specialty: 'Notfallmedizin',
@@ -39,7 +39,7 @@ const cases = [
       background: 'Demo-Fall für die Bedienung der OSCE-Oberfläche. Alle Angaben sind fiktiv und nicht redaktionell als Lehrfall geprüft.',
       coreProblem: 'Akuter Brustschmerz: strukturierte Ersteinschätzung und Kommunikation.',
       instructions: [
-        'Gib das Startkommando verbal. Jedes Gerät startet seinen Timer separat.',
+        'Gib das Startkommando verbal und starte den Timer auf dem Prüfergerät.',
         'Teile Befunde nur auf Nachfrage mit oder zeige das Material auf deinem Gerät.',
         'Die Checkliste dient hier dem Funktionstest, nicht einer validierten Prüfung.',
       ],
@@ -76,8 +76,12 @@ const cases = [
 ] satisfies OsceCase[];
 
 const validCode = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
+const validCaseId = /^case-[a-f0-9]{10}$/;
 if (new Set(cases.map(({ joinCode }) => joinCode)).size !== cases.length || cases.some(({ joinCode }) => !validCode.test(joinCode))) {
   throw new Error('MedCases-Fallcodes müssen eindeutig und sechs gut lesbare Zeichen lang sein.');
+}
+if (new Set(cases.map(({ id }) => id)).size !== cases.length || cases.some(({ id }) => !validCaseId.test(id))) {
+  throw new Error('MedCases-IDs müssen eindeutig und opak sein.');
 }
 
 function publicProjection({ id, joinCode, title, specialty, summary, demo, timer }: OsceCase): PublicCase {
@@ -87,8 +91,8 @@ function publicProjection({ id, joinCode, title, specialty, summary, demo, timer
 export const osceCases: readonly OsceCase[] = cases;
 export const publicCases: PublicCase[] = cases.map(publicProjection);
 export function forCandidate(item: OsceCase): CandidateCase {
-  return { ...publicProjection(item), candidate: item.candidate };
+  return { id: item.id, title: item.title, demo: item.demo, candidate: item.candidate };
 }
 export function forPatient(item: OsceCase): PatientCase {
-  return { ...publicProjection(item), patient: item.patient };
+  return { id: item.id, title: item.title, demo: item.demo, patient: item.patient };
 }

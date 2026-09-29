@@ -2,20 +2,18 @@
 import MedNerdsIcon from './MedNerdsIcon.astro';
 
 const socialLinks = [
-  { label: 'YouTube', icon: 'simple-icons:youtube' },
-  { label: 'Instagram', icon: 'simple-icons:instagram' },
-  { label: 'GitHub', icon: 'simple-icons:github' },
-  { label: 'LinkedIn', icon: 'simple-icons:linkedin' },
-  { label: 'X', icon: 'simple-icons:x' },
+  { label: 'YouTube', icon: 'simple-icons:youtube', href: 'https://www.youtube.com/@mednerds' },
+  { label: 'Instagram', icon: 'simple-icons:instagram', href: 'https://www.instagram.com/mednerds/' },
+  { label: 'GitHub', icon: 'simple-icons:github', href: 'https://github.com/NodalDev/MedNerds' },
+  { label: 'LinkedIn', icon: 'simple-icons:linkedin', href: 'https://linkedin.com/company/MedNerds' },
+  { label: 'X', icon: 'simple-icons:x', href: 'https://x.com/mednerds' },
 ] as const;
-
-const placeholderHref = 'https://mednerds.ch/';
 ---
 
 <nav class="mn-header-socials" aria-label="MedNerds auf Social Media">
   {
-    socialLinks.map(({ label, icon }) => (
-      <a href={placeholderHref} aria-label={label} title={label}>
+    socialLinks.map(({ label, icon, href }) => (
+      <a href={href} aria-label={label} title={label}>
         <MedNerdsIcon name={icon} size="sm" />
       </a>
     ))

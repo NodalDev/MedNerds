@@ -2,7 +2,6 @@
 import MedNerdsIcon from './MedNerdsIcon.astro';
 import footerLogoLight from '../assets/Logos/MedNerds - einfarbig - hell.webp?url';
 import footerLogoDark from '../assets/Logos/MedNerds - einfarbig - dunkel.webp?url';
-import licenseLogo from '../assets/licenses/Cc-by-nc-sa_icon.svg?url';
 
 const year = new Date().getFullYear();
 
@@ -46,11 +45,11 @@ const participationLinks = [
           </h2>
 
           <p>
-            Die Inhalte von MedNerds werden mit grosser Sorgfalt erstellt
-            und vor Veröffentlichung mehrfach überprüft. Dennoch kann keine
-            Gewähr für Vollständigkeit, Aktualität und Fehlerfreiheit übernommen
-            werden. Die Informationen richten sich an Fachpersonen und sollten
-            immer kritisch beurteilt werden. 
+            Die Inhalte von MedNerds werden mit grosser Sorgfalt erstellt und
+            durchlaufen ein internes peer-review. Dennoch kann keine Gewähr für
+            Vollständigkeit, Aktualität und Fehlerfreiheit gegeben werden. Medizinische
+            Informationen richten sich an Fachpersonen und sollten immer kritisch
+            beurteilt werden.
           </p>
         </div>
 
@@ -81,6 +80,7 @@ const participationLinks = [
             width="661"
             height="144"
             alt="MedNerds"
+            loading="lazy"
           />
           <img
             class="brand-dark"
@@ -88,6 +88,7 @@ const participationLinks = [
             width="661"
             height="144"
             alt="MedNerds"
+            loading="lazy"
           />
         </span>
 
@@ -95,28 +96,21 @@ const participationLinks = [
           <p>
             Eigene Texte und Bilder stehen, sofern nicht anders angegeben, unter <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de">CC BY-NC-SA 4.0</a>.
           </p>
-          <img
-            src={licenseLogo}
-            width="88"
-            height="31"
-            alt="Creative Commons BY-NC-SA 4.0"
-          />
+          <a
+            class="mn-footer-license-badge"
+            href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"
+            aria-label="Creative Commons BY-NC-SA 4.0"
+          >
+            <MedNerdsIcon name="tabler:creative-commons" size="lg" />
+            <MedNerdsIcon name="tabler:creative-commons-by" size="lg" />
+            <MedNerdsIcon name="tabler:creative-commons-nc" size="lg" />
+            <MedNerdsIcon name="tabler:creative-commons-sa" size="lg" />
+          </a>
         </div>
 
-        <a class="mn-footer-netlify" href="https://www.netlify.com">
-          <img
-            class="netlify-badge-dark"
-            src="https://www.netlify.com/assets/badges/netlify-badge-color-accent.svg"
-            alt="Deploys by Netlify"
-            loading="lazy"
-          />
-          <img
-            class="netlify-badge-light"
-            src="https://www.netlify.com/assets/badges/netlify-badge-color-bg.svg"
-            alt="Deploys by Netlify"
-            loading="lazy"
-          />
-        </a>
+        <p class="mn-footer-netlify">
+          This site ist powered by <a href="https://www.netlify.com">Netlify</a>.
+        </p>
       </div>
 
       <nav
@@ -398,6 +392,9 @@ const participationLinks = [
      ---------------------------------------- */
 
   .mn-footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
     max-width: 24rem;
   }
 
@@ -417,7 +414,7 @@ const participationLinks = [
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.75rem;
+    gap: 1rem;
     margin-top: 1.25rem;
   }
 
@@ -429,36 +426,45 @@ const participationLinks = [
     line-height: 1.5;
   }
 
-  .mn-footer-license img {
-    display: block;
-    width: 5.5rem;
-    height: auto;
-  }
-
-  .mn-footer-netlify {
-    display: inline-block;
+  .mn-footer-license-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     max-width: 100%;
-    margin-top: 2rem;
     line-height: 0;
   }
 
-  .mn-footer-netlify img {
-    display: block;
-    width: 7.25rem;
-    max-width: 100%;
-    height: auto;
+  .mn-footer-license-badge :global(.mn-icon) {
+    color: var(--sl-color-black);
+    background: var(--sl-color-white);
+    border-radius: 50%;
   }
 
-  .mn-footer-netlify .netlify-badge-light,
-  :global(:root[data-theme='light']) .mn-footer-netlify .netlify-badge-dark {
-    display: none;
+  :global(:root[data-theme='light']) .mn-footer-license-badge :global(.mn-icon) {
+    color: var(--sl-color-gray-1);
+    background: transparent;
   }
 
-  :global(:root[data-theme='light']) .mn-footer-netlify .netlify-badge-light {
-    display: block;
+  .mn-footer-license-badge:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 0.2rem;
+    border-radius: 0.2rem;
   }
 
-  .mn-footer-netlify:focus-visible {
+  .mn-footer-netlify {
+    margin: auto 0 0;
+    padding-top: 2rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+  }
+
+  .mn-footer-netlify a {
+    color: inherit;
+    text-underline-offset: 0.15em;
+  }
+
+  .mn-footer-netlify a:focus-visible {
     outline: 2px solid var(--sl-color-accent);
     outline-offset: 0.2rem;
     border-radius: 0.2rem;

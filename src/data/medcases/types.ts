@@ -1,9 +1,8 @@
-export type OsceRole = 'master' | 'candidate' | 'patient';
+import type { TimerConfig } from '../../lib/osce-timer/timer';
 
-export interface TimerConfig {
-  durationSeconds: number;
-  warningRemainingSeconds: number;
-}
+export type { TimerConfig } from '../../lib/osce-timer/timer';
+
+export type OsceRole = 'examiner' | 'candidate' | 'patient';
 
 export type MaterialType = 'image' | 'ecg' | 'sono' | 'xray' | 'lab' | 'vitals' | 'document';
 
@@ -19,23 +18,26 @@ export interface CaseMaterial {
 
 export interface ChecklistSection {
   title: string;
-  items: { id: string; label: string; points: number; critical?: boolean }[];
+  items: { id: string; label: string; points?: number; critical?: boolean }[];
 }
 
 export interface OsceCase {
+  /** Stable, non-semantic URL identifier. It does not change with the visible title. */
   id: string;
+  /** Static V1 lookup code, not a session identifier. */
   joinCode: string;
   title: string;
   specialty: string;
   summary: string;
   demo: boolean;
-  timer: TimerConfig;
+  timer?: TimerConfig;
   candidate: {
     setting: string;
     role: string;
     situation: string;
     tasks: string[];
     initialInformation: string[];
+    materials?: CaseMaterial[];
   };
   patient: {
     identity: string;
@@ -45,20 +47,21 @@ export interface OsceCase {
     history: { topic: string; answer: string }[];
     doNotVolunteer: string[];
     reactions: string[];
+    materials?: CaseMaterial[];
   };
   examiner: {
     background: string;
     coreProblem: string;
     instructions: string[];
-    checklist: ChecklistSection[];
-    findings: { title: string; lines: string[] }[];
-    materials: CaseMaterial[];
-    learningObjectives: string[];
-    debrief: { keyPoints: string[]; reflectionQuestions: string[] };
+    checklist?: ChecklistSection[];
+    findings?: { title: string; lines: string[] }[];
+    materials?: CaseMaterial[];
+    learningObjectives?: string[];
+    debrief?: { keyPoints: string[]; reflectionQuestions: string[] };
   };
 }
 
 export type PublicCase = Pick<OsceCase, 'id' | 'joinCode' | 'title' | 'specialty' | 'summary' | 'demo' | 'timer'>;
-export type CandidateCase = PublicCase & Pick<OsceCase, 'candidate'>;
-export type PatientCase = PublicCase & Pick<OsceCase, 'patient'>;
+export type CandidateCase = Pick<OsceCase, 'id' | 'title' | 'demo' | 'candidate'>;
+export type PatientCase = Pick<OsceCase, 'id' | 'title' | 'demo' | 'patient'>;
 export type MasterCase = OsceCase;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TimerConfig } from '../../data/medcases/types';
 import { formatTime, type TimerCue, type TimerStatus } from '../../lib/medcases/timer';
+import { OsceTimerEngine, type TimerEvent } from '../../lib/osce-timer/timer';
 
 interface Props {
   config: TimerConfig;
@@ -11,45 +12,45 @@ interface Props {
 }
 
 export default function OsceTimer({ config, master = false, disabled = false, onCue, onStatusChange }: Props) {
-  const [status, setStatus] = useState<TimerStatus>('ready');
-  const [remaining, setRemaining] = useState(config.durationSeconds);
-  const deadline = useRef<number | null>(null);
-  const emitted = useRef(new Set<TimerCue>());
+  const timerRef = useRef<OsceTimerEngine | null>(null);
+  timerRef.current ??= new OsceTimerEngine(config);
+  const [snapshot, setSnapshot] = useState(() => timerRef.current!.getSnapshot());
+  const statusRef = useRef<TimerStatus>(snapshot.status);
   const cueCallback = useRef(onCue);
   cueCallback.current = onCue;
   const statusCallback = useRef(onStatusChange);
   statusCallback.current = onStatusChange;
 
-  const emit = useCallback((cue: TimerCue) => {
-    if (emitted.current.has(cue)) return;
-    emitted.current.add(cue);
-    cueCallback.current?.(cue);
+  const commit = useCallback((events: readonly TimerEvent[], playCues = true) => {
+    const next = timerRef.current!.getSnapshot();
+    setSnapshot((previous) => previous.status === next.status && previous.remainingSeconds === next.remainingSeconds
+      ? previous
+      : next);
+    if (statusRef.current !== next.status) {
+      statusRef.current = next.status;
+      statusCallback.current?.(next.status);
+    }
+    if (playCues && !document.hidden) {
+      for (const event of events) {
+        if (event === 'start' || event === 'warning' || event === 'end') cueCallback.current?.(event);
+      }
+    }
   }, []);
 
   useEffect(() => {
-    if (status === 'ready') setRemaining(config.durationSeconds);
-  }, [config.durationSeconds, status]);
+    const timer = timerRef.current!;
+    if (statusRef.current !== 'ready'
+      || (timer.config.durationSeconds === config.durationSeconds
+        && timer.config.warningRemainingSeconds === config.warningRemainingSeconds)) return;
+    timerRef.current = new OsceTimerEngine(config);
+    setSnapshot(timerRef.current.getSnapshot());
+  }, [config.durationSeconds, config.warningRemainingSeconds]);
 
   useEffect(() => {
-    if (status !== 'running') return;
-    const update = () => {
-      const next = Math.max(0, Math.ceil(((deadline.current ?? performance.now()) - performance.now()) / 1000));
-      setRemaining(next);
-      if (document.hidden) return;
-      if (next <= 0) {
-        emit('end');
-        setStatus('ended');
-        statusCallback.current?.('ended');
-      } else if (config.warningRemainingSeconds > 0 && next <= config.warningRemainingSeconds) {
-        emit('warning');
-      }
-    };
+    if (snapshot.status !== 'running') return;
+    const update = () => commit(timerRef.current!.update());
     const onVisibility = () => {
-      if (document.hidden) return;
-      const next = Math.max(0, Math.ceil(((deadline.current ?? performance.now()) - performance.now()) / 1000));
-      if (next <= config.warningRemainingSeconds) emitted.current.add('warning');
-      if (next <= 0) emitted.current.add('end');
-      update();
+      if (!document.hidden) commit(timerRef.current!.update(), false);
     };
     const interval = window.setInterval(update, 200);
     document.addEventListener('visibilitychange', onVisibility);
@@ -58,37 +59,16 @@ export default function OsceTimer({ config, master = false, disabled = false, on
       window.clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [status, config.warningRemainingSeconds, emit]);
+  }, [snapshot.status, commit]);
 
   const start = () => {
-    if (status !== 'ready' || disabled) return;
-    emitted.current.clear();
-    deadline.current = performance.now() + config.durationSeconds * 1000;
-    setRemaining(config.durationSeconds);
-    setStatus('running');
-    statusCallback.current?.('running');
-    emit('start');
+    if (!disabled) commit(timerRef.current!.start());
   };
-  const pause = () => {
-    if (status !== 'running') return;
-    setRemaining(Math.max(0, Math.ceil(((deadline.current ?? performance.now()) - performance.now()) / 1000)));
-    setStatus('paused');
-    statusCallback.current?.('paused');
-  };
-  const resume = () => {
-    if (status !== 'paused') return;
-    deadline.current = performance.now() + remaining * 1000;
-    setStatus('running');
-    statusCallback.current?.('running');
-  };
-  const reset = () => {
-    deadline.current = null;
-    emitted.current.clear();
-    setRemaining(config.durationSeconds);
-    setStatus('ready');
-    statusCallback.current?.('ready');
-  };
+  const pause = () => commit(timerRef.current!.pause());
+  const resume = () => commit(timerRef.current!.resume());
+  const reset = () => commit(timerRef.current!.reset());
 
+  const { status, remainingSeconds: remaining } = snapshot;
   const warning = status === 'running' && config.warningRemainingSeconds > 0 && remaining <= config.warningRemainingSeconds;
   const statusText = status === 'ready' ? 'BEREIT' : status === 'paused' ? 'PAUSIERT' : status === 'ended' ? 'ZEIT ABGELAUFEN' : warning ? `Warnung ab ${formatTime(config.warningRemainingSeconds)} Restzeit` : 'LÄUFT';
 
@@ -96,7 +76,7 @@ export default function OsceTimer({ config, master = false, disabled = false, on
     <p className="osce-eyebrow">Lokaler Timer</p>
     <div className="osce-timer__display" role="timer" aria-label={`${formatTime(remaining)} verbleibend`}>{formatTime(remaining)}</div>
     <p className="osce-timer__state" role="status" aria-live="polite">{statusText}</p>
-    {status === 'ready' && <p className="osce-muted">Warnung bei {config.warningRemainingSeconds ? formatTime(config.warningRemainingSeconds) : 'deaktiviert'}. Warte auf das verbale Startkommando des Prüfers.</p>}
+    {status === 'ready' && <p className="osce-muted">Warnung bei {config.warningRemainingSeconds ? formatTime(config.warningRemainingSeconds) : 'deaktiviert'}. Starte nach deinem verbalen Kommando.</p>}
     <div className="osce-actions">
       {status === 'ready' && <button className="osce-button" type="button" onClick={start} disabled={disabled}>Start</button>}
       {master && status === 'running' && <button className="osce-button osce-button--secondary" type="button" onClick={pause}>Lokal pausieren</button>}

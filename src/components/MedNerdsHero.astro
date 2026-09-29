@@ -18,9 +18,7 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
           <h1 id="_top" data-page-title set:html={title} />
           {tagline && <div class="home-hero-tagline" set:html={tagline} />}
           <p class="home-hero-description">
-            MedNerds macht medizinische Inhalte schnell auffindbar, verständlich
-            strukturiert und offen zugänglich. Die Plattform wächst Schritt für
-            Schritt mit ihrer Community.
+            MedNerds setzt sich für hochwertiges und kostenfrei verfügbares medizinisches Wissen ein. Die Plattform wächst Schritt für Schritt.
           </p>
         </div>
         {
@@ -84,7 +82,7 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
   }
 
   .home-hero-tagline {
-    max-width: 30ch;
+    max-width: 58ch;
     color: var(--sl-color-gray-2);
     font-size: clamp(var(--sl-text-base), calc(0.0625rem + 2vw), var(--sl-text-xl));
   }

@@ -1,10 +1,11 @@
-import type { TimerConfig } from '../../data/medcases/types';
+import type { TimerConfig, TimerEvent } from '../osce-timer/timer';
 
-export type TimerStatus = 'ready' | 'running' | 'paused' | 'ended';
-export type TimerCue = 'start' | 'warning' | 'end';
+export type { TimerStatus } from '../osce-timer/timer';
+export type TimerCue = Extract<TimerEvent, 'start' | 'warning' | 'end'>;
 
-export function validTimerConfig(config: TimerConfig): boolean {
-  return Number.isInteger(config.durationSeconds)
+export function validTimerConfig(config: TimerConfig | undefined): config is TimerConfig {
+  return config != null
+    && Number.isInteger(config.durationSeconds)
     && config.durationSeconds >= 60
     && config.durationSeconds <= 1800
     && Number.isInteger(config.warningRemainingSeconds)
@@ -17,19 +18,8 @@ export function formatTime(seconds: number): string {
   return `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
 }
 
-export function timerFromQuery(search: string, defaults: TimerConfig): TimerConfig {
-  const params = new URLSearchParams(search);
-  const duration = params.get('duration');
-  const warning = params.get('warning');
-  if (duration === null || warning === null || !/^\d+$/.test(duration) || !/^\d+$/.test(warning)) return defaults;
-  const config = { durationSeconds: Number(duration), warningRemainingSeconds: Number(warning) };
-  return validTimerConfig(config) ? config : defaults;
-}
-
-export function joinUrl(origin: string, code: string, config: TimerConfig): string {
+export function joinUrl(origin: string, code: string): string {
   const url = new URL('/medcases/join/', origin);
   url.searchParams.set('case', code);
-  url.searchParams.set('duration', String(config.durationSeconds));
-  url.searchParams.set('warning', String(config.warningRemainingSeconds));
   return url.toString();
 }

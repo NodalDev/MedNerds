@@ -23,7 +23,7 @@ export const productLinks = [
     product: 'meddocs',
     icon: 'tabler:book',
     description:
-      'Strukturiertes medizinisches Wissen mit klaren Kapiteln, Quellen und Querverweisen.',
+      'Strukturiertes medizinisches Wissen zu EKGs, Echokardiographie, Ultraschall, Notfallmedizin und vielem mehr.',
     status: 'building',
     children: [
       { label: 'Übersicht', href: '/meddocs/', icon: sidebarIcons.Übersicht },
@@ -41,8 +41,8 @@ export const productLinks = [
     product: 'medblog',
     icon: 'tabler:news',
     description:
-      'Neuigkeiten, Einordnungen und Beiträge aus der MedNerds-Community.',
-    status: 'planned',
+      'Neuigkeiten zu MedNerds und Beiträge zu spannenden Themen.',
+    status: 'building',
     children: [],
   },
   {
@@ -51,7 +51,7 @@ export const productLinks = [
     product: 'medlearn',
     icon: 'tabler:school',
     description:
-      'Lernpfade, Quizfragen und Wiederholungen für nachhaltiges Lernen.',
+      'E-Learning mit Quizfragen und Wiederholungen für nachhaltiges Lernen.',
     status: 'planned',
     children: [],
   },
@@ -61,7 +61,7 @@ export const productLinks = [
     product: 'medcases',
     icon: 'healthicons:clinical-f-outline',
     description:
-      'OSCE-Prüfungssituationen gemeinsam mit Prüfling, Schauspielpatient und Prüfer trainieren.',
+      'OSCE-Prüfungssituationen gemeinsam trainieren.',
     status: 'building',
     children: [
       { label: 'OSCE-Fälle', href: '/medcases/', icon: 'healthicons:clinical-f-outline' },
@@ -79,6 +79,7 @@ export const productLinks = [
     children: [
       { label: 'EKG-Lagetyptrainer', href: '/medtools/ekg/lagetyptrainer/', icon: 'tabler:activity-heartbeat' },
       { label: 'Interaktiver Herzzyklus', href: '/medtools/kardiologie/herzzyklus/', icon: 'tabler:heart' },
+      { label: 'OSCE-Timer', href: '/medtools/osce-timer/', icon: 'tabler:clock' },
     ],
   },
   {
@@ -87,7 +88,7 @@ export const productLinks = [
     product: 'mednerds-basel',
     icon: 'tabler:users-group',
     description:
-      'Die Community und das organisatorische Zuhause der offenen Plattform.',
+      'Der Verein hinter dem Projekt MedNerds.',
     status: 'active',
     children: [],
   },

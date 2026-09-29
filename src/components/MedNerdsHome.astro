@@ -1,5 +1,6 @@
 ---
 import MedNerdsIcon from './MedNerdsIcon.astro';
+import NewsletterSignup from './NewsletterSignup.astro';
 import medNerdsLogo from '../assets/Logos/MedNerds - icon.webp?url';
 import {
   productLinks,
@@ -8,44 +9,46 @@ import {
 
 const principles = [
   {
-    title: 'Verständlich',
+    title: '#FOAMED',
     description:
-      'Komplexe medizinische Zusammenhänge werden klar gegliedert und nachvollziehbar erklärt.',
-    icon: 'tabler:message-language',
+      'Wissen soll ohne unnötige Hürden auffindbar und dauerhaft für alle kostenlos nutzbar sein.',
+    icon: 'tabler:creative-commons-nc',
   },
   {
     title: 'Fundiert',
     description:
-      'Quellen, Versionsangaben und redaktionelle Prüfung schaffen eine verlässliche Grundlage.',
+      'Alle Inhalte durchlaufen eine interne redaktionelle Prüfung und mit Quellen belegt.',
     icon: 'tabler:shield-check',
   },
   {
-    title: 'Offen zugänglich',
+    title: 'Community',
     description:
-      'Wissen soll ohne unnötige Hürden auffindbar und für alle nutzbar sein.',
-    icon: 'tabler:world',
+      'Das Projekt wird vom Verein MedNerds Basel getragen und weiterentwickelt.',
+    icon: 'tabler:users-group',
   },
   {
     title: 'Vernetzt',
     description:
-      'Wissen, Lernwege, klinische Fälle und Werkzeuge greifen modular ineinander.',
-    icon: 'tabler:route',
+      'Wissen, E-Learning, klinische Fälle und Werkzeuge greifen modular ineinander.',
+    icon: 'tabler:topology-star',
   },
 ] as const;
 
-const roadmapProducts = productLinks.filter(
-  ({ product }) => product !== 'mednerds-basel',
-);
 ---
 
 <div class="mn-home not-content">
   <section class="mn-home-section mn-home-products" aria-labelledby="mn-home-products-title">
     <div class="mn-home-section-inner">
-      <div class="mn-home-section-heading">
+      <div class="mn-home-section-heading mn-home-section-heading--compact">
         <div>
           <p class="mn-home-eyebrow">Bereiche</p>
-          <h2 id="mn-home-products-title">Was MedNerds verbindet</h2>
+          <h2 id="mn-home-products-title">MedNerds wächst Schritt für Schritt.</h2>
         </div>
+        <p>
+          Aktuell liegt der Fokus auf dem Aufbau von MedDocs. Die weiteren
+          Bereiche folgen auf einer gemeinsamen technischen und redaktionellen
+          Grundlage.
+        </p>
       </div>
 
       <div class="mn-product-grid">
@@ -112,60 +115,34 @@ const roadmapProducts = productLinks.filter(
     </div>
   </section>
 
-  <section class="mn-home-section mn-home-roadmap" aria-labelledby="mn-home-roadmap-title">
-    <div class="mn-home-section-inner mn-home-roadmap-grid">
-      <div class="mn-home-roadmap-copy">
-        <p class="mn-home-eyebrow">Aktueller Stand</p>
-        <h2 id="mn-home-roadmap-title">MedNerds wächst Schritt für Schritt.</h2>
-        <p>
-          Aktuell liegt der Fokus auf dem Aufbau von MedDocs. Die weiteren
-          Bereiche folgen auf einer gemeinsamen technischen und redaktionellen
-          Grundlage.
-        </p>
-      </div>
-
-      <ul class="mn-roadmap-list" aria-label="Entwicklungsstand der Bereiche">
-        {
-          roadmapProducts.map((product) => (
-            <li>
-              <span class="mn-roadmap-product">
-                <MedNerdsIcon name={product.icon} size="md" />
-                <span>{product.label}</span>
-              </span>
-              <span class:list={['mn-status', `mn-status--${product.status}`]}>
-                {productStatusLabels[product.status]}
-              </span>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-  </section>
-
-  <section class="mn-home-section mn-home-community" aria-labelledby="mn-home-community-title">
-    <div class="mn-home-section-inner">
-      <div class="mn-community-card">
+  <div class="mn-home-section">
+    <div class="mn-home-section-inner mn-home-pair-grid">
+      <section class="mn-home-newsletter" aria-labelledby="mn-home-newsletter-title">
+        <NewsletterSignup />
+      </section>
+      <section class="mn-community-card" aria-labelledby="mn-home-community-title">
         <div class="mn-community-mark" aria-hidden="true">
           <MedNerdsIcon name="tabler:users-group" size="xl" />
         </div>
         <div class="mn-community-copy">
           <p class="mn-home-eyebrow">MedNerds Basel</p>
           <h2 id="mn-home-community-title">
-            Von Studierenden. Für alle, die Medizin verstehen wollen.
+            Von der Community. Für alle, die Medizin verstehen wollen.
           </h2>
           <p>
-            MedNerds Basel ist die Community und das organisatorische Zuhause
-            der Plattform. Hier entstehen Zusammenarbeit, Qualitätssicherung
-            und offene Bildungsangebote.
+            MedNerds Basel setzt sich als Verein für eine offene, praxisnahe und wissenschaftlich
+            fundierte medizinsche Bildung ein. Er orientiert sich dabei an den Grundgedanken von
+            FOAMed und betreibt dazu das Projekt MedNerds.ch. Ausserdem fördern wir in Zukunft
+            Präsenzveranstaltungen, Workshops, Simulationen sowei Mentoring und Tutoringangebote.
           </p>
         </div>
         <a class="mn-home-button mn-home-button--secondary" href="/mednerds-basel/">
-          Community kennenlernen
+          Verein kennenlernen
           <MedNerdsIcon name="tabler:arrow-right" size="sm" />
         </a>
-      </div>
+      </section>
     </div>
-  </section>
+  </div>
 </div>
 
 <style>
@@ -195,6 +172,20 @@ const roadmapProducts = productLinks.filter(
     padding-block: clamp(4rem, 8vw, 7rem);
   }
 
+  .mn-home-pair-grid {
+    --mn-home-pair-padding: clamp(1.5rem, 3vw, 2.5rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    padding-block: clamp(3.25rem, 6vw, 5rem);
+  }
+
+  .mn-home-newsletter {
+    display: flex;
+    min-width: 0;
+  }
+
   .mn-home-eyebrow {
     margin: 0;
     color: var(--sl-color-accent);
@@ -220,7 +211,6 @@ const roadmapProducts = productLinks.filter(
   }
 
   .mn-home-section-heading > p,
-  .mn-home-roadmap-copy > p:last-child,
   .mn-community-copy > p:last-child {
     max-width: 62ch;
     color: var(--sl-color-gray-2);
@@ -247,6 +237,7 @@ const roadmapProducts = productLinks.filter(
 
   .mn-home-section-heading--compact {
     grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
   }
 
   .mn-product-grid {
@@ -335,7 +326,6 @@ const roadmapProducts = productLinks.filter(
 
   .mn-product-card-topline,
   .mn-product-link-label,
-  .mn-roadmap-product,
   .mn-home-button {
     display: inline-flex;
     align-items: center;
@@ -486,8 +476,7 @@ const roadmapProducts = productLinks.filter(
     outline-offset: 3px;
   }
 
-  .mn-principles-list,
-  .mn-roadmap-list {
+  .mn-principles-list {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -534,46 +523,6 @@ const roadmapProducts = productLinks.filter(
     line-height: 1.65;
   }
 
-  .mn-home-roadmap-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 0.85fr) minmax(20rem, 1.15fr);
-    gap: clamp(3rem, 8vw, 8rem);
-    align-items: start;
-  }
-
-  .mn-home-roadmap-copy {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .mn-home-roadmap-copy h2 {
-    max-width: 15ch;
-  }
-
-  .mn-roadmap-list {
-    border-top: 1px solid var(--sl-color-hairline);
-  }
-
-  .mn-roadmap-list li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-    padding-block: 1rem;
-    border-bottom: 1px solid var(--sl-color-hairline);
-  }
-
-  .mn-roadmap-product {
-    gap: 0.7rem;
-    min-width: 0;
-    color: var(--sl-color-white);
-    font-weight: 620;
-  }
-
-  .mn-roadmap-product :global(.mn-icon) {
-    color: var(--sl-color-accent);
-  }
-
   .mn-community-card,
   .mn-home-final-card {
     border: 1px solid var(--sl-color-hairline);
@@ -581,17 +530,18 @@ const roadmapProducts = productLinks.filter(
   }
 
   .mn-community-card {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: clamp(1.5rem, 4vw, 3.5rem);
-    align-items: center;
-    padding: clamp(1.75rem, 4vw, 3.5rem);
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: var(--mn-home-pair-padding);
     background: color-mix(in oklch, var(--mn-surface) 88%, var(--color-MedNerds-700) 12%);
   }
 
   .mn-community-mark {
     display: grid;
-    width: clamp(4rem, 8vw, 6rem);
+    width: clamp(3.5rem, 5vw, 4.5rem);
     aspect-ratio: 1;
     place-items: center;
     border: 1px solid color-mix(in srgb, var(--color-MedNerds-400) 32%, transparent);
@@ -602,12 +552,23 @@ const roadmapProducts = productLinks.filter(
 
   .mn-community-copy {
     display: grid;
-    gap: 0.85rem;
+    gap: 0.75rem;
   }
 
   .mn-community-copy h2 {
     max-width: 24ch;
-    font-size: clamp(1.75rem, 3vw, 2.75rem);
+    font-size: clamp(1.75rem, 2.4vw, 2.5rem);
+  }
+
+  @media (min-width: 64rem) {
+    .mn-community-copy > p:last-child {
+      font-size: clamp(1rem, 1.2vw, 1.0625rem);
+      line-height: 1.65;
+    }
+  }
+
+  .mn-community-card .mn-home-button {
+    margin-top: auto;
   }
 
   .mn-home-button {
@@ -684,14 +645,11 @@ const roadmapProducts = productLinks.filter(
     .mn-principles-list li:nth-child(4) {
       border-top: 1px solid var(--sl-color-hairline);
     }
+  }
 
-    .mn-community-card {
-      grid-template-columns: auto minmax(0, 1fr);
-    }
-
-    .mn-community-card .mn-home-button {
-      grid-column: 2;
-      justify-self: start;
+  @media (min-width: 64rem) {
+    .mn-home-pair-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
@@ -700,10 +658,13 @@ const roadmapProducts = productLinks.filter(
       padding-block: clamp(3.25rem, 12vw, 5rem);
     }
 
-    .mn-home-section-heading,
-    .mn-home-roadmap-grid {
+    .mn-home-section-heading {
       grid-template-columns: minmax(0, 1fr);
       gap: 1.5rem;
+    }
+
+    .mn-home-section-heading--compact {
+      gap: 1rem;
     }
 
     .mn-home-section-heading {
@@ -718,20 +679,6 @@ const roadmapProducts = productLinks.filter(
       min-height: 14rem;
     }
 
-    .mn-home-roadmap-grid {
-      gap: 2.5rem;
-    }
-
-    .mn-community-card {
-      grid-template-columns: minmax(0, 1fr);
-      align-items: start;
-    }
-
-    .mn-community-card .mn-home-button {
-      grid-column: auto;
-      justify-self: start;
-    }
-
     .mn-home-final-card {
       align-items: flex-start;
       flex-direction: column;
@@ -739,6 +686,10 @@ const roadmapProducts = productLinks.filter(
   }
 
   @media (max-width: 35rem) {
+    .mn-community-copy h2 {
+      font-size: clamp(1.5rem, 7vw, 1.75rem);
+    }
+
     .mn-principles-list {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -748,10 +699,6 @@ const roadmapProducts = productLinks.filter(
     .mn-principles-list li:nth-child(4) {
       border-top: 1px solid var(--sl-color-hairline);
       border-inline-start: 0;
-    }
-
-    .mn-roadmap-list li {
-      gap: 0.75rem;
     }
 
     .mn-home-button {

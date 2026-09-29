@@ -6,10 +6,10 @@ import { forCandidate, forPatient, osceCases } from '../../../../data/medcases/c
 import type { OsceCase, OsceRole } from '../../../../data/medcases/types';
 import '../../../../styles/medcases.css';
 
-const roleLabels: Record<OsceRole, string> = { master: 'Prüfer', candidate: 'Prüfling', patient: 'Schauspielpatient' };
+const roleLabels: Record<OsceRole, string> = { examiner: 'Prüfer', candidate: 'Prüfling', patient: 'Schauspielpatient' };
 export function getStaticPaths() {
-  return osceCases.flatMap((item) => (['master', 'candidate', 'patient'] as const).map((role) => ({
-    params: { slug: item.id, role }, props: { item, role },
+  return osceCases.flatMap((item) => (['examiner', 'candidate', 'patient'] as const).map((role) => ({
+    params: { caseId: item.id, role }, props: { item, role },
   })));
 }
 interface Props { item: OsceCase; role: OsceRole }
@@ -25,8 +25,8 @@ const { item, role } = Astro.props;
   head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' } }],
 }}>
   <div class="osce">
-    {role === 'master' && <OsceMaster item={item} origin={Astro.site?.origin ?? Astro.url.origin} client:load />}
-    {role === 'candidate' && <OsceParticipant role="candidate" item={forCandidate(item)} client:load />}
-    {role === 'patient' && <OsceParticipant role="patient" item={forPatient(item)} client:load />}
+    {role === 'examiner' && <OsceMaster item={item} origin={Astro.site?.origin ?? Astro.url.origin} client:load />}
+    {role === 'candidate' && <OsceParticipant role="candidate" item={forCandidate(item)} />}
+    {role === 'patient' && <OsceParticipant role="patient" item={forPatient(item)} />}
   </div>
 </StarlightPage>

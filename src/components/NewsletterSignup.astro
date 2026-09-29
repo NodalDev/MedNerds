@@ -1,0 +1,310 @@
+---
+import MedNerdsIcon from './MedNerdsIcon.astro';
+---
+
+<form
+  class="inf-form mn-newsletter"
+  method="post"
+  action="https://newsletter.infomaniak.com/v3/api/1/newsletters/webforms/26108/submit"
+>
+  <input
+    class="mn-newsletter-trap"
+    type="text"
+    name="inf_email_check"
+    autocomplete="off"
+    tabindex="-1"
+    aria-hidden="true"
+  />
+  <input
+    class="mn-newsletter-trap"
+    type="text"
+    name="website"
+    autocomplete="off"
+    tabindex="-1"
+    aria-hidden="true"
+  />
+  <input
+    type="hidden"
+    name="key"
+    value="eyJpdiI6IllWTnd0NFhHVWpQSXhiZXNYMkZwdnVzYkxqcWxyRE56V283THMxNmthR2M9IiwibWFjIjoiZTYzZDU5NzM3Y2Q5YmFhZjhiMzRhMzI4MzY0YzIxNjg5YjgwZDlhNWYyNmEzNjRmZTZkY2Y0MmU5YWFkZWM3ZiIsInZhbHVlIjoiOUdQbTVRQ0JoRTdUZWNCSlZJREJldGNYOUxmcUFtVEt5RE1jS2lKOU0wND0ifQ=="
+  />
+  <input type="hidden" name="webform_id" value="26108" />
+
+  <div class="inf-main_1b285431b6d97f0b3d25c629171a4448 mn-newsletter-body">
+    <div class="mn-newsletter-mark" aria-hidden="true">
+      <MedNerdsIcon name="tabler:send" size="xl" />
+    </div>
+    <p class="mn-newsletter-eyebrow">Newsletter</p>
+    <h2 id="mn-home-newsletter-title">Bleib auf dem Laufenden</h2>
+    <p class="mn-newsletter-description">
+      Verpasse keine Neuigkeiten zu Inhalten und Updates von MedNerds.
+    </p>
+
+    <div class="inf-success" style="display:none" role="status" aria-live="polite">
+      <p>
+        Fast geschafft! Wir haben dir eine Bestätigungs-E-Mail geschickt. Bitte bestätige
+        deine Anmeldung über den Link in der E-Mail.
+      </p>
+      <p><a href="#mn-newsletter-email" class="inf-btn">Zurück zum Formular</a></p>
+    </div>
+
+    <div class="inf-content" aria-live="polite">
+      <div class="inf-input inf-input-text">
+        <label for="mn-newsletter-email">E-Mail-Adresse</label>
+        <input
+          id="mn-newsletter-email"
+          type="email"
+          name="inf[1]"
+          data-inf-meta="1"
+          data-inf-error=""
+          autocomplete="email"
+          placeholder="name@beispiel.ch"
+          required
+        />
+      </div>
+
+      <div class="inf-rgpd">
+        Die E-Mail-Adresse wird nur verwendet, um unseren Newsletter und Informationen über
+        unsere Aktivitäten zuzusenden. Der Newsletter kann jederzeit über den Abmeldelink
+        in unseren E-Mails abbestellt werden. Weitere Informationen findest du in unserer
+        <a href="/datenschutz/">Datenschutzerklärung</a>.
+      </div>
+
+      <script
+        is:inline
+        src="https://newsletter.infomaniak.com/v3/static/mcaptcha/altcha.min.js?v=1790686800"
+        type="module"
+      ></script>
+      <altcha-widget
+        hidelogo
+        hidefooter
+        floating
+        challengeurl="https://newsletter.infomaniak.com/v3/altcha-challenge"
+      ></altcha-widget>
+      <script
+        is:inline
+        src="https://newsletter.infomaniak.com/v3/static/mcaptcha/altcha-index.js?v=1790686800"
+        defer
+      ></script>
+      <script
+        is:inline
+        src="https://newsletter.infomaniak.com/v3/static/webform_index.js?v=1790686800"
+      ></script>
+
+      <div class="inf-submit">
+        <input type="submit" value="Newsletter abonnieren" />
+      </div>
+    </div>
+  </div>
+</form>
+
+<style>
+  .mn-newsletter {
+    box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    padding: var(--mn-home-pair-padding);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 1rem;
+    background: var(--mn-surface);
+  }
+
+  .mn-newsletter-body {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .mn-newsletter-trap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .mn-newsletter-mark {
+    display: grid;
+    width: clamp(3.5rem, 5vw, 4.5rem);
+    aspect-ratio: 1;
+    place-items: center;
+    margin-bottom: 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--color-MedNerds-400) 32%, transparent);
+    border-radius: 50%;
+    color: var(--color-MedNerds-300);
+    background: color-mix(in srgb, var(--color-MedNerds-500) 9%, transparent);
+  }
+
+  .mn-newsletter-eyebrow {
+    margin: 0 0 0.6rem;
+    color: var(--sl-color-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    max-width: 22ch;
+    margin: 0;
+    color: var(--sl-color-white);
+    font-size: clamp(1.75rem, 2.4vw, 2.5rem);
+    font-weight: 680;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
+
+  .mn-newsletter-description {
+    max-width: 55ch;
+    margin: 0.75rem 0 0;
+    color: var(--sl-color-gray-2);
+    font-size: clamp(1rem, 1.35vw, 1.125rem);
+    line-height: 1.65;
+  }
+
+  .inf-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+    margin-top: 1.5rem;
+  }
+
+  .inf-input {
+    display: grid;
+    gap: 0.55rem;
+    width: min(100%, 32rem);
+    min-width: 0;
+  }
+
+  label {
+    color: var(--sl-color-white);
+    font-size: 0.9rem;
+    font-weight: 650;
+  }
+
+  .inf-input input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--sl-color-gray-4);
+    border-radius: 0.65rem;
+    color: var(--sl-color-white);
+    background: var(--sl-color-bg);
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  .inf-input input::placeholder {
+    color: var(--sl-color-gray-3);
+    opacity: 1;
+  }
+
+  .inf-input input:user-invalid {
+    border-color: var(--sl-color-red);
+  }
+
+  .mn-newsletter :global(.inf-input.inf-error) input {
+    border-color: var(--sl-color-red);
+  }
+
+  .mn-newsletter :global(.inf-message) {
+    color: var(--sl-color-red-high);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .inf-input input:focus-visible,
+  .inf-submit input:focus-visible,
+  .inf-success a:focus-visible,
+  .inf-rgpd a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .inf-rgpd {
+    max-width: 70ch;
+    color: var(--sl-color-gray-3);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .inf-submit {
+    margin-top: auto;
+  }
+
+  .inf-rgpd a,
+  .inf-success a {
+    color: var(--sl-color-accent);
+    text-underline-offset: 0.15em;
+  }
+
+  .inf-submit input {
+    min-height: 2.9rem;
+    max-width: 100%;
+    padding: 0.7rem 1.15rem;
+    border: 1px solid var(--sl-color-accent);
+    border-radius: 0.65rem;
+    color: var(--sl-color-black);
+    background: var(--sl-color-accent-high);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 680;
+    line-height: 1.2;
+    white-space: normal;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .inf-submit input:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .inf-submit input:hover {
+      background: var(--sl-color-accent);
+    }
+  }
+
+  .inf-success {
+    max-width: 70ch;
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--sl-color-green);
+    border-radius: 0.65rem;
+    color: var(--sl-color-green-high);
+    background: var(--sl-color-green-low);
+    line-height: 1.6;
+  }
+
+  .inf-success p {
+    margin: 0;
+  }
+
+  .inf-success p + p {
+    margin-top: 0.75rem;
+  }
+
+  @media (max-width: 35rem) {
+    .inf-input,
+    .inf-submit,
+    .inf-submit input {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .inf-submit input {
+      transition: none;
+    }
+  }
+</style>

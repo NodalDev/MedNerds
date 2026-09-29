@@ -1,0 +1,28 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { publicCases } from '../../../../data/medcases/cases';
+import type { PublicCase } from '../../../../data/medcases/types';
+import { validTimerConfig } from '../../../../lib/medcases/timer';
+import '../../../../styles/medcases.css';
+
+export function getStaticPaths() {
+  return publicCases.map((item) => ({ params: { caseId: item.id }, props: { item } }));
+}
+interface Props { item: PublicCase }
+const { item } = Astro.props;
+---
+
+<StarlightPage hasSidebar={false} frontmatter={{
+  title: item.title,
+  description: item.summary,
+  pageLayout: 'hub',
+  tableOfContents: false,
+}}>
+  <div class="osce osce-overview">
+    <p class="osce-eyebrow">{item.specialty} · {item.demo ? 'Demo / Testfall' : 'OSCE'}</p>
+    <p class="osce-intro">{item.summary}</p>
+    <div class="osce-overview__facts">{validTimerConfig(item.timer) && <span>{item.timer.durationSeconds / 60} Minuten</span>}<span>3 Rollen</span><span>Timer beim Prüfer</span></div>
+    <section class="osce-panel"><h2>So läuft dieser Fall ab</h2><ol><li>Der Prüfer öffnet den Fall auf dem eigenen Gerät und steuert die Zeit.</li><li>Prüfling und Schauspielpatient treten per QR-Code oder Fallcode bei.</li><li>Nach dem verbalen Kommando startet der Prüfer den Timer.</li><li>Der Prüfer führt die vorhandene Checkliste und öffnet gegebenenfalls das Debriefing nach dem Durchlauf.</li></ol><p class="osce-fineprint">In V1 gibt es keine gemeinsame Sitzung und keine Synchronisierung zwischen Geräten.</p></section>
+    <div class="osce-actions"><a class="osce-button" href={`/medcases/osce/${item.id}/examiner/`}>Als Prüfer starten</a><a class="osce-button osce-button--secondary" href="/medcases/join/">Mit Fallcode beitreten</a></div>
+  </div>
+</StarlightPage>

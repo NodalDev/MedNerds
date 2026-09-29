@@ -1,10 +1,11 @@
 ---
 import { publicCases } from '../../data/medcases/cases';
+import { validTimerConfig } from '../../lib/medcases/timer';
 import '../../styles/medcases.css';
 ---
 
 <div class="osce osce-hub">
-  <p class="osce-hub__lead">Getrennte Ansichten für Prüfling, Schauspielpatient und Prüfer. Alle starten ihren Timer nach einem gemeinsamen verbalen Kommando auf dem eigenen Gerät.</p>
+  <p class="osce-hub__lead">Getrennte Ansichten für Student*in, Schauspielpatient*in und Examinator*in. Die Zeit steuert allein das Prüfergerät.</p>
   <section aria-labelledby="osce-faelle">
     <div class="osce-section-heading"><h2 id="osce-faelle">Verfügbare OSCE-Fälle</h2><span class="osce-muted">{publicCases.length} Demo-Fall</span></div>
     <div class="osce-case-grid">
@@ -12,7 +13,7 @@ import '../../styles/medcases.css';
         <span class="osce-eyebrow">{item.specialty} · {item.demo ? 'Demo / Testfall' : 'OSCE'}</span>
         <strong>{item.title}</strong>
         <span>{item.summary}</span>
-        <span class="osce-case-card__meta">{item.timer.durationSeconds / 60} Minuten · 3 Rollen</span>
+        <span class="osce-case-card__meta">{validTimerConfig(item.timer) ? `${item.timer.durationSeconds / 60} Minuten · ` : ''}3 Rollen</span>
         <span class="osce-case-card__link">Fall ansehen <span aria-hidden="true">→</span></span>
       </a>)}
     </div>
