@@ -2,8 +2,10 @@
 import DefaultHero from '@astrojs/starlight/components/Hero.astro';
 import { LinkButton } from '@astrojs/starlight/components';
 import MedNerdsHeroLogo from './MedNerdsHeroLogo.astro';
+import MedNerdsBaselHero from './MedNerdsBaselHero.astro';
 
 const isHomepage = Astro.locals.starlightRoute.id === '';
+const isBaselPage = Astro.url.pathname === '/mednerds-basel/';
 const { data } = Astro.locals.starlightRoute.entry;
 const { title = data.title, tagline, actions = [] } = data.hero || {};
 ---
@@ -37,6 +39,8 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
         }
       </div>
     </div>
+  ) : isBaselPage ? (
+    <MedNerdsBaselHero />
   ) : (
     <DefaultHero />
   )

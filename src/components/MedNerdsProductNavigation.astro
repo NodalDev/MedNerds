@@ -236,7 +236,7 @@ const activeProduct = getActiveProduct(pathname);
   }
 
   :is(.product-link, .product-open, .child-links a):focus-visible {
-    outline: 2px solid var(--sl-color-accent);
+    outline: 2px solid var(--product-color);
     outline-offset: 3px;
     border-radius: 0.25rem;
   }
@@ -299,7 +299,7 @@ const activeProduct = getActiveProduct(pathname);
     justify-self: start;
     gap: 0.5rem;
     min-height: 2.75rem;
-    color: var(--sl-color-accent);
+    color: var(--product-color);
     font-size: 0.875rem;
     font-weight: 600;
     text-decoration: none;
@@ -353,11 +353,15 @@ const activeProduct = getActiveProduct(pathname);
 
   .child-links a:hover {
     background: var(--mn-surface-hover);
-    color: var(--sl-color-accent);
+  }
+
+  .child-links a:hover,
+  .child-links a[aria-current] {
+    color: var(--product-color);
   }
 
   .child-links a > :global(.mn-icon:first-child) {
-    color: var(--sl-color-accent);
+    color: var(--product-color);
   }
 
   .child-links a > :global(.mn-icon:last-child) {

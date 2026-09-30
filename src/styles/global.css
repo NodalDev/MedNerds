@@ -635,33 +635,38 @@
    Product navigation
    ---------------------------------------- */
 
-.product-link {
+.product-item,
+.mobile-product-link {
   --product-light: var(--color-MedNerds-700);
   --product-dark: var(--color-MedNerds-300);
   --product-color: var(--product-dark);
 }
 
-.product-link[data-product='medlearn'] {
+.product-item[data-product-id='medlearn'],
+.mobile-product-link[data-product='medlearn'] {
   --product-light: var(--color-MedLearn-700);
   --product-dark: var(--color-MedLearn-300);
 }
 
-.product-link[data-product='medcases'] {
+.product-item[data-product-id='medcases'],
+.mobile-product-link[data-product='medcases'] {
   --product-light: var(--color-MedCases-700);
   --product-dark: var(--color-MedCases-300);
 }
 
-.product-link[data-product='medblog'] {
+.product-item[data-product-id='medblog'],
+.mobile-product-link[data-product='medblog'] {
   --product-light: var(--color-MedBlog-700);
   --product-dark: var(--color-MedBlog-300);
 }
 
-.product-link[data-product='medtools'] {
+.product-item[data-product-id='medtools'],
+.mobile-product-link[data-product='medtools'] {
   --product-light: var(--color-MedTools-700);
   --product-dark: var(--color-MedTools-300);
 }
 
-:root[data-theme='light'] .product-link {
+:root[data-theme='light'] :is(.product-item, .mobile-product-link) {
   --product-color: var(--product-light);
 }
 
