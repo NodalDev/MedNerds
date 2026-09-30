@@ -67,6 +67,33 @@ try {
   await command('Page.enable');
   await command('Runtime.enable');
   await navigate('/medcases/');
+  await viewport(1440, 900, 'dark');
+  const entryCards = await evaluate(`[...document.querySelectorAll('.osce-entry-card')].map((card) => {
+    const cardBox = card.getBoundingClientRect();
+    const actionBox = card.querySelector('.osce-button').getBoundingClientRect();
+    return { x: cardBox.x, y: cardBox.y, width: cardBox.width, height: cardBox.height, actionTop: actionBox.top };
+  })`);
+  assert.equal(entryCards.length, 2);
+  assert.ok(Math.abs(entryCards[0].width - entryCards[1].width) < 1);
+  assert.ok(Math.abs(entryCards[0].height - entryCards[1].height) < 1);
+  assert.ok(Math.abs(entryCards[0].actionTop - entryCards[1].actionTop) < 1, JSON.stringify(entryCards));
+  assert.ok(entryCards[1].x > entryCards[0].x);
+  assert.equal(await evaluate("document.querySelector('#medcases-session-code').placeholder"), 'Session-Code');
+  assert.equal(await evaluate("document.querySelector('label[for=medcases-session-code]').classList.contains('sr-only')"), true);
+  for (const width of [832, 1024, 1280]) {
+    await viewport(width, 900, 'dark');
+    const cards = await evaluate(`[...document.querySelectorAll('.osce-entry-card')].map((card) => {
+      const box = card.getBoundingClientRect();
+      return { x: box.x, y: box.y, width: box.width, height: box.height, actionTop: card.querySelector('.osce-button').getBoundingClientRect().top };
+    })`);
+    assert.ok(Math.abs(cards[0].width - cards[1].width) < 1 && Math.abs(cards[0].height - cards[1].height) < 1, `${width}px: ${JSON.stringify(cards)}`);
+    assert.ok(Math.abs(cards[0].actionTop - cards[1].actionTop) < 1, `${width}px: ${JSON.stringify(cards)}`);
+  }
+  await viewport(320, 800, 'dark');
+  assert.equal(await evaluate("document.querySelectorAll('.osce-entry-card')[1].getBoundingClientRect().top > document.querySelectorAll('.osce-entry-card')[0].getBoundingClientRect().bottom"), true);
+  await viewport(1440, 900, 'dark');
+  assert.equal(await evaluate("document.body.innerText.includes('Akuter Thoraxschmerz')"), false);
+  assert.equal(await evaluate("document.body.innerText.includes('Session beitreten')"), true);
   const search = await evaluate(`(async () => {
     const pagefind = await import('/pagefind/pagefind.js');
     const publicResults = await pagefind.search('OSCE');
@@ -76,11 +103,15 @@ try {
     return { urls, spoilerUrls };
   })()`);
   assert.ok(search.urls.includes('/medcases/'));
+  await navigate('/medcases/osce/');
+  assert.equal(await evaluate("document.body.innerText.includes('Akuter Thoraxschmerz')"), true);
   assert.deepEqual(search.spoilerUrls, [[], [], []]);
   assert.ok(search.spoilerUrls.every((group) => group.every((url) => !url.startsWith('/medcases/osce/') && url !== '/medcases/join/')));
   await navigate(`${root}/`);
-  assert.ok(await evaluate("document.body.innerText.includes('Als Prüfer starten')"));
-  assert.equal(await evaluate(`document.querySelector('a[href$="/examiner/"]') !== null`), true);
+  assert.ok(await evaluate("document.body.innerText.includes('Live-OSCE starten')"));
+  assert.equal(await evaluate(`document.querySelector('a[href$="/examiner/?mode=live"]') !== null`), true);
+  assert.equal(await evaluate(`document.querySelector('a[href$="/examiner/?mode=local"]') !== null`), true);
+  assert.equal(await evaluate("document.body.innerText.includes('Mit Fallcode beitreten')"), false);
 
   await navigate('/medcases/join/');
   await waitFor("document.querySelector('#osce-code') !== null");
@@ -98,6 +129,7 @@ try {
   assert.equal(await evaluate(`document.querySelector('.osce-role-link').getAttribute('href')`), `${root}/candidate/`);
 
   await navigate(`${root}/candidate/`);
+  assert.equal(await evaluate("document.body.innerText.includes('Akuter Thoraxschmerz')"), false);
   assert.equal(await evaluate("document.body.innerText.includes('Ausgangssituation')"), true);
   assert.equal(await evaluate("document.querySelector('.osce-timer')"), null);
   assert.equal(await evaluate("document.body.innerText.includes('Kernproblem')"), false);
@@ -117,29 +149,37 @@ try {
     for (const theme of ['dark', 'light']) await viewport(width, 850, theme);
   }
 
-  await navigate(`${root}/examiner/`);
-  await waitFor("document.querySelector('.osce-qr') !== null");
-  assert.equal(await evaluate("document.querySelector('.osce-timer__display').textContent"), '13:00');
-  assert.equal(await evaluate("document.body.innerText.includes('K7P4MX')"), true);
-  assert.equal(await evaluate("document.querySelector('.osce-text-link').href"), 'https://mednerds.ch/medcases/join/?case=K7P4MX');
-  const decodedQr = await evaluate(`(async () => {
-    if (!('BarcodeDetector' in window)) return null;
-    const detector = new BarcodeDetector({ formats: ['qr_code'] });
-    const svg = document.querySelector('.osce-qr');
-    const image = await createImageBitmap(new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' }));
-    return (await detector.detect(image))[0]?.rawValue ?? null;
-  })()`);
-  if (decodedQr) assert.equal(decodedQr, 'https://mednerds.ch/medcases/join/?case=K7P4MX');
-  await click('.osce-toggle input');
-  assert.equal(await evaluate("document.querySelector('.osce-toggle input').checked"), false);
-  await click('.osce-toggle input');
-  await click('.osce-timer button');
+  await navigate(`${root}/examiner/?mode=live`);
+  await waitFor("document.querySelector('.osce-mode-switch') !== null");
+  assert.equal(await evaluate("document.querySelector('.osce-mode-switch').textContent.includes('Modus: Live-OSCE')"), true);
+  assert.equal(await evaluate("document.body.innerText.includes('Statischer Fallbeitritt')"), false);
+  assert.equal(await evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-timer')"), null);
+  assert.equal(await evaluate("document.body.innerText.includes('Live-OSCE ist derzeit nicht verfügbar.')"), true);
+  await click('.osce-mode-switch button');
+  assert.equal(await evaluate("document.querySelector('.osce-mode-switch').textContent.includes('Lokaler Timer')"), true);
+  assert.equal(await evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-timer__display').textContent"), '13:00');
+  await click('.osce-mode-content:not([hidden]) .osce-toggle input');
+  assert.equal(await evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-toggle input').checked"), false);
+  await click('.osce-mode-content:not([hidden]) .osce-toggle input');
+  await click('.osce-mode-content:not([hidden]) .osce-sound summary');
+  assert.equal(await evaluate("document.querySelectorAll('.osce-mode-content:not([hidden]) .osce-sound button').length"), 4);
+  await click('.osce-mode-content:not([hidden]) .osce-timer button');
   await waitFor("document.body.innerText.includes('LÄUFT')");
-  await click('.osce-timer button:first-child');
+  await evaluate('window.__modeConfirmCalls = 0; window.confirm = () => { window.__modeConfirmCalls++; return false; }');
+  await click('.osce-mode-switch button');
+  assert.equal(await evaluate("document.querySelector('.osce-mode-switch').textContent.includes('Lokaler Timer')"), true);
+  assert.equal(await evaluate('window.__modeConfirmCalls'), 1);
+  await evaluate('window.confirm = () => { window.__modeConfirmCalls++; return true; }');
+  await click('.osce-mode-switch button');
+  assert.equal(await evaluate("document.querySelector('.osce-mode-switch').textContent.includes('Live-OSCE')"), true);
+  assert.equal(await evaluate("document.querySelector('.osce-mode-content[hidden] .osce-timer__state').textContent"), 'LÄUFT');
+  await click('.osce-mode-switch button');
+  assert.equal(await evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-timer__state').textContent"), 'LÄUFT');
+  await click('.osce-mode-content:not([hidden]) .osce-timer button:first-child');
   await waitFor("document.body.innerText.includes('PAUSIERT')");
-  await click('.osce-timer button:first-child');
+  await click('.osce-mode-content:not([hidden]) .osce-timer button:first-child');
   await waitFor("document.body.innerText.includes('LÄUFT')");
-  await click('.osce-timer button:nth-child(2)');
+  await click('.osce-mode-content:not([hidden]) .osce-timer button:nth-child(2)');
   await waitFor("document.body.innerText.includes('BEREIT')");
   await click('.osce-checklist__item input');
   assert.ok(await evaluate("document.querySelector('.osce-score').textContent.includes('1 / 12')"));
@@ -152,18 +192,19 @@ try {
   const examinerShot = await command('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   await writeFile(join(tmpdir(), 'medcases-examiner-light-test.png'), Buffer.from(examinerShot.data, 'base64'));
 
-  await click('.osce-timer button');
+  await click('.osce-mode-content:not([hidden]) .osce-timer button');
   await command('Emulation.setVirtualTimePolicy', { policy: 'advance', budget: 661000 });
-  await waitFor("document.querySelector('.osce-timer').classList.contains('osce-timer--warning')");
+  await waitFor("document.querySelector('.osce-mode-content:not([hidden]) .osce-timer').classList.contains('osce-timer--warning')");
   await command('Emulation.setVirtualTimePolicy', { policy: 'advance', budget: 120000 });
   await waitFor("document.body.innerText.includes('ZEIT ABGELAUFEN')");
-  assert.equal(await evaluate("document.querySelector('.osce-timer__display').textContent"), '00:00');
+  assert.equal(await evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-timer__display').textContent"), '00:00');
 
   for (const path of [`${root}/unknown/`, '/medcases/osce/case-ffffffffee/candidate/', '/medcases/osce/akuter-thoraxschmerz/candidate/']) {
     assert.equal(await evaluate(`(async () => (await fetch(${JSON.stringify(path)})).status)()`), 404);
   }
-  assert.deepEqual(errors, []);
-  console.log('MedCases browser checks passed: opake routes, join, spoiler-free search, role isolation, examiner timer and checklist, 30 viewport/theme combinations.');
+  // A production build without a Worker URL deliberately reports unavailable Realtime.
+  assert.deepEqual(errors.filter((error) => !error.startsWith('MedCases Realtime ist nicht konfiguriert:')), []);
+  console.log('MedCases browser checks passed: opake routes, join, spoiler-free search, role isolation, examiner mode switch, local timer and checklist, 30 viewport/theme combinations.');
 } finally {
   socket.close();
   await fetch(`${endpoint}/json/close/${target.id}`).catch(() => {});

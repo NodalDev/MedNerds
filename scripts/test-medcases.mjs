@@ -25,6 +25,7 @@ for (const projection of [candidate, patient]) {
   assert.equal('joinCode' in projection, false);
 }
 assert.equal('patient' in candidate, false);
+assert.equal('title' in candidate, false);
 assert.equal('candidate' in patient, false);
 assert.deepEqual(patient.releasableMaterials.map(({ id }) => id), ['vitals-1']);
 assert.ok(candidate.candidate.tasks.length > 0);
@@ -41,21 +42,31 @@ assert.equal(validTimerConfig({ durationSeconds: 600, warningRemainingSeconds: 6
 assert.equal(joinUrl('https://mednerds.ch', item.joinCode), 'https://mednerds.ch/medcases/join/?case=K7P4MX');
 
 const root = `dist/medcases/osce/${item.id}`;
-const [landingHtml, publicHtml, candidateHtml, patientHtml, examinerHtml, joinHtml, liveJoinHtml, displayHtml, patientEntryHtml, livePatientHtml] = await Promise.all([
+const [landingHtml, libraryHtml, publicHtml, candidateHtml, patientHtml, examinerHtml, joinHtml, liveJoinHtml, candidateEntryHtml, displayHtml, patientEntryHtml, livePatientHtml] = await Promise.all([
   readFile('dist/medcases/index.html', 'utf8'),
+  readFile('dist/medcases/osce/index.html', 'utf8'),
   readFile(`${root}/index.html`, 'utf8'),
   readFile(`${root}/candidate/index.html`, 'utf8'),
   readFile(`${root}/patient/index.html`, 'utf8'),
   readFile(`${root}/examiner/index.html`, 'utf8'),
   readFile('dist/medcases/join/index.html', 'utf8'),
   readFile('dist/medcases/session/join/index.html', 'utf8'),
+  readFile('dist/medcases/session/candidate/index.html', 'utf8'),
   readFile('dist/medcases/session/display/index.html', 'utf8'),
   readFile('dist/medcases/session/patient/index.html', 'utf8'),
   readFile(`dist/medcases/session/patient/${item.id}/index.html`, 'utf8'),
 ]);
 assert.match(landingHtml, /data-pagefind-body/);
+assert.match(libraryHtml, /data-pagefind-body/);
 assert.match(publicHtml, /data-pagefind-body/);
-for (const html of [joinHtml, liveJoinHtml, displayHtml, patientEntryHtml, livePatientHtml, candidateHtml, patientHtml, examinerHtml]) {
+assert.match(landingHtml, /OSCE starten/);
+assert.match(landingHtml, /Session beitreten/);
+assert.match(landingHtml, /placeholder="Session-Code"/);
+assert.match(landingHtml, /class="sr-only" for="medcases-session-code"/);
+assert.doesNotMatch(landingHtml, /Akuter Thoraxschmerz/);
+assert.match(libraryHtml, /Akuter Thoraxschmerz/);
+assert.match(libraryHtml, new RegExp(`/medcases/osce/${item.id}/`));
+for (const html of [joinHtml, liveJoinHtml, candidateEntryHtml, displayHtml, patientEntryHtml, livePatientHtml, candidateHtml, patientHtml, examinerHtml]) {
   assert.match(html, /name="robots" content="noindex, nofollow"/);
   assert.doesNotMatch(html, /data-pagefind-body/);
 }
@@ -63,11 +74,17 @@ assert.doesNotMatch(displayHtml, /Kernproblem|Checkliste|Gesamtscore|Diagnose/);
 assert.doesNotMatch(patientEntryHtml, /Kernproblem|Checkliste|Gesamtscore|Diagnose|vitals-1/);
 assert.doesNotMatch(livePatientHtml, /Kernproblem|Checkliste|Gesamtscore|Diagnose|osce-timer__display/);
 assert.doesNotMatch(candidateHtml, /Kernproblem|Bluthochdruck|Checkliste|Ausstrahlung|osce-timer__display/);
+assert.doesNotMatch(candidateHtml, /Akuter Thoraxschmerz/);
+assert.match(candidateHtml, /OSCE-Station/);
+assert.doesNotMatch(candidateEntryHtml, /Akuter Thoraxschmerz/);
 assert.doesNotMatch(patientHtml, /Kernproblem|Checkliste|Gesamtscore|osce-timer__display/);
 assert.doesNotMatch(candidateHtml, /OsceParticipant.*client:load/);
 assert.match(examinerHtml, /Kernproblem|Checkliste|osce-timer__display/);
 assert.doesNotMatch(examinerHtml, /duration=780|warning=120/);
 assert.match(publicHtml, new RegExp(`/medcases/osce/${item.id}/examiner/`));
+assert.match(publicHtml, /\?mode=live/);
+assert.match(publicHtml, /\?mode=local/);
+assert.doesNotMatch(publicHtml, /Mit Fallcode beitreten/);
 await assert.rejects(readFile('dist/medcases/osce/akuter-thoraxschmerz/index.html', 'utf8'), { code: 'ENOENT' });
 await assert.rejects(readFile(`${root}/master/index.html`, 'utf8'), { code: 'ENOENT' });
 await assert.rejects(readFile(`${root}/unknown/index.html`, 'utf8'), { code: 'ENOENT' });

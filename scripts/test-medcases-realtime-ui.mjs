@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   EXAMINER_STORAGE_KEY, PATIENT_STORAGE_KEY, clearExaminerSession, clearPatientSession, cueForLiveEvent,
   normalizeSessionCode, patientCapabilityFromFragment, patientInviteUrl, restoreExaminerSession,
-  restorePatientSession, saveExaminerSession, savePatientSession, sessionDisplayUrl, sessionJoinUrl,
+  restorePatientSession, saveExaminerSession, savePatientSession, sessionCandidateUrl, sessionDisplayUrl, sessionJoinUrl,
   validStoredSession, visibleRemainingMs,
 } from '../src/lib/medcases/realtime-ui.ts';
 
@@ -34,6 +34,12 @@ test('display link contains only the code and uses its dedicated route', () => {
   const url = sessionDisplayUrl('http://localhost:4321/other/', valid.joinCode);
   assert.equal(url, 'http://localhost:4321/medcases/session/display/?code=K7P4MX');
   for (const secret of [valid.sessionId, valid.examinerCapability, valid.caseId]) assert.ok(!url.includes(secret));
+});
+
+test('candidate link contains only a session code', () => {
+  const url = sessionCandidateUrl('https://mednerds.ch/', valid.joinCode);
+  assert.equal(url, 'https://mednerds.ch/medcases/session/candidate/?code=K7P4MX');
+  for (const secret of [valid.sessionId, valid.examinerCapability, valid.patientCapability, valid.caseId]) assert.ok(!url.includes(secret));
 });
 
 test('patient invite keeps its separate capability in the URL fragment and sessionStorage only', () => {

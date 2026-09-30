@@ -64,8 +64,8 @@ export const productLinks = [
       'OSCE-Prüfungssituationen gemeinsam trainieren.',
     status: 'building',
     children: [
-      { label: 'OSCE-Fälle', href: '/medcases/', icon: 'healthicons:clinical-f-outline' },
-      { label: 'Mit Fallcode beitreten', href: '/medcases/join/', icon: 'tabler:qrcode' },
+      { label: 'OSCE trainieren', href: '/medcases/osce/', icon: 'healthicons:clinical-f-outline' },
+      { label: 'Session beitreten', href: '/medcases/session/candidate/', icon: 'tabler:qrcode' },
     ],
   },
   {

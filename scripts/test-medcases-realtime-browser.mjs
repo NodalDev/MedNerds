@@ -71,14 +71,23 @@ try {
     html: document.body.innerHTML,
   }))()`);
   info.url = `${site}/medcases/session/join/?code=${info.code}`;
+  info.candidateUrl = `${site}/medcases/session/candidate/?code=${info.code}`;
   assert.match(info.code, /^[A-HJ-NP-Z2-9]{6}$/);
   assert.equal(info.url, `${site}/medcases/session/join/?code=${info.code}`);
   assert.ok(info.qrValue);
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-live__invite .osce-label')?.textContent"), 'Prüfling verbinden');
   const stored = JSON.parse(info.storage);
   assert.ok(!info.html.includes(stored.examinerCapability));
   assert.ok(!info.url.includes(stored.examinerCapability));
   assert.ok(!info.url.includes(stored.sessionId));
   assert.equal(await examiner.evaluate("document.querySelector('.osce-timer__display')?.textContent"), '13:00');
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-switch').textContent.includes('Modus: Live-OSCE')"), true);
+  await examiner.evaluate("document.querySelector('.osce-mode-switch button').click()");
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-timer__display')?.textContent"), '13:00');
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-content[hidden] .osce-live') !== null"), true);
+  assert.equal(await examiner.evaluate("sessionStorage.getItem('mednerds.medcases.realtime.examiner.v2') !== null"), true);
+  await examiner.evaluate("document.querySelector('.osce-mode-switch button').click()");
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-live .osce-join-code')?.textContent"), info.code);
 
   await observer.navigate(info.url);
   await observer.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'");
@@ -97,6 +106,15 @@ try {
   await examiner.clickText('.osce-timer button', 'Timer starten');
   await examiner.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'LÄUFT'");
   await observer.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'LÄUFT'");
+  await examiner.evaluate("window.__modeConfirmCalls = 0; window.confirm = () => { window.__modeConfirmCalls++; return false; }; document.querySelector('.osce-mode-switch button').click()");
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-switch').textContent.includes('Modus: Live-OSCE')"), true);
+  assert.equal(await examiner.evaluate('window.__modeConfirmCalls'), 1);
+  await examiner.evaluate("window.confirm = () => { window.__modeConfirmCalls++; return true; }; document.querySelector('.osce-mode-switch button').click()");
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-timer__display')?.textContent"), '13:00');
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-content[hidden] .osce-live .osce-join-code')?.textContent"), info.code);
+  await examiner.evaluate("document.querySelector('.osce-mode-switch button').click()");
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-live .osce-join-code')?.textContent"), info.code);
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-mode-content:not([hidden]) .osce-timer__state')?.textContent"), 'LÄUFT');
   await examiner.clickText('.osce-timer button', 'Pausieren');
   await examiner.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'PAUSIERT'");
   await observer.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'PAUSIERT'");
@@ -107,7 +125,7 @@ try {
 
   await observer.command('Page.reload', { ignoreCache: true });
   await observer.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'");
-  assert.equal(await observer.evaluate("document.querySelector('.osce-timer__state')?.textContent"), 'LÄUFT');
+  await observer.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'LÄUFT'");
   await examiner.command('Page.reload', { ignoreCache: true });
   await examiner.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'");
   await examiner.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'LÄUFT'");
@@ -115,10 +133,16 @@ try {
   assert.ok(await examiner.evaluate("sessionStorage.getItem('mednerds.medcases.realtime.examiner.v2') !== null"));
   console.log('Two-tab create, observer route, timer, and both reloads passed.');
   console.log('READY_FOR_RESTART');
-  await examiner.waitFor("document.querySelector('.osce-live__status')?.textContent.includes('wiederhergestellt')", 30_000);
+  console.log('Restart the local Worker, then press Enter to continue.');
+  await new Promise((resolve) => process.stdin.once('data', resolve));
+  process.stdin.pause();
   await examiner.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'", 45_000);
   await observer.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'", 45_000);
   assert.equal(await examiner.evaluate("document.querySelector('.osce-timer__state')?.textContent"), 'LÄUFT');
+  await examiner.clickText('.osce-timer button', 'Pausieren');
+  await observer.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'PAUSIERT'");
+  await examiner.clickText('.osce-timer button', 'Fortsetzen');
+  await observer.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'LÄUFT'");
   console.log('Both browser clients reconnected after Worker restart.');
 
   const shortCode = await examiner.evaluate(`(async () => {

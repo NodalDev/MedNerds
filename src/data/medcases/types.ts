@@ -64,6 +64,6 @@ export interface OsceCase {
 }
 
 export type PublicCase = Pick<OsceCase, 'id' | 'joinCode' | 'title' | 'specialty' | 'summary' | 'demo' | 'timer'>;
-export type CandidateCase = Pick<OsceCase, 'id' | 'title' | 'demo' | 'candidate'>;
+export type CandidateCase = Pick<OsceCase, 'id' | 'demo' | 'candidate'>;
 export type PatientCase = Pick<OsceCase, 'id' | 'title' | 'demo' | 'patient'> & { releasableMaterials: CaseMaterial[] };
 export type MasterCase = OsceCase;

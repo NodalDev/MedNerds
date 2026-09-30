@@ -1,23 +1,28 @@
 ---
-import { publicCases } from '../../data/medcases/cases';
-import { validTimerConfig } from '../../lib/medcases/timer';
+import MedNerdsIcon from '../MedNerdsIcon.astro';
 import '../../styles/medcases.css';
 ---
 
 <div class="osce osce-hub">
-  <p class="osce-hub__lead">Getrennte Ansichten für Student*in, Schauspielpatient*in und Examinator*in. Die Zeit steuert allein das Prüfergerät.</p>
-  <section aria-labelledby="osce-faelle">
-    <div class="osce-section-heading"><h2 id="osce-faelle">Verfügbare OSCE-Fälle</h2><span class="osce-muted">{publicCases.length} Demo-Fall</span></div>
-    <div class="osce-case-grid">
-      {publicCases.map((item) => <a class="osce-case-card" href={`/medcases/osce/${item.id}/`}>
-        <span class="osce-eyebrow">{item.specialty} · {item.demo ? 'Demo / Testfall' : 'OSCE'}</span>
-        <strong>{item.title}</strong>
-        <span>{item.summary}</span>
-        <span class="osce-case-card__meta">{validTimerConfig(item.timer) ? `${item.timer.durationSeconds / 60} Minuten · ` : ''}3 Rollen</span>
-        <span class="osce-case-card__link">Fall ansehen <span aria-hidden="true">→</span></span>
-      </a>)}
-    </div>
-  </section>
-  <p class="osce-hub__join">Du hast bereits einen Fallcode? <a href="/medcases/join/">Als Teilnehmer beitreten <span aria-hidden="true">→</span></a></p>
-  <p class="osce-fineprint">MedCases V1 speichert keine Ergebnisse und verbindet Geräte nicht miteinander.</p>
+  <div class="osce-entry-grid">
+    <section class="osce-panel osce-entry-card">
+      <h2>OSCE starten</h2>
+      <span class="osce-entry-card__icon" aria-hidden="true"><MedNerdsIcon name="tabler:clipboard-text" size="xl" /></span>
+      <p>Wähle einen Fall aus unseren Kategorien aus oder lasse dich überraschen und starte ihn als Prüfer.</p>
+      <a class="osce-button" href="/medcases/osce/">Fälle ansehen</a>
+    </section>
+    <section class="osce-panel osce-entry-card">
+      <h2>Session beitreten</h2>
+      <span class="osce-entry-card__icon" aria-hidden="true"><MedNerdsIcon name="tabler:users-plus" size="xl" /></span>
+      <p>Scanne den QR-Code des Prüfers oder gib den Session-Code ein.</p>
+      <form action="/medcases/session/candidate/" method="get" class="osce-entry-form">
+        <label class="sr-only" for="medcases-session-code">Session-Code</label>
+        <div class="osce-join__row">
+          <input id="medcases-session-code" name="code" class="osce-input osce-code-input" type="text" placeholder="Session-Code"
+            autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" required />
+          <button class="osce-button osce-button--secondary" type="submit">Beitreten</button>
+        </div>
+      </form>
+    </section>
+  </div>
 </div>

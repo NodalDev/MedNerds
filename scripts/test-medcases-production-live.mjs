@@ -102,7 +102,9 @@ if (MODE === 'production') {
   assert.equal(created.headers.get('Access-Control-Allow-Origin'), PRODUCTION_ORIGIN);
   const session = await created.json();
   assert.ok(session.expiresAtMs >= createdAt + 3_590_000 && session.expiresAtMs <= Date.now() + 3_610_000);
-  assert.equal((await post('/sessions/join', { joinCode: session.joinCode }, PRODUCTION_ORIGIN)).status, 200);
+  const joined = await post('/sessions/join', { joinCode: session.joinCode }, PRODUCTION_ORIGIN);
+  assert.equal(joined.status, 200);
+  assert.equal((await joined.json()).caseId, BODY.caseId);
   const preflight = await fetch(`${BASE}/sessions`, { method: 'OPTIONS', headers: { Origin: PRODUCTION_ORIGIN } });
   assert.equal(preflight.status, 204);
   assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), PRODUCTION_ORIGIN);

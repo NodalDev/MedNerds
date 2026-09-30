@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { CaseMaterial, TimerConfig } from '../../data/medcases/types';
 import type { TimerStatus } from '../../lib/medcases/timer';
 import { createRealtimeSession } from '../../lib/medcases/MedCasesRealtimeClient';
 import { realtimeConfig } from '../../lib/medcases/realtime-config';
 import {
-  clearExaminerSession, cueForLiveEvent, patientInviteUrl, restoreExaminerSession, saveExaminerSession, sessionDisplayUrl,
+  clearExaminerSession, cueForLiveEvent, patientInviteUrl, restoreExaminerSession, saveExaminerSession, sessionCandidateUrl, sessionDisplayUrl,
   validStoredSession, type StoredExaminerSession,
 } from '../../lib/medcases/realtime-ui';
 import { useRealtimeSession } from './useRealtimeSession';
@@ -12,22 +12,25 @@ import RealtimeTimer from './RealtimeTimer';
 import SessionQrCode from './SessionQrCode';
 
 export default function RealtimeExaminer({
-  caseId, timer, materials, localStatus, onActiveChange, onCue,
+  caseId, timer, materials, onActiveChange, onTimerStatusChange, onUseLocalTimer, onCue, soundControls,
 }: {
   caseId: string;
   timer: TimerConfig;
   materials: CaseMaterial[];
-  localStatus: TimerStatus;
   onActiveChange(active: boolean): void;
+  onTimerStatusChange(status: TimerStatus | null): void;
+  onUseLocalTimer(): void;
   onCue(cue: 'start' | 'warning' | 'end'): void;
+  soundControls: ReactNode;
 }) {
   const [credentials, setCredentials] = useState<StoredExaminerSession | null>(null);
   const [creating, setCreating] = useState(false);
   const [restoring, setRestoring] = useState(true);
   const [expired, setExpired] = useState(false);
   const [error, setError] = useState('');
-  const [copied, setCopied] = useState<'patient' | 'display' | null>(null);
+  const [copied, setCopied] = useState<'candidate' | 'patient' | 'display' | null>(null);
   const [copyError, setCopyError] = useState(false);
+  const [patientInviteOpen, setPatientInviteOpen] = useState(false);
   const [displayInviteOpen, setDisplayInviteOpen] = useState(false);
   const creatingRef = useRef(false);
   const workerUrl = realtimeConfig.workerUrl;
@@ -57,8 +60,17 @@ export default function RealtimeExaminer({
     } : null,
     onTerminal, onLiveEvent,
   );
+  useEffect(() => onTimerStatusChange(credentials ? session?.timer?.status ?? null : null),
+    [credentials, session?.timer?.status, onTimerStatusChange]);
 
-  if (!workerUrl) return null;
+  if (!workerUrl) return <section className="osce-panel osce-live" role="status">
+    <p className="osce-eyebrow">Live-Session</p>
+    <p>Live-OSCE ist derzeit nicht verfügbar.</p>
+    <button className="osce-button osce-button--secondary" type="button" onClick={onUseLocalTimer}>Lokalen Timer verwenden</button>
+  </section>;
+  const candidateUrl = credentials
+    ? sessionCandidateUrl(realtimeConfig.joinBaseUrl ?? window.location.origin, credentials.joinCode)
+    : null;
   const patientUrl = credentials
     ? patientInviteUrl(realtimeConfig.joinBaseUrl ?? window.location.origin, credentials.joinCode, credentials.patientCapability)
     : null;
@@ -67,7 +79,7 @@ export default function RealtimeExaminer({
     : null;
 
   const create = async () => {
-    if (creatingRef.current || localStatus !== 'ready' || credentials) return;
+    if (creatingRef.current || credentials) return;
     creatingRef.current = true;
     setCreating(true);
     setError('');
@@ -81,7 +93,7 @@ export default function RealtimeExaminer({
       saveExaminerSession(window.sessionStorage, next);
       setCredentials(next);
     } catch {
-      setError('Die Live-Session konnte nicht erstellt werden. Prüfe die lokale Worker-Verbindung und versuche es erneut.');
+      setError('Die Live-Session konnte nicht erstellt werden. Prüfe deine Verbindung und versuche es erneut.');
     } finally {
       creatingRef.current = false;
       setCreating(false);
@@ -93,7 +105,7 @@ export default function RealtimeExaminer({
     setExpired(false);
     setError('');
   };
-  const copyLink = async (url: string, kind: 'patient' | 'display') => {
+  const copyLink = async (url: string, kind: 'candidate' | 'patient' | 'display') => {
     try { await navigator.clipboard.writeText(url); setCopied(kind); setCopyError(false); }
     catch { setCopied(null); setCopyError(true); }
   };
@@ -106,26 +118,36 @@ export default function RealtimeExaminer({
 
   return <div className="osce-live-stack">
     <section className="osce-panel osce-live">
-      <p className="osce-eyebrow">Lokaler Prototyp</p>
+      <p className="osce-eyebrow">Live-OSCE</p>
       <h2>Live-Session</h2>
       {!credentials ? <>
         <p>Synchronisiere den OSCE-Timer mit weiteren Geräten.</p>
         {expired && <p role="status">Diese Live-Session ist abgelaufen.</p>}
-        {localStatus !== 'ready' && <p className="osce-muted">Setze zuerst den lokalen Timer zurück, bevor du eine Live-Session erstellst.</p>}
-        <button className="osce-button" type="button" onClick={create} disabled={creating || restoring || localStatus !== 'ready'}>
+        <button className="osce-button" type="button" onClick={create} disabled={creating || restoring}>
           {creating ? 'Live-Session wird erstellt …' : 'Live-Session erstellen'}
         </button>
       </> : <>
         <p className="osce-live__status" role="status" aria-live="polite">{connectionText}</p>
         <p className="osce-muted">Diese temporäre Session läuft spätestens um {new Date(credentials.expiresAtMs).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })} ab.</p>
-        {patientUrl && <div className="osce-live__invite">
-          <p className="osce-label">Schauspielpatient verbinden</p>
-          <SessionQrCode url={patientUrl} label="QR-Code mit temporärem Zugang zur Schauspielpatientenansicht" />
+        {candidateUrl && <div className="osce-live__invite">
+          <p className="osce-label">Prüfling verbinden</p>
+          <SessionQrCode url={candidateUrl} label="QR-Code zum Beitritt als Prüfling" />
           <div className="osce-live__details">
             <p className="osce-label">Session-Code</p>
             <strong className="osce-join-code">{credentials.joinCode}</strong>
-            <button className="osce-button osce-button--secondary" type="button" onClick={() => copyLink(patientUrl, 'patient')}>{copied === 'patient' ? 'Patientenlink kopiert' : 'Patientenlink kopieren'}</button>
+            <button className="osce-button osce-button--secondary" type="button" onClick={() => copyLink(candidateUrl, 'candidate')}>{copied === 'candidate' ? 'Beitrittslink kopiert' : 'Beitrittslink kopieren'}</button>
           </div>
+        </div>}
+        {patientUrl && <div className="osce-live__display-invite">
+          <button className="osce-button osce-button--secondary" type="button" aria-expanded={patientInviteOpen}
+            onClick={() => setPatientInviteOpen((open) => !open)}>Schauspielpatient einladen</button>
+          {patientInviteOpen && <div className="osce-live__invite">
+            <p className="osce-label">Persönliche Patienteneinladung</p>
+            <SessionQrCode url={patientUrl} label="QR-Code mit temporärem Zugang zur Schauspielpatientenansicht" />
+            <button className="osce-button osce-button--secondary" type="button" onClick={() => copyLink(patientUrl, 'patient')}>
+              {copied === 'patient' ? 'Patientenlink kopiert' : 'Patientenlink kopieren'}
+            </button>
+          </div>}
         </div>}
         {displayUrl && <div className="osce-live__display-invite">
           <button className="osce-button osce-button--secondary" type="button" aria-expanded={displayInviteOpen}
@@ -144,7 +166,9 @@ export default function RealtimeExaminer({
         <button className="osce-button osce-button--secondary" type="button" onClick={discard}>Live-Ansicht verlassen</button>
       </>}
       {error && <p className="osce-error" role="alert">{error}</p>}
+      {error && !credentials && <button className="osce-button osce-button--secondary" type="button" onClick={onUseLocalTimer}>Lokalen Timer verwenden</button>}
       {copyError && <p className="osce-error" role="alert">Der Link konnte nicht kopiert werden.</p>}
+      {soundControls}
     </section>
     {credentials && status === 'connected' && materials.length > 0 && <section className="osce-panel osce-live-materials">
       <h2>Materialien freigeben</h2>

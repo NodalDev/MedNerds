@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { TimerConfig } from '../../data/medcases/types';
 import { formatTime, type TimerCue, type TimerStatus } from '../../lib/medcases/timer';
 import { OsceTimerEngine, type TimerEvent } from '../../lib/osce-timer/timer';
@@ -9,9 +9,10 @@ interface Props {
   disabled?: boolean;
   onCue?: (cue: TimerCue) => void;
   onStatusChange?: (status: TimerStatus) => void;
+  soundControls?: ReactNode;
 }
 
-export default function OsceTimer({ config, master = false, disabled = false, onCue, onStatusChange }: Props) {
+export default function OsceTimer({ config, master = false, disabled = false, onCue, onStatusChange, soundControls }: Props) {
   const timerRef = useRef<OsceTimerEngine | null>(null);
   timerRef.current ??= new OsceTimerEngine(config);
   const [snapshot, setSnapshot] = useState(() => timerRef.current!.getSnapshot());
@@ -83,6 +84,7 @@ export default function OsceTimer({ config, master = false, disabled = false, on
       {master && status === 'paused' && <button className="osce-button" type="button" onClick={resume}>Fortsetzen</button>}
       {master && status !== 'ready' && <button className="osce-button osce-button--secondary" type="button" onClick={reset}>Zurücksetzen</button>}
     </div>
-    {master && <p className="osce-fineprint">Pause und Reset betreffen nur dieses Gerät.</p>}
+    {master && <p className="osce-fineprint">Nur auf diesem Gerät. Keine Synchronisation mit Patient oder Display. Pause und Reset betreffen nur diesen Timer.</p>}
+    {soundControls}
   </section>;
 }

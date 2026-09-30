@@ -1,33 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import qrcode from 'qrcode-generator';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MasterCase } from '../../data/medcases/types';
 import { OsceTimerSound } from '../../lib/osce-timer/sound';
-import { joinUrl, validTimerConfig, type TimerCue, type TimerStatus } from '../../lib/medcases/timer';
+import { validTimerConfig, type TimerCue, type TimerStatus } from '../../lib/medcases/timer';
 import OsceTimer from './OsceTimer';
 import RealtimeExaminer from './RealtimeExaminer';
 
-function JoinQr({ url }: { url: string }) {
-  const matrix = useMemo(() => {
-    const qr = qrcode(0, 'M');
-    qr.addData(url);
-    qr.make();
-    const size = qr.getModuleCount();
-    const cells: [number, number][] = [];
-    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (qr.isDark(y, x)) cells.push([x + 4, y + 4]);
-    return { cells, size: size + 8 };
-  }, [url]);
-  return <svg className="osce-qr" viewBox={`0 0 ${matrix.size} ${matrix.size}`} role="img" aria-label="QR-Code zum Beitritt zu diesem OSCE-Fall" xmlns="http://www.w3.org/2000/svg"><rect width={matrix.size} height={matrix.size} fill="#fff" />{matrix.cells.map(([x, y]) => <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill="#10131c" />)}</svg>;
-}
+type OsceMode = 'live' | 'local';
 
-export default function OsceMaster({ item, origin }: { item: MasterCase; origin: string }) {
+export default function OsceMaster({ item }: { item: MasterCase }) {
+  const [mode, setMode] = useState<OsceMode>('live');
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundTestStatus, setSoundTestStatus] = useState<'untested' | 'tested' | 'failed'>('untested');
   const [localStatus, setLocalStatus] = useState<TimerStatus>('ready');
   const [liveActive, setLiveActive] = useState(false);
+  const [liveTimerStatus, setLiveTimerStatus] = useState<TimerStatus | null>(null);
   const [checked, setChecked] = useState<Set<string>>(() => new Set());
   const [debriefOpen, setDebriefOpen] = useState(false);
   const audio = useRef<OsceTimerSound | null>(null);
   const timerConfig = validTimerConfig(item.timer) ? item.timer : null;
-  const url = joinUrl(origin, item.joinCode);
   const checklist = item.examiner.checklist ?? [];
   const checklistItems = checklist.flatMap((section) => section.items);
   const hasScoring = checklistItems.length > 0 && checklistItems.every((entry) => typeof entry.points === 'number' && Number.isFinite(entry.points));
@@ -39,21 +29,51 @@ export default function OsceMaster({ item, origin }: { item: MasterCase; origin:
   const debrief = item.examiner.debrief;
   const hasDebrief = learningObjectives.length > 0 || Boolean(debrief && (debrief.keyPoints.length > 0 || debrief.reflectionQuestions.length > 0));
 
-  useEffect(() => () => { void audio.current?.close(); }, []);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('mode') === 'local') setMode('local');
+    return () => { void audio.current?.close(); };
+  }, []);
   const playCue = useCallback((cue: TimerCue) => {
     if (!soundEnabled) return;
     audio.current ??= new OsceTimerSound();
     void audio.current.play(cue);
   }, [soundEnabled]);
-  const testCue = (cue: TimerCue) => {
+  const testCue = async (cue: TimerCue) => {
     audio.current ??= new OsceTimerSound();
-    void audio.current.play(cue);
+    setSoundTestStatus(await audio.current.play(cue) ? 'tested' : 'failed');
   };
   const toggle = (id: string) => setChecked((previous) => {
     const next = new Set(previous);
     if (next.has(id)) next.delete(id); else next.add(id);
     return next;
   });
+  const selectMode = (next: OsceMode) => {
+    if (next === mode) return;
+    const running = mode === 'local' ? localStatus === 'running' : liveTimerStatus === 'running';
+    const unknownLiveTimer = mode === 'live' && liveActive && liveTimerStatus === null;
+    if ((running || unknownLiveTimer) && !window.confirm(
+      `${unknownLiveTimer ? 'Der Status des aktiven Live-Timers ist derzeit nicht bestätigt.' : 'Der aktuelle Timer läuft bereits.'}\n`
+      + 'Er läuft beim Moduswechsel weiter. Der Zeitstand wird nicht übernommen. Modus wechseln?',
+    )) return;
+    setMode(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set('mode', next);
+    window.history.replaceState(null, '', url);
+  };
+  const soundControls = <section className="osce-sound" aria-label="Tonprüfung">
+    <p className="osce-eyebrow">Tonprüfung</p>
+    <strong>Ton vor Prüfungsbeginn testen</strong>
+    <p className="osce-fineprint">Einige Browser und Geräte benötigen eine aktive Tonprüfung, damit Warn- und Endsignal zuverlässig abgespielt werden.</p>
+    <p className="osce-sound__status" role="status" aria-live="polite">{soundTestStatus === 'tested' ? '✓ Ton getestet' : soundTestStatus === 'failed' ? 'Ton konnte nicht abgespielt werden' : '○ Noch nicht getestet'}</p>
+    <button className="osce-button osce-button--secondary" type="button" onClick={() => void testCue('start')}>Ton testen</button>
+    <label className="osce-toggle"><input type="checkbox" checked={soundEnabled} onChange={(event) => setSoundEnabled(event.target.checked)} />Ton aktiviert</label>
+    <details><summary>Weitere Töne testen</summary><div className="osce-actions">
+      <button className="osce-button osce-button--secondary" type="button" onClick={() => void testCue('start')}>Startton testen</button>
+      <button className="osce-button osce-button--secondary" type="button" onClick={() => void testCue('warning')}>Warnung testen</button>
+      <button className="osce-button osce-button--secondary" type="button" onClick={() => void testCue('end')}>Endton testen</button>
+    </div></details>
+    <p className="osce-fineprint">Nur dieses Prüfergerät gibt Signale aus.</p>
+  </section>;
 
   return <div className="osce-workspace">
     <div className="osce-intro"><p className="osce-eyebrow">{item.demo ? 'Demo / Testfall · ' : ''}OSCE · Prüfer</p><p>Du leitest diesen Durchlauf. Frage, ob alle bereit sind, und gib das Startkommando verbal.</p></div>
@@ -66,10 +86,22 @@ export default function OsceMaster({ item, origin }: { item: MasterCase; origin:
         {hasDebrief && <section className="osce-panel"><h2>Debriefing</h2><p>Öffne die Auswertung nach dem Durchlauf bewusst selbst.</p><button className="osce-button osce-button--secondary" type="button" aria-expanded={debriefOpen} onClick={() => setDebriefOpen((open) => !open)}>{debriefOpen ? 'Debriefing schließen' : 'Debriefing öffnen'}</button>{debriefOpen && <div className="osce-debrief">{hasScoring && <p><strong>Gesamtscore:</strong> {score} / {total} Punkte</p>}{learningObjectives.length > 0 && <><h3>Lernziele</h3><ul>{learningObjectives.map((line) => <li key={line}>{line}</li>)}</ul></>}{debrief && debrief.keyPoints.length > 0 && <><h3>Kernpunkte</h3><ul>{debrief.keyPoints.map((line) => <li key={line}>{line}</li>)}</ul></>}{debrief && debrief.reflectionQuestions.length > 0 && <><h3>Reflexion</h3><ul>{debrief.reflectionQuestions.map((line) => <li key={line}>{line}</li>)}</ul></>}</div>}</section>}
       </div>
       <aside className="osce-master-grid__side">
-        {timerConfig ? <>{!liveActive && <OsceTimer config={timerConfig} master onCue={playCue} onStatusChange={setLocalStatus} />}
-          <RealtimeExaminer caseId={item.id} timer={timerConfig} materials={materials.filter(({ releaseToPatient }) => releaseToPatient)} localStatus={localStatus} onActiveChange={setLiveActive} onCue={playCue} /></> : <section className="osce-panel" role="status"><h2>Timer nicht verfügbar</h2><p>Für diesen Fall fehlt eine gültige Timerkonfiguration.</p></section>}
-        <section className="osce-panel"><h2>Ton</h2><label className="osce-toggle"><input type="checkbox" checked={soundEnabled} onChange={(event) => setSoundEnabled(event.target.checked)} />Ton aktiviert</label><p className="osce-muted">Nur dieses Prüfergerät gibt Signale aus.</p><div className="osce-actions"><button className="osce-button osce-button--secondary" type="button" onClick={() => testCue('start')}>Startton testen</button><button className="osce-button osce-button--secondary" type="button" onClick={() => testCue('warning')}>Warnung testen</button><button className="osce-button osce-button--secondary" type="button" onClick={() => testCue('end')}>Endton testen</button></div></section>
-        <section className="osce-panel osce-invite"><h2>Statischer Fallbeitritt</h2><JoinQr url={url} /><p className="osce-label">Fallcode</p><strong className="osce-join-code">{item.joinCode}</strong><p className="osce-muted">QR-Code scannen oder <a href="/medcases/join/">mednerds.ch/medcases/join</a> öffnen und den Fallcode eingeben.</p><p className="osce-fineprint">Der QR-Code enthält nur den statischen Fallcode. Er erstellt keine Session und überträgt keine Zeitwerte.</p><a className="osce-text-link" href={url}>Beitrittslink öffnen →</a></section>
+        {timerConfig ? <>
+          <div className="osce-mode-content" hidden={mode !== 'live'}>
+            <RealtimeExaminer caseId={item.id} timer={timerConfig} materials={materials.filter(({ releaseToPatient }) => releaseToPatient)}
+              onActiveChange={setLiveActive} onTimerStatusChange={setLiveTimerStatus} onUseLocalTimer={() => selectMode('local')}
+              onCue={(cue) => { if (mode === 'live') playCue(cue); }} soundControls={soundControls} />
+          </div>
+          <div className="osce-mode-content" hidden={mode !== 'local'}>
+            <OsceTimer config={timerConfig} master onCue={(cue) => { if (mode === 'local') playCue(cue); }}
+              onStatusChange={setLocalStatus} soundControls={soundControls} />
+          </div>
+          <div className="osce-mode-switch"><span>Modus: {mode === 'live' ? 'Live-OSCE' : 'Lokaler Timer · Fallback'}</span>
+            <button type="button" onClick={() => selectMode(mode === 'live' ? 'local' : 'live')}>
+              {mode === 'live' ? 'Lokalen Timer verwenden' : 'Zu Live-OSCE wechseln'}
+            </button>
+          </div>
+        </> : <section className="osce-panel" role="status"><h2>Timer nicht verfügbar</h2><p>Für diesen Fall fehlt eine gültige Timerkonfiguration.</p></section>}
       </aside>
     </div>
   </div>;

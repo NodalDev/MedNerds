@@ -106,7 +106,7 @@ if (mode === 'persistence-create') {
   assert.ok(state.timer.remainingAtPauseMs > 0);
   assert.deepEqual(state.releasedMaterialIds, persistedMaterials);
   assert.deepEqual((await resolveCode(session.joinCode.toLowerCase())).body, {
-    sessionId: session.sessionId, expiresAtMs: session.expiresAtMs,
+    sessionId: session.sessionId, expiresAtMs: session.expiresAtMs, caseId: CASE_ID,
   });
   const examiner = await new Client(session.sessionId).open();
   assert.deepEqual((await examiner.authenticate('examiner', session.examinerCapability)).state, state);
@@ -165,7 +165,7 @@ if (mode === 'persistence-create') {
   assert.notEqual(session.patientCapability, other.patientCapability);
   assert.equal((await stateFor(other.sessionId)).timer.status, 'ready');
   assert.deepEqual((await resolveCode(session.joinCode.toLowerCase())).body, {
-    sessionId: session.sessionId, expiresAtMs: session.expiresAtMs,
+    sessionId: session.sessionId, expiresAtMs: session.expiresAtMs, caseId: CASE_ID,
   });
 
   const examiner = await new Client(session.sessionId).open();

@@ -91,7 +91,7 @@ function publicProjection({ id, joinCode, title, specialty, summary, demo, timer
 export const osceCases: readonly OsceCase[] = cases;
 export const publicCases: PublicCase[] = cases.map(publicProjection);
 export function forCandidate(item: OsceCase): CandidateCase {
-  return { id: item.id, title: item.title, demo: item.demo, candidate: item.candidate };
+  return { id: item.id, demo: item.demo, candidate: item.candidate };
 }
 export function forPatient(item: OsceCase): PatientCase {
   return {

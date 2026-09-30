@@ -21,7 +21,7 @@ export interface StoredPatientSession {
   expiresAtMs: number;
 }
 
-function sessionUrl(baseUrl: string, code: string, destination: 'join' | 'display' | 'patient'): string {
+function sessionUrl(baseUrl: string, code: string, destination: 'join' | 'candidate' | 'display' | 'patient'): string {
   if (!JOIN_CODE.test(code)) throw new RangeError('Invalid session code.');
   const url = new URL(`/medcases/session/${destination}/`, baseUrl);
   url.searchParams.set('code', code);
@@ -30,6 +30,10 @@ function sessionUrl(baseUrl: string, code: string, destination: 'join' | 'displa
 
 export function sessionJoinUrl(baseUrl: string, code: string): string {
   return sessionUrl(baseUrl, code, 'join');
+}
+
+export function sessionCandidateUrl(baseUrl: string, code: string): string {
+  return sessionUrl(baseUrl, code, 'candidate');
 }
 
 export function sessionDisplayUrl(baseUrl: string, code: string): string {

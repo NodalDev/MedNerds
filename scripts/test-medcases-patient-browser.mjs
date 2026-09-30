@@ -94,6 +94,8 @@ try {
   assert.equal(info.qr, true);
   assert.equal(info.visibleUrl, false);
   assert.equal(info.inviteColumns, 1);
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-live__invite .osce-label')?.textContent"), 'Prüfling verbinden');
+  assert.equal(await examiner.evaluate("document.querySelector('.osce-live__display-invite .osce-live__invite')"), null);
   assert.match(info.stored.patientCapability, /^[A-Za-z0-9_-]{43}$/);
   assert.ok(info.stored.patientCapability !== info.stored.examinerCapability);
   const inviteUrl = `${site}/medcases/session/patient/?code=${info.code}#access=${info.stored.patientCapability}`;
@@ -101,7 +103,8 @@ try {
   assert.equal(new URL(inviteUrl).searchParams.has('access'), false);
   await examiner.evaluate(`Object.defineProperty(navigator, 'clipboard', { configurable: true,
     value: { writeText: async (value) => { window.__copiedPatientLink = value; } } })`);
-  await examiner.click('.osce-live__invite button', 'Patientenlink kopieren');
+  await examiner.click('.osce-live__display-invite button', 'Schauspielpatient einladen');
+  await examiner.click('.osce-live__display-invite .osce-live__invite button', 'Patientenlink kopieren');
   assert.equal(await examiner.evaluate('window.__copiedPatientLink'), inviteUrl);
 
   await unauthorized.navigate(`/medcases/session/patient/?code=${info.code}`);

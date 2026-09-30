@@ -17,7 +17,7 @@ const { item, role } = Astro.props;
 ---
 
 <StarlightPage hasSidebar={false} frontmatter={{
-  title: `${item.title} · ${roleLabels[role]}`,
+  title: role === 'candidate' ? 'OSCE-Station · Prüfling' : `${item.title} · ${roleLabels[role]}`,
   description: `OSCE-Rollenansicht für ${roleLabels[role]}.`,
   pageLayout: 'hub',
   tableOfContents: false,
@@ -25,7 +25,9 @@ const { item, role } = Astro.props;
   head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' } }],
 }}>
   <div class="osce">
-    {role === 'examiner' && <OsceMaster item={item} origin={Astro.site?.origin ?? Astro.url.origin} client:load />}
+    {role === 'candidate' && <nav class="osce-breadcrumb" aria-label="Brotkrumennavigation"><a href="/medcases/">MedCases</a><span aria-hidden="true">›</span><a href="/medcases/session/candidate/">Session beitreten</a><span aria-hidden="true">›</span><span>OSCE-Station</span></nav>}
+    {role === 'examiner' && <nav class="osce-breadcrumb" aria-label="Brotkrumennavigation"><a href="/medcases/">MedCases</a><span aria-hidden="true">›</span><a href="/medcases/osce/">OSCE trainieren</a><span aria-hidden="true">›</span><a href={`/medcases/osce/${item.id}/`}>{item.title}</a><span aria-hidden="true">›</span><span>Prüfer</span></nav>}
+    {role === 'examiner' && <OsceMaster item={item} client:load />}
     {role === 'candidate' && <OsceParticipant role="candidate" item={forCandidate(item)} />}
     {role === 'patient' && <OsceParticipant role="patient" item={forPatient(item)} />}
   </div>

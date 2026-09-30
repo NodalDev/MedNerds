@@ -65,6 +65,8 @@ export interface JoinSessionRequest {
 export interface JoinSessionResponse {
   sessionId: string;
   expiresAtMs: number;
+  /** Opaque case ID for the static Candidate view; no session snapshot is exposed. */
+  caseId: string;
 }
 
 export type TimerEventType =

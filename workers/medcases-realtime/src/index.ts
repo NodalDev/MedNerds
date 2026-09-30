@@ -196,14 +196,15 @@ async function joinSessionResponse(request: Request, env: WorkerEnv): Promise<Re
 
   const lookup = await codeStub(env, code).fetch(internalRequest('/lookup'));
   if (lookup.status !== 200) return json({ code: 'JOIN_CODE_INVALID' }, 404);
-  const mapping = await lookup.json() as JoinSessionResponse;
+  const mapping = await lookup.json() as Pick<JoinSessionResponse, 'sessionId' | 'expiresAtMs'>;
   // A failed cross-object initialization must never leave a joinable ghost session.
   const active = await sessionStub(env, mapping.sessionId).fetch(internalRequest('/exists'));
   if (active.status !== 200) {
     await releaseCode(env, code, mapping.sessionId);
     return json({ code: 'JOIN_CODE_INVALID' }, 404);
   }
-  return json({ sessionId: mapping.sessionId, expiresAtMs: mapping.expiresAtMs } satisfies JoinSessionResponse);
+  const { caseId } = await active.json() as { caseId: string };
+  return json({ sessionId: mapping.sessionId, expiresAtMs: mapping.expiresAtMs, caseId } satisfies JoinSessionResponse);
 }
 
 /** Development-only direct access for reservation race and cleanup tests. */
@@ -401,7 +402,7 @@ export class MedCaseSession extends DurableObject<WorkerEnv> {
     if (!persisted) return json({ code: 'SESSION_NOT_FOUND' }, 404);
     const stored = await this.settle(persisted, nowMs);
     if (!stored) return json({ code: 'SESSION_EXPIRED' }, 410);
-    if (path === '/exists' && request.method === 'GET') return json({ active: true });
+    if (path === '/exists' && request.method === 'GET') return json({ active: true, caseId: stored.state.caseId });
     if (path === '/state' && request.method === 'GET') return json({ state: stored.state, serverNowMs: nowMs });
 
     if (path.endsWith('/connect') && request.headers.get('Upgrade')?.toLowerCase() === 'websocket') {

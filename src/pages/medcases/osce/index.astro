@@ -1,0 +1,13 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import MedCasesCaseLibrary from '../../../components/medcases/MedCasesCaseLibrary.astro';
+---
+
+<StarlightPage hasSidebar={false} frontmatter={{
+  title: 'OSCE-Fälle',
+  description: 'OSCE-Trainingsfälle auswählen und als Prüfer starten.',
+  pageLayout: 'hub',
+  tableOfContents: false,
+}}>
+  <MedCasesCaseLibrary />
+</StarlightPage>

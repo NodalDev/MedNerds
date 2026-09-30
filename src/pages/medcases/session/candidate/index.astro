@@ -1,0 +1,20 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import CandidateSessionEntry from '../../../../components/medcases/CandidateSessionEntry';
+import '../../../../styles/medcases.css';
+---
+
+<StarlightPage hasSidebar={false} frontmatter={{
+  title: 'Session beitreten',
+  description: 'Mit einem Session-Code einer OSCE-Station beitreten.',
+  pageLayout: 'hub',
+  tableOfContents: false,
+  pagefind: false,
+  head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' } }],
+}}>
+  <div class="osce osce-join">
+    <nav aria-label="Brotkrumen"><a href="/medcases/">MedCases</a> / Session beitreten</nav>
+    <p class="osce-intro">Scanne den QR-Code des Prüfers oder gib den Session-Code ein.</p>
+    <CandidateSessionEntry client:load />
+  </div>
+</StarlightPage>
