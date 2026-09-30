@@ -1,4 +1,5 @@
 ---
+import { Icon } from '@astrojs/starlight/components';
 import MedNerdsIcon from './MedNerdsIcon.astro';
 import footerLogoLight from '../assets/Logos/MedNerds - einfarbig - hell.webp?url';
 import footerLogoDark from '../assets/Logos/MedNerds - einfarbig - dunkel.webp?url';
@@ -108,11 +109,19 @@ const participationLinks = [
           </a>
         </div>
 
-        <p>
-          This site is built with astro/starlight
+        <p class="mn-footer-build">
+          This site is built with{' '}
+          <span class="mn-footer-build-icons">
+            <a href="https://astro.build/" aria-label="Astro"><Icon name="astro" size="1.25em" /></a>
+            {' and '}
+            <a class="mn-footer-starlight-link" href="https://starlight.astro.build/" aria-label="Starlight"><Icon name="starlight" size="1.25em" /></a>
+          </span>
         </p>
         <p class="mn-footer-netlify">
-          This site ist powered by <a href="https://www.netlify.com">Netlify</a>.
+          Powered by{' '}
+          <a href="https://www.netlify.com/" aria-label="Netlify">
+            <MedNerdsIcon name="logos:netlify" size="xl" />
+          </a>
         </p>
       </div>
 
@@ -434,11 +443,8 @@ const participationLinks = [
     align-items: center;
     gap: 0.25rem;
     max-width: 100%;
+    color: var(--sl-color-gray-3);
     line-height: 0;
-  }
-
-  .mn-footer-license-badge :global(.mn-icon) {
-    color: var(--sl-color-white);
   }
 
   .mn-footer-license-badge:focus-visible {
@@ -447,23 +453,62 @@ const participationLinks = [
     border-radius: 0.2rem;
   }
 
+  .mn-footer-build,
   .mn-footer-netlify {
-    margin: auto 0 0;
-    padding-top: 2rem;
     color: var(--sl-color-gray-3);
     font-size: var(--sl-text-sm);
     line-height: 1.5;
   }
 
-  .mn-footer-netlify a {
-    color: inherit;
-    text-underline-offset: 0.15em;
+  .mn-footer-build {
+    margin: auto 0 0;
+    padding-top: 2rem;
   }
 
+  .mn-footer-build-icons {
+    color: inherit;
+    white-space: nowrap;
+  }
+
+  .mn-footer-build-icons a,
+  .mn-footer-netlify a {
+    display: inline-flex;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .mn-footer-build-icons a {
+    vertical-align: middle;
+  }
+
+  .mn-footer-starlight-link {
+    margin-inline-start: 0.15em;
+  }
+
+  .mn-footer-build-icons a:focus-visible,
   .mn-footer-netlify a:focus-visible {
     outline: 2px solid var(--sl-color-accent);
     outline-offset: 0.2rem;
     border-radius: 0.2rem;
+  }
+
+  .mn-footer-netlify {
+    margin: 0.25rem 0 0;
+  }
+
+  .mn-footer-netlify a {
+    vertical-align: middle;
+  }
+
+  .mn-footer-netlify a :global(svg) {
+    /* Match the 512 × 209 wordmark instead of the icon component's square size. */
+    width: 5rem;
+    height: 2.04rem;
+  }
+
+  .mn-footer-netlify a :global(path) {
+    fill: currentColor;
   }
 
   /* ----------------------------------------

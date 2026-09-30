@@ -58,21 +58,6 @@ const activities = [
       </article>
     </div>
   </section>
-
-  <section class="basel-section" aria-labelledby="basel-activities-title">
-    <div class="section-heading">
-      <h2 id="basel-activities-title">Was wir tun</h2>
-    </div>
-    <ul class="activity-grid">
-      {activities.map(({ title, description, icon }) => (
-        <li class="activity-tile">
-          <MedNerdsIcon name={icon} size="lg" />
-          <h3>{title}</h3>
-          <p>{description}</p>
-        </li>
-      ))}
-    </ul>
-  </section>
 </div>
 
 <style>
@@ -171,7 +156,7 @@ const activities = [
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    align-self: flex-start;
+    align-self: flex-end;
     gap: 0.5rem;
     margin-top: auto;
     min-height: 2.75rem;
