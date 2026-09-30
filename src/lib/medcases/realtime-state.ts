@@ -1,8 +1,9 @@
 import type { CreateSessionRequest, SessionState, SessionTimerState, TimerCommand, TimerEventType } from './realtime-protocol.ts';
 
-/** Local prototype retention. Production policy belongs to a later phase. */
-export const DEVELOPMENT_SESSION_TTL_MS = 60 * 60 * 1000;
+/** Current session lifetime in both development and production. */
+export const SESSION_TTL_MS = 60 * 60 * 1000;
 export const MAX_SESSION_DURATION_MS = 30 * 60 * 1000;
+export const MAX_RELEASED_MATERIAL_IDS = 64;
 
 export interface SessionConfig extends CreateSessionRequest {
   sessionId: string;
@@ -45,9 +46,9 @@ export function validSessionConfig(value: unknown): value is SessionConfig {
   });
 }
 
-export function createSession(config: SessionConfig, nowMs: number, ttlMs = DEVELOPMENT_SESSION_TTL_MS): SessionState {
+export function createSession(config: SessionConfig, nowMs: number, ttlMs = SESSION_TTL_MS): SessionState {
   if (!validSessionConfig(config)) throw new RangeError('Invalid session configuration.');
-  if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0 || ttlMs > DEVELOPMENT_SESSION_TTL_MS) {
+  if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0 || ttlMs > SESSION_TTL_MS) {
     throw new RangeError('Invalid session lifetime.');
   }
   return {
@@ -136,6 +137,13 @@ export function applyTimerCommand(state: SessionState, command: TimerCommand, no
       break;
   }
   return { state: { ...state, timer }, events: [event] };
+}
+
+/** Material release is monotonic for the lifetime of a session. */
+export function releaseMaterial(state: SessionState, materialId: string): { state: SessionState; released: boolean; limitReached: boolean } {
+  if (state.releasedMaterialIds.includes(materialId)) return { state, released: false, limitReached: false };
+  if (state.releasedMaterialIds.length >= MAX_RELEASED_MATERIAL_IDS) return { state, released: false, limitReached: true };
+  return { state: { ...state, releasedMaterialIds: [...state.releasedMaterialIds, materialId] }, released: true, limitReached: false };
 }
 
 /** A Durable Object has one alarm: use it for the next threshold or expiry. */

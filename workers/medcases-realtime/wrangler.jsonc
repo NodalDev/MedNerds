@@ -3,7 +3,18 @@
   "name": "mednerds-medcases-realtime",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-29",
-  "workers_dev": false,
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "ENVIRONMENT": "production",
+    "ALLOWED_ORIGINS": "https://mednerds.ch"
+  },
+  "ratelimits": [
+    { "name": "SESSION_CREATE_RATE_LIMIT", "namespace_id": "680201", "simple": { "limit": 10, "period": 60 } },
+    { "name": "JOIN_LOOKUP_RATE_LIMIT", "namespace_id": "680202", "simple": { "limit": 120, "period": 60 } },
+    { "name": "WEBSOCKET_CONNECT_RATE_LIMIT", "namespace_id": "680203", "simple": { "limit": 120, "period": 60 } },
+    { "name": "AUTH_ATTEMPT_RATE_LIMIT", "namespace_id": "680204", "simple": { "limit": 30, "period": 60 } }
+  ],
   "durable_objects": {
     "bindings": [
       { "name": "MEDCASE_SESSIONS", "class_name": "MedCaseSession" },

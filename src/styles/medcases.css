@@ -83,11 +83,27 @@
 .osce-text-link { font-weight: 700; }
 .osce-live-stack { display: grid; min-width: 0; gap: 1rem; }
 .osce-live__status { font-weight: 700; }
-.osce-live__invite { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); align-items: center; gap: 1rem; }
+.osce-live__invite { display: grid; min-width: 0; justify-items: center; gap: 0.75rem; text-align: center; }
 .osce-live__qr { width: min(100%, 12rem); margin-inline: auto; background: #fff; }
 .osce-live__qr svg { display: block; width: 100%; height: auto; }
-.osce-live__details { display: grid; min-width: 0; justify-items: start; gap: 0.65rem; }
+.osce-live__details { display: grid; min-width: 0; justify-items: center; gap: 0.65rem; }
 .osce-live__link { max-width: 100%; overflow-wrap: anywhere; font-size: 0.83rem; }
+.osce-live__display-invite { display: grid; gap: 1rem; justify-items: start; padding-top: 1rem; border-top: 1px solid var(--osce-border); }
+.osce-live-materials__row { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; padding-block: 0.8rem; border-top: 1px solid var(--osce-border); }
+.osce-live-materials__row strong { color: var(--osce-accent); }
+
+.osce-display-page { display: grid; min-width: 0; gap: 1rem; margin-block: 1rem 2rem; }
+.osce-display-join { display: grid; gap: 0.8rem; max-width: 32rem; }
+.osce-display { display: grid; min-width: 0; min-height: min(70svh, 42rem); align-content: center; justify-items: center; gap: 1.2rem; padding: clamp(1rem, 3vw, 2.5rem); border: 1px solid var(--osce-border); border-radius: 0.85rem; background: var(--mn-surface); text-align: center; }
+.osce-display:fullscreen { width: 100%; height: 100%; min-height: 100%; overflow: auto; border: 0; border-radius: 0; background: var(--sl-color-bg); color: var(--sl-color-white); }
+.osce-display__body { display: grid; min-width: 0; justify-items: center; gap: clamp(0.6rem, 2vw, 1.2rem); }
+.osce-display__time, .osce-display__placeholder { max-width: 100%; font-size: clamp(2rem, min(19vw, 18vh), 14rem); font-weight: 750; letter-spacing: -0.055em; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.osce-display__state { font-size: clamp(1.3rem, 3vw, 2.4rem); font-weight: 700; }
+.osce-display__connection { max-width: 45ch; color: var(--sl-color-gray-2); font-size: clamp(0.95rem, 1.8vw, 1.2rem); }
+.osce-display__connection--lost { color: var(--sl-color-orange); font-weight: 700; }
+.osce-display__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
+.osce-display--warning .osce-display__time, .osce-display--warning .osce-display__state { color: var(--sl-color-orange); }
+.osce-display--ended .osce-display__time, .osce-display--ended .osce-display__state { color: var(--sl-color-red); }
 
 @media (min-width: 52rem) {
   .osce-master-grid { grid-template-columns: minmax(0, 1fr) minmax(18rem, 21rem); }
@@ -97,7 +113,6 @@
 @media (max-width: 35rem) {
   .osce-join__row > * { flex: 1 1 100%; max-width: none; }
   .osce-actions > .osce-button { flex: 1 1 auto; }
-  .osce-live__invite { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

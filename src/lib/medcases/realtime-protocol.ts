@@ -1,7 +1,7 @@
 /** Shared wire contract for MedCases sessions. No medical case content crosses this boundary. */
 export const MAX_CONTROL_MESSAGE_BYTES = 1024;
 
-export type SessionRole = 'examiner' | 'observer';
+export type SessionRole = 'examiner' | 'observer' | 'display' | 'patient';
 export type TimerCommand = 'timer.start' | 'timer.pause' | 'timer.resume' | 'timer.reset';
 export type TimerStatus = 'ready' | 'running' | 'paused' | 'ended';
 
@@ -25,10 +25,23 @@ export interface SessionState {
   releasedMaterialIds: string[];
 }
 
+/** Minimal public wire projection; the Durable Object retains the full SessionState. */
+export interface SessionViewState {
+  version: 1;
+  sessionId: string;
+  expiresAtMs: number;
+  caseId?: string;
+  timer?: SessionTimerState;
+  releasedMaterialIds?: string[];
+}
+
 export type ClientMessage =
   | { type: TimerCommand }
   | { type: 'time.ping'; clientSentAtMs: number }
   | { type: 'session.authenticate'; role: 'observer' }
+  | { type: 'session.authenticate'; role: 'display' }
+  | { type: 'session.authenticate'; role: 'patient'; capability: string }
+  | { type: 'material.release'; materialId: string }
   | { type: 'session.authenticate'; role: 'examiner'; capability: string };
 
 export interface CreateSessionRequest {
@@ -41,6 +54,7 @@ export interface CreateSessionResponse {
   sessionId: string;
   joinCode: string;
   examinerCapability: string;
+  patientCapability: string;
   expiresAtMs: number;
 }
 
@@ -62,8 +76,9 @@ export type TimerEventType =
   | 'timer.ended';
 
 export type ServerMessage =
-  | { type: 'session.snapshot'; state: SessionState; serverNowMs: number }
-  | { type: TimerEventType; state: SessionState; serverNowMs: number }
+  | { type: 'session.snapshot'; state: SessionViewState; serverNowMs: number }
+  | { type: TimerEventType; state: SessionViewState; serverNowMs: number }
+  | { type: 'material.released'; materialId: string; state: SessionViewState; serverNowMs: number }
   | { type: 'session.expired'; serverNowMs: number }
   | { type: 'time.pong'; clientSentAtMs: number; serverNowMs: number }
   | { type: 'error'; code: ErrorCode; message: string };
@@ -75,7 +90,9 @@ export type ErrorCode =
   | 'INVALID_STATE_TRANSITION'
   | 'SESSION_EXPIRED'
   | 'AUTH_REQUIRED'
-  | 'AUTH_FAILED';
+  | 'AUTH_FAILED'
+  | 'CONNECTION_LIMIT_REACHED'
+  | 'RESOURCE_LIMIT_REACHED';
 
 export type MessageParseResult =
   | { ok: true; message: ClientMessage }
@@ -113,13 +130,19 @@ export function parseClientMessage(payload: string | ArrayBuffer): MessageParseR
       ? { ok: true, message: { type: 'time.ping', clientSentAtMs: record.clientSentAtMs } }
       : { ok: false, code: 'INVALID_MESSAGE' };
   }
+  if (record.type === 'material.release') {
+    return Object.keys(record).length === 2 && typeof record.materialId === 'string'
+      && /^[a-z][a-z0-9-]{0,63}$/.test(record.materialId)
+      ? { ok: true, message: { type: 'material.release', materialId: record.materialId } }
+      : { ok: false, code: 'INVALID_MESSAGE' };
+  }
   if (record.type === 'session.authenticate') {
-    if (record.role === 'observer' && Object.keys(record).length === 2) {
-      return { ok: true, message: { type: 'session.authenticate', role: 'observer' } };
+    if ((record.role === 'observer' || record.role === 'display') && Object.keys(record).length === 2) {
+      return { ok: true, message: { type: 'session.authenticate', role: record.role } };
     }
-    if (record.role === 'examiner' && Object.keys(record).length === 3
+    if ((record.role === 'examiner' || record.role === 'patient') && Object.keys(record).length === 3
       && typeof record.capability === 'string' && /^[A-Za-z0-9_-]{43}$/.test(record.capability)) {
-      return { ok: true, message: { type: 'session.authenticate', role: 'examiner', capability: record.capability } };
+      return { ok: true, message: { type: 'session.authenticate', role: record.role, capability: record.capability } };
     }
     return { ok: false, code: 'INVALID_MESSAGE' };
   }
@@ -127,5 +150,9 @@ export function parseClientMessage(payload: string | ArrayBuffer): MessageParseR
 }
 
 export function mayControlTimer(role: SessionRole): boolean {
+  return role === 'examiner';
+}
+
+export function mayReleaseMaterial(role: SessionRole): boolean {
   return role === 'examiner';
 }

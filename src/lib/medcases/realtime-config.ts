@@ -1,17 +1,14 @@
+import { configuredRealtimeOrigin, publicRealtimeOrigin } from './realtime-url';
+
 const configuredWorkerUrl = import.meta.env.PUBLIC_MEDCASES_REALTIME_URL?.trim();
 const configuredJoinBaseUrl = import.meta.env.PUBLIC_MEDCASES_JOIN_BASE_URL?.trim();
 
-function publicHttpUrl(value: string | undefined): string | null {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) return null;
-    return url.origin;
-  } catch { return null; }
-}
-
-/** One place for the development fallback and future explicit production opt-in. */
+/** Production has no localhost fallback; an invalid URL leaves live features disabled. */
 export const realtimeConfig = {
-  workerUrl: publicHttpUrl(configuredWorkerUrl) ?? (import.meta.env.DEV ? 'http://127.0.0.1:8787' : null),
-  joinBaseUrl: publicHttpUrl(configuredJoinBaseUrl),
+  workerUrl: configuredRealtimeOrigin(configuredWorkerUrl, import.meta.env.DEV),
+  joinBaseUrl: publicRealtimeOrigin(configuredJoinBaseUrl, import.meta.env.DEV),
 };
+
+if (import.meta.env.PROD && !realtimeConfig.workerUrl && typeof window !== 'undefined') {
+  console.error('MedCases Realtime ist nicht konfiguriert: PUBLIC_MEDCASES_REALTIME_URL benötigt eine HTTPS-Origin.');
+}

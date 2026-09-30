@@ -64,7 +64,7 @@ const cases = [
         { title: 'Herz und Lunge', lines: ['Demo-Befund: Auskultatorisch keine auffälligen Geräusche.'] },
       ],
       materials: [
-        { id: 'vitals-1', type: 'vitals', title: 'Vitalparameter', description: 'Lokaler Demo-Materialslot für die Prüferansicht.', lines: ['Puls 92/min', 'Blutdruck 145/90 mmHg', 'SpO₂ 97 %'] },
+        { id: 'vitals-1', type: 'vitals', title: 'Vitalparameter', description: 'Lokaler Demo-Materialslot für diesen Fall.', lines: ['Puls 92/min', 'Blutdruck 145/90 mmHg', 'SpO₂ 97 %'], releaseToPatient: true },
       ],
       learningObjectives: ['Gespräch unter Zeitdruck strukturieren.', 'Befunde gezielt erfragen.', 'Das weitere Vorgehen verständlich kommunizieren.'],
       debrief: {
@@ -94,5 +94,8 @@ export function forCandidate(item: OsceCase): CandidateCase {
   return { id: item.id, title: item.title, demo: item.demo, candidate: item.candidate };
 }
 export function forPatient(item: OsceCase): PatientCase {
-  return { id: item.id, title: item.title, demo: item.demo, patient: item.patient };
+  return {
+    id: item.id, title: item.title, demo: item.demo, patient: item.patient,
+    releasableMaterials: (item.examiner.materials ?? []).filter(({ releaseToPatient }) => releaseToPatient),
+  };
 }

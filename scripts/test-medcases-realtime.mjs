@@ -1,14 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseClientMessage, mayControlTimer, MAX_CONTROL_MESSAGE_BYTES } from '../src/lib/medcases/realtime-protocol.ts';
+import { parseClientMessage, mayControlTimer, mayReleaseMaterial, MAX_CONTROL_MESSAGE_BYTES } from '../src/lib/medcases/realtime-protocol.ts';
 import {
   advanceSession,
   applyTimerCommand,
   createSession,
   nextAlarmAt,
   remainingMs,
+  releaseMaterial,
+  MAX_RELEASED_MATERIAL_IDS,
   validSessionConfig,
-  DEVELOPMENT_SESSION_TTL_MS,
+  SESSION_TTL_MS,
 } from '../src/lib/medcases/realtime-state.ts';
 import {
   createExaminerCapability,
@@ -37,15 +39,64 @@ test('strictly validates small control messages and roles', () => {
   assert.deepEqual(parseClientMessage('{"type":"timer.end"}'), { ok: false, code: 'UNKNOWN_MESSAGE_TYPE' });
   assert.equal(mayControlTimer('examiner'), true);
   assert.equal(mayControlTimer('observer'), false);
+  assert.equal(mayControlTimer('display'), false);
+  assert.equal(mayControlTimer('patient'), false);
+  assert.equal(mayReleaseMaterial('examiner'), true);
+  for (const role of ['patient', 'display', 'observer']) assert.equal(mayReleaseMaterial(role), false);
   const capability = createExaminerCapability();
   assert.equal(parseClientMessage('{"type":"session.authenticate","role":"observer"}').ok, true);
+  assert.equal(parseClientMessage('{"type":"session.authenticate","role":"display"}').ok, true);
+  assert.equal(parseClientMessage('{"type":"session.authenticate","role":"patient","capability":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}').ok, true);
+  assert.deepEqual(parseClientMessage('{"type":"material.release","materialId":"vitals-1"}'),
+    { ok: true, message: { type: 'material.release', materialId: 'vitals-1' } });
   assert.equal(parseClientMessage(JSON.stringify({ type: 'session.authenticate', role: 'examiner', capability })).ok, true);
   for (const message of [
     { type: 'session.authenticate', role: 'examiner' },
     { type: 'session.authenticate', role: 'examiner', capability: '' },
     { type: 'session.authenticate', role: 'observer', capability },
+    { type: 'session.authenticate', role: 'display', capability },
+    { type: 'session.authenticate', role: 'patient' },
+    { type: 'session.authenticate', role: 'patient', capability: '' },
+    { type: 'material.release', materialId: '../secret' },
     { type: 'session.authenticate', role: 'admin', capability },
   ]) assert.equal(parseClientMessage(JSON.stringify(message)).ok, false);
+});
+
+test('material release is idempotent and timer reset preserves released IDs', () => {
+  const initial = createSession(config, 100_000);
+  const first = releaseMaterial(initial, 'vitals-1');
+  assert.equal(first.released, true);
+  assert.deepEqual(first.state.releasedMaterialIds, ['vitals-1']);
+  const repeated = releaseMaterial(first.state, 'vitals-1');
+  assert.equal(repeated.released, false);
+  assert.equal(repeated.state, first.state);
+  const second = releaseMaterial(first.state, 'lab-2');
+  assert.deepEqual(second.state.releasedMaterialIds, ['vitals-1', 'lab-2']);
+  const started = applyTimerCommand(second.state, 'timer.start', 101_000).state;
+  const reset = applyTimerCommand(started, 'timer.reset', 102_000).state;
+  assert.deepEqual(reset.releasedMaterialIds, ['vitals-1', 'lab-2']);
+  assert.deepEqual(createSession(config, 200_000).releasedMaterialIds, []);
+});
+
+test('64 distinct material IDs are the hard cap; an idempotent release still succeeds', () => {
+  let state = createSession(config, 100_000);
+  for (let i = 0; i < MAX_RELEASED_MATERIAL_IDS; i++) {
+    const change = releaseMaterial(state, `material-${i}`);
+    assert.equal(change.released, true);
+    assert.equal(change.limitReached, false);
+    state = change.state;
+  }
+  const repeated = releaseMaterial(state, 'material-0');
+  assert.equal(repeated.limitReached, false);
+  assert.equal(repeated.released, false);
+  assert.equal(repeated.state, state);
+  const excess = releaseMaterial(state, 'material-64');
+  assert.equal(excess.limitReached, true);
+  assert.equal(excess.released, false);
+  assert.equal(excess.state, state);
+  const started = applyTimerCommand(state, 'timer.start', 101_000).state;
+  const reset = applyTimerCommand(started, 'timer.reset', 102_000).state;
+  assert.equal(reset.releasedMaterialIds.length, MAX_RELEASED_MATERIAL_IDS);
 });
 
 test('cryptographic identifiers, alphabet and capability hashes have strict formats', async () => {
@@ -94,7 +145,7 @@ test('validates IDs and timer configuration, persists only dynamic session state
   assert.equal(validSessionConfig({ ...config, warningRemainingSeconds: 13 }), false);
   assert.equal(validSessionConfig({ ...config, diagnosis: 'No medical content' }), false);
   const state = createSession(config, 100_000);
-  assert.equal(state.expiresAtMs, 100_000 + DEVELOPMENT_SESSION_TTL_MS);
+  assert.equal(state.expiresAtMs, 100_000 + SESSION_TTL_MS);
   assert.equal(createSession(config, 100_000, 1500).expiresAtMs, 101_500);
   assert.equal(nextAlarmAt(state), state.expiresAtMs);
   assert.deepEqual(JSON.parse(JSON.stringify(state)), state);

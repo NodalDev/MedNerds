@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import {
   MAX_CONTROL_MESSAGE_BYTES,
   mayControlTimer,
+  mayReleaseMaterial,
   parseClientMessage,
   type CreateSessionRequest,
   type CreateSessionResponse,
@@ -10,6 +11,7 @@ import {
   type ServerMessage,
   type SessionRole,
   type SessionState,
+  type SessionViewState,
   type TimerEventType,
 } from '../../../src/lib/medcases/realtime-protocol.ts';
 import {
@@ -17,12 +19,24 @@ import {
   applyTimerCommand,
   createSession,
   nextAlarmAt,
+  releaseMaterial,
   validCreateSessionRequest,
   validSessionConfig,
-  DEVELOPMENT_SESSION_TTL_MS,
+  SESSION_TTL_MS,
 } from '../../../src/lib/medcases/realtime-state.ts';
 import {
+  clientAbuseKey,
+  MAX_CONNECTIONS_BY_ROLE,
+  RATE_LIMIT_WINDOW_SECONDS,
+  rateLimitAllows,
+  readJsonBodyWithLimit,
+  type JsonReadResult,
+  type RateLimitBinding,
+} from './abuse-protection.ts';
+import { environmentKind, validateRequestOrigin, type EnvironmentSettings, type RealtimeEnvironment } from './environment.ts';
+import {
   createExaminerCapability,
+  createPatientCapability,
   createSessionId,
   equalCapabilityHashes,
   hashCapability,
@@ -33,21 +47,25 @@ import { JoinCodeEntry, type JoinCodeMapping } from './JoinCodeEntry.ts';
 
 export { JoinCodeEntry };
 
-interface WorkerEnv {
+interface WorkerEnv extends EnvironmentSettings {
   MEDCASE_SESSIONS: DurableObjectNamespace<MedCaseSession>;
   JOIN_CODE_ENTRIES: DurableObjectNamespace<JoinCodeEntry>;
-  /** Supplied only by `npm run realtime:dev`; never in deployable config. */
-  ENVIRONMENT?: string;
+  SESSION_CREATE_RATE_LIMIT: RateLimitBinding;
+  JOIN_LOOKUP_RATE_LIMIT: RateLimitBinding;
+  WEBSOCKET_CONNECT_RATE_LIMIT: RateLimitBinding;
+  AUTH_ATTEMPT_RATE_LIMIT: RateLimitBinding;
 }
 
 interface StoredSession {
   state: SessionState;
   joinCode: string;
   examinerCapabilityHash: string;
+  patientCapabilityHash: string;
 }
 
 interface ConnectionAttachment {
   connectionId: string;
+  abuseKey: string;
   authenticated: boolean;
   role: SessionRole | null;
   failedAuthAttempts: number;
@@ -56,10 +74,10 @@ interface ConnectionAttachment {
 const SESSION_ROUTE = /^\/sessions\/(session_[a-f0-9]{32})\/connect$/;
 const DEBUG_STATE_ROUTE = /^\/__dev\/sessions\/(session_[a-f0-9]{32})\/state$/;
 const DEBUG_CODE_ROUTE = /^\/__dev\/join-codes\/([A-HJ-NP-Z2-9]{6})\/(reserve|lookup|release)$/;
-const ALLOWED_ORIGINS = new Set(['http://localhost:4321', 'http://127.0.0.1:4321']);
 const STATE_KEY = 'session';
 const MIN_TEST_TTL_MS = 1000;
 const MAX_TEST_TTL_MS = 60_000;
+const ABUSE_KEY_HEADER = 'X-MedNerds-Internal-Abuse-Key';
 
 function json(value: unknown, status = 200): Response {
   return new Response(JSON.stringify(value), {
@@ -68,29 +86,23 @@ function json(value: unknown, status = 200): Response {
   });
 }
 
-function withLocalCors(response: Response, request: Request): Response {
+function withCors(response: Response, origin: string | null): Response {
   if (response.status === 101) return response;
-  const origin = request.headers.get('Origin');
-  if (!origin || !ALLOWED_ORIGINS.has(origin)) return response;
+  if (!origin) return response;
   const headers = new Headers(response.headers);
   headers.set('Access-Control-Allow-Origin', origin);
   headers.set('Vary', 'Origin');
   return new Response(response.body, { status: response.status, headers });
 }
 
-function originAllowed(request: Request): boolean {
-  const origin = request.headers.get('Origin');
-  // Origin-less non-browser test clients are accepted only in this dev-only router.
-  return origin === null || ALLOWED_ORIGINS.has(origin);
+function invalidJsonResponse(parsed: Extract<JsonReadResult, { ok: false }>): Response {
+  return parsed.status === 413 ? json({ code: 'PAYLOAD_TOO_LARGE' }, 413) : json({ code: 'INVALID_REQUEST' }, 400);
 }
 
-async function readSmallJson(request: Request): Promise<{ ok: true; value: unknown } | { ok: false }> {
-  if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') ?? '')) return { ok: false };
-  const contentLength = Number(request.headers.get('Content-Length') ?? 0);
-  if (contentLength > MAX_CONTROL_MESSAGE_BYTES) return { ok: false };
-  const body = await request.text();
-  if (new TextEncoder().encode(body).byteLength > MAX_CONTROL_MESSAGE_BYTES) return { ok: false };
-  try { return { ok: true, value: JSON.parse(body) }; } catch { return { ok: false }; }
+function rateLimitedResponse(): Response {
+  const response = json({ code: 'RATE_LIMITED' }, 429);
+  response.headers.set('Retry-After', String(RATE_LIMIT_WINDOW_SECONDS));
+  return response;
 }
 
 function sessionStub(env: WorkerEnv, sessionId: string): DurableObjectStub<MedCaseSession> {
@@ -117,24 +129,28 @@ async function releaseCode(env: WorkerEnv, code: string, expectedSessionId: stri
   }
 }
 
-function testTtl(request: Request): number | null {
+function sessionTtl(request: Request, environment: RealtimeEnvironment): number | null {
   const raw = request.headers.get('X-MedNerds-Test-TTL-Ms');
-  if (raw === null) return DEVELOPMENT_SESSION_TTL_MS;
+  if (environment === 'production') return raw === null ? SESSION_TTL_MS : null;
+  if (raw === null) return SESSION_TTL_MS;
   if (!/^\d{1,5}$/.test(raw)) return null;
   const value = Number(raw);
   return value >= MIN_TEST_TTL_MS && value <= MAX_TEST_TTL_MS ? value : null;
 }
 
-async function createSessionResponse(request: Request, env: WorkerEnv): Promise<Response> {
-  const parsed = await readSmallJson(request);
-  if (!parsed.ok || !validCreateSessionRequest(parsed.value)) return json({ code: 'INVALID_REQUEST' }, 400);
-  const ttlMs = testTtl(request);
+async function createSessionResponse(request: Request, env: WorkerEnv, environment: RealtimeEnvironment): Promise<Response> {
+  const parsed = await readJsonBodyWithLimit(request);
+  if (!parsed.ok) return invalidJsonResponse(parsed);
+  if (!validCreateSessionRequest(parsed.value)) return json({ code: 'INVALID_REQUEST' }, 400);
+  const ttlMs = sessionTtl(request, environment);
   if (ttlMs === null) return json({ code: 'INVALID_REQUEST' }, 400);
 
   const config: CreateSessionRequest = parsed.value;
   const sessionId = createSessionId();
   const examinerCapability = createExaminerCapability();
+  const patientCapability = createPatientCapability();
   const examinerCapabilityHash = await hashCapability(examinerCapability);
+  const patientCapabilityHash = await hashCapability(patientCapability);
   const state = createSession({ ...config, sessionId }, Date.now(), ttlMs);
   let attemptedCode: string | null = null;
   let joinCode: string | null;
@@ -156,7 +172,7 @@ async function createSessionResponse(request: Request, env: WorkerEnv): Promise<
 
   try {
     const result = await sessionStub(env, sessionId).fetch(internalRequest('/initialize', 'POST', {
-      state, joinCode, examinerCapabilityHash,
+      state, joinCode, examinerCapabilityHash, patientCapabilityHash,
     } satisfies StoredSession));
     if (result.status !== 201) throw new Error('Session initialization failed.');
   } catch {
@@ -165,14 +181,15 @@ async function createSessionResponse(request: Request, env: WorkerEnv): Promise<
   }
 
   const body: CreateSessionResponse = {
-    sessionId, joinCode, examinerCapability, expiresAtMs: state.expiresAtMs,
+    sessionId, joinCode, examinerCapability, patientCapability, expiresAtMs: state.expiresAtMs,
   };
   return json(body, 201);
 }
 
 async function joinSessionResponse(request: Request, env: WorkerEnv): Promise<Response> {
-  const parsed = await readSmallJson(request);
-  const value = parsed.ok && parsed.value && typeof parsed.value === 'object' && !Array.isArray(parsed.value)
+  const parsed = await readJsonBodyWithLimit(request);
+  if (!parsed.ok) return parsed.status === 413 ? invalidJsonResponse(parsed) : json({ code: 'JOIN_CODE_INVALID' }, 404);
+  const value = parsed.value && typeof parsed.value === 'object' && !Array.isArray(parsed.value)
     ? parsed.value as Record<string, unknown> : null;
   const code = value && Object.keys(value).length === 1 ? normalizeJoinCode(value.joinCode) : null;
   if (!code) return json({ code: 'JOIN_CODE_INVALID' }, 404);
@@ -194,7 +211,7 @@ async function debugCodeResponse(request: Request, env: WorkerEnv, code: string,
   const method = action === 'lookup' ? 'GET' : 'POST';
   if (request.method !== method) return json({ code: 'INVALID_REQUEST' }, 405);
   if (method === 'GET') return codeStub(env, code).fetch(internalRequest('/lookup'));
-  const body = await readSmallJson(request);
+  const body = await readJsonBodyWithLimit(request, MAX_CONTROL_MESSAGE_BYTES);
   if (!body.ok) return json({ code: 'INVALID_REQUEST' }, 400);
   return codeStub(env, code).fetch(internalRequest(`/${action}`, 'POST', body.value));
 }
@@ -204,20 +221,29 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === '/health' && request.method === 'GET') return json({ ok: true });
 
-    // No production session API exists until abuse protection and public auth are designed.
-    if (env.ENVIRONMENT !== 'development') return new Response('Not found', { status: 404 });
-    if (!originAllowed(request)) return new Response('Forbidden origin', { status: 403 });
+    const environment = environmentKind(env);
+    if (!environment || (environment !== 'development' && url.pathname.startsWith('/__dev/'))) {
+      return new Response('Not found', { status: 404 });
+    }
+    const requestOrigin = validateRequestOrigin(request, env);
+    if (!requestOrigin.allowed) return new Response('Forbidden origin', { status: 403 });
 
     let result: Response;
     if (request.method === 'OPTIONS' && (url.pathname === '/sessions' || url.pathname === '/sessions/join')) {
       result = new Response(null, {
         status: 204,
-        headers: { 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, X-MedNerds-Test-TTL-Ms' },
+        headers: { 'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': environment === 'development'
+            ? 'Content-Type, X-MedNerds-Test-TTL-Ms' : 'Content-Type' },
       });
     } else if (url.pathname === '/sessions' && request.method === 'POST') {
-      result = await createSessionResponse(request, env);
+      const key = await clientAbuseKey(request);
+      result = await rateLimitAllows(env.SESSION_CREATE_RATE_LIMIT, key)
+        ? await createSessionResponse(request, env, environment) : rateLimitedResponse();
     } else if (url.pathname === '/sessions/join' && request.method === 'POST') {
-      result = await joinSessionResponse(request, env);
+      const key = await clientAbuseKey(request);
+      result = await rateLimitAllows(env.JOIN_LOOKUP_RATE_LIMIT, key)
+        ? await joinSessionResponse(request, env) : rateLimitedResponse();
     } else {
       const connect = SESSION_ROUTE.exec(url.pathname);
       const debug = DEBUG_STATE_ROUTE.exec(url.pathname);
@@ -226,17 +252,24 @@ export default {
         if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('WebSocket upgrade required', { status: 426 });
         // `?role=examiner` is ignored: only the first WebSocket auth message grants rights.
         if ([...url.searchParams.keys()].some((key) => key !== 'role')) return new Response('Invalid connection request', { status: 400 });
-        return sessionStub(env, connect[1]).fetch(request);
+        const key = await clientAbuseKey(request);
+        if (!await rateLimitAllows(env.WEBSOCKET_CONNECT_RATE_LIMIT, key)) {
+          return withCors(rateLimitedResponse(), requestOrigin.origin);
+        }
+        const headers = new Headers(request.headers);
+        headers.set(ABUSE_KEY_HEADER, key);
+        headers.delete('CF-Connecting-IP');
+        return sessionStub(env, connect[1]).fetch(new Request(request, { headers }));
       }
-      if (debugCode) {
+      if (environment === 'development' && debugCode) {
         result = await debugCodeResponse(request, env, debugCode[1], debugCode[2]);
-      } else if (debug && request.method === 'GET') {
+      } else if (environment === 'development' && debug && request.method === 'GET') {
         result = await sessionStub(env, debug[1]).fetch(internalRequest('/state'));
       } else {
         result = new Response('Not found', { status: 404 });
       }
     }
-    return withLocalCors(result, request);
+    return withCors(result, requestOrigin.origin);
   },
 };
 
@@ -245,7 +278,9 @@ function validStoredSession(value: unknown): value is StoredSession {
   const stored = value as Record<string, unknown>;
   if (typeof stored.joinCode !== 'string' || normalizeJoinCode(stored.joinCode) !== stored.joinCode
     || typeof stored.examinerCapabilityHash !== 'string'
-    || !/^[a-f0-9]{64}$/.test(stored.examinerCapabilityHash)) return false;
+    || !/^[a-f0-9]{64}$/.test(stored.examinerCapabilityHash)
+    || typeof stored.patientCapabilityHash !== 'string'
+    || !/^[a-f0-9]{64}$/.test(stored.patientCapabilityHash)) return false;
   const state = stored.state as SessionState | undefined;
   if (!state || state.version !== 1 || !state.timer || !Array.isArray(state.releasedMaterialIds)
     || state.timer.status !== 'ready' || state.timer.startedAtMs !== null
@@ -253,13 +288,27 @@ function validStoredSession(value: unknown): value is StoredSession {
     || state.timer.warningEmitted !== false || !Number.isSafeInteger(state.createdAtMs)
     || !Number.isSafeInteger(state.expiresAtMs)) return false;
   const ttlMs = state.expiresAtMs - state.createdAtMs;
-  return ttlMs > 0 && ttlMs <= DEVELOPMENT_SESSION_TTL_MS
+  return ttlMs > 0 && ttlMs <= SESSION_TTL_MS
     && validSessionConfig({
       sessionId: state.sessionId,
       caseId: state.caseId,
       durationSeconds: state.timer.durationMs / 1000,
       warningRemainingSeconds: state.timer.warningRemainingMs / 1000,
     });
+}
+
+function stateForRole(state: SessionState, role: SessionRole): SessionViewState {
+  if (role === 'display') {
+    return { version: 1, sessionId: state.sessionId, expiresAtMs: state.expiresAtMs, timer: state.timer };
+  }
+  if (role === 'patient') {
+    return {
+      version: 1, sessionId: state.sessionId, caseId: state.caseId,
+      expiresAtMs: state.expiresAtMs, releasedMaterialIds: state.releasedMaterialIds,
+    };
+  }
+  // Observer retains its Phase 6C technical snapshot for compatibility.
+  return state;
 }
 
 export class MedCaseSession extends DurableObject<WorkerEnv> {
@@ -275,7 +324,11 @@ export class MedCaseSession extends DurableObject<WorkerEnv> {
   private broadcast(message: ServerMessage): void {
     for (const socket of this.ctx.getWebSockets()) {
       const attachment = socket.deserializeAttachment() as ConnectionAttachment | null;
-      if (attachment?.authenticated) this.send(socket, message);
+      if (!attachment?.authenticated || !attachment.role) continue;
+      if (message.type === 'material.released' && attachment.role === 'display') continue;
+      if ('state' in message) {
+        this.send(socket, { ...message, state: stateForRole(message.state as SessionState, attachment.role) });
+      } else this.send(socket, message);
     }
   }
 
@@ -288,6 +341,8 @@ export class MedCaseSession extends DurableObject<WorkerEnv> {
       SESSION_EXPIRED: 'Session is unavailable or expired.',
       AUTH_REQUIRED: 'Authenticate before using this session.',
       AUTH_FAILED: 'Authentication failed.',
+      CONNECTION_LIMIT_REACHED: 'This role has too many active connections.',
+      RESOURCE_LIMIT_REACHED: 'This session has reached its material limit.',
     };
     this.send(socket, { type: 'error', code, message: messages[code] });
   }
@@ -326,8 +381,10 @@ export class MedCaseSession extends DurableObject<WorkerEnv> {
   }
 
   async fetch(request: Request): Promise<Response> {
-    if (this.env.ENVIRONMENT !== 'development') return new Response('Not found', { status: 404 });
+    const environment = environmentKind(this.env);
+    if (!environment) return new Response('Not found', { status: 404 });
     const path = new URL(request.url).pathname;
+    if (path === '/state' && environment !== 'development') return new Response('Not found', { status: 404 });
     const nowMs = Date.now();
 
     if (path === '/initialize' && request.method === 'POST') {
@@ -352,7 +409,8 @@ export class MedCaseSession extends DurableObject<WorkerEnv> {
       const [client, server] = Object.values(pair);
       this.ctx.acceptWebSocket(server);
       server.serializeAttachment({
-        connectionId: crypto.randomUUID(), authenticated: false, role: null, failedAuthAttempts: 0,
+        connectionId: crypto.randomUUID(), abuseKey: request.headers.get(ABUSE_KEY_HEADER) ?? '',
+        authenticated: false, role: null, failedAuthAttempts: 0,
       } satisfies ConnectionAttachment);
       // The first snapshot is sent only after a valid authentication message.
       return new Response(null, { status: 101, webSocket: client });
@@ -384,18 +442,32 @@ export class MedCaseSession extends DurableObject<WorkerEnv> {
         this.error(socket, 'AUTH_REQUIRED');
         return;
       }
-      if (parsed.message.role === 'examiner') {
+      if (parsed.message.role === 'examiner' || parsed.message.role === 'patient') {
         const candidateHash = await hashCapability(parsed.message.capability);
-        if (!equalCapabilityHashes(candidateHash, stored.examinerCapabilityHash)) {
+        const expectedHash = parsed.message.role === 'examiner'
+          ? stored.examinerCapabilityHash : stored.patientCapabilityHash;
+        if (!equalCapabilityHashes(candidateHash, expectedHash)) {
+          const failureKey = await hashCapability(`${attachment.abuseKey}:${stored.state.sessionId}`);
+          const allowed = await rateLimitAllows(this.env.AUTH_ATTEMPT_RATE_LIMIT, failureKey);
           attachment.failedAuthAttempts += 1;
           socket.serializeAttachment(attachment);
           this.error(socket, 'AUTH_FAILED');
-          if (attachment.failedAuthAttempts >= 3) socket.close(1008, 'Authentication failed');
+          if (!allowed || attachment.failedAuthAttempts >= 3) socket.close(1008, 'Authentication failed');
           return;
         }
       }
+      const role = parsed.message.role;
+      const activeForRole = this.ctx.getWebSockets().filter((peer) => {
+        const peerAttachment = peer.deserializeAttachment() as ConnectionAttachment | null;
+        return peerAttachment?.authenticated && peerAttachment.role === role;
+      }).length;
+      if (activeForRole >= MAX_CONNECTIONS_BY_ROLE[role]) {
+        this.error(socket, 'CONNECTION_LIMIT_REACHED');
+        socket.close(1008, 'Connection limit reached');
+        return;
+      }
       socket.serializeAttachment({ ...attachment, authenticated: true, role: parsed.message.role } satisfies ConnectionAttachment);
-      this.send(socket, { type: 'session.snapshot', state: stored.state, serverNowMs: nowMs });
+      this.send(socket, { type: 'session.snapshot', state: stateForRole(stored.state, parsed.message.role), serverNowMs: nowMs });
       return;
     }
 
@@ -405,6 +477,27 @@ export class MedCaseSession extends DurableObject<WorkerEnv> {
     }
     if (parsed.message.type === 'time.ping') {
       this.send(socket, { type: 'time.pong', clientSentAtMs: parsed.message.clientSentAtMs, serverNowMs: Date.now() });
+      return;
+    }
+    if (parsed.message.type === 'material.release') {
+      if (!attachment.role || !mayReleaseMaterial(attachment.role)) {
+        this.error(socket, 'FORBIDDEN');
+        return;
+      }
+      const materialId = parsed.message.materialId;
+      const change = releaseMaterial(stored.state, materialId);
+      if (change.limitReached) {
+        this.error(socket, 'RESOURCE_LIMIT_REACHED');
+        return;
+      }
+      if (!change.released) {
+        this.send(socket, { type: 'material.released', materialId,
+          state: stateForRole(stored.state, 'examiner'), serverNowMs: nowMs });
+        return;
+      }
+      const { state } = change;
+      await this.ctx.storage.put(STATE_KEY, { ...stored, state });
+      this.broadcast({ type: 'material.released', materialId, state, serverNowMs: nowMs });
       return;
     }
     if (!attachment.role || !mayControlTimer(attachment.role)) {

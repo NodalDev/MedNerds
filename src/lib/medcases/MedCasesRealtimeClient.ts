@@ -1,6 +1,7 @@
 import type {
   CreateSessionRequest, CreateSessionResponse, JoinSessionResponse, ServerMessage, SessionRole, TimerCommand,
 } from './realtime-protocol';
+import { realtimeWebSocketUrl } from './realtime-url';
 
 export type ConnectionStatus = 'connecting' | 'authenticating' | 'connected' | 'reconnecting' | 'expired' | 'error';
 interface ClientOptions {
@@ -86,6 +87,12 @@ export class MedCasesRealtimeClient {
     return true;
   }
 
+  sendMaterialRelease(materialId: string): boolean {
+    if (this.options.role !== 'examiner' || !this.connected || this.socket?.readyState !== WebSocket.OPEN) return false;
+    this.socket.send(JSON.stringify({ type: 'material.release', materialId }));
+    return true;
+  }
+
   private readonly onOnline = () => {
     if (!this.closed && !this.terminal && (!this.socket || this.socket.readyState === WebSocket.CLOSED)) this.connect();
   };
@@ -111,17 +118,23 @@ export class MedCasesRealtimeClient {
     this.pendingPing = null;
     this.bestRtt = Infinity;
     this.samples = 0;
-    const url = new URL(`/sessions/${this.options.sessionId}/connect`, this.options.baseUrl);
-    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    let url: string;
+    try { url = realtimeWebSocketUrl(this.options.baseUrl, this.options.sessionId, import.meta.env.DEV); }
+    catch {
+      this.terminal = true;
+      this.options.onStatus('error');
+      this.stop();
+      return;
+    }
     const socket = new WebSocket(url);
     let authenticated = false;
     this.socket = socket;
     socket.addEventListener('open', () => {
       if (this.closed || this.socket !== socket) return;
       this.options.onStatus('authenticating');
-      socket.send(JSON.stringify(this.options.role === 'examiner'
-        ? { type: 'session.authenticate', role: 'examiner', capability: this.options.capability }
-        : { type: 'session.authenticate', role: 'observer' }));
+      socket.send(JSON.stringify(this.options.role === 'examiner' || this.options.role === 'patient'
+        ? { type: 'session.authenticate', role: this.options.role, capability: this.options.capability }
+        : { type: 'session.authenticate', role: this.options.role }));
     });
     socket.addEventListener('message', (event: MessageEvent<string>) => {
       if (this.closed || this.socket !== socket) return;
@@ -131,6 +144,12 @@ export class MedCasesRealtimeClient {
       if (message.type === 'error' && message.code === 'AUTH_FAILED') {
         this.terminal = true;
         this.options.onTerminal('auth-failed');
+        this.options.onStatus('error');
+        this.stop();
+        return;
+      }
+      if (message.type === 'error' && message.code === 'CONNECTION_LIMIT_REACHED') {
+        this.terminal = true;
         this.options.onStatus('error');
         this.stop();
         return;

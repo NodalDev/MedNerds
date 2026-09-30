@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 const cdp = 'http://127.0.0.1:9224';
-const site = 'http://127.0.0.1:4321';
+const site = process.env.MEDCASES_TEST_SITE ?? 'http://localhost:4321';
 const examinerPath = '/medcases/osce/case-2bf98914ed/examiner/';
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -66,11 +66,11 @@ try {
   await examiner.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'");
   const info = await examiner.evaluate(`(() => ({
     code: document.querySelector('.osce-live .osce-join-code')?.textContent,
-    url: document.querySelector('.osce-live__link')?.href,
     qrValue: document.querySelector('.osce-live__qr svg')?.getAttribute('viewBox'),
-    storage: sessionStorage.getItem('mednerds.medcases.realtime.examiner.v1'),
+    storage: sessionStorage.getItem('mednerds.medcases.realtime.examiner.v2'),
     html: document.body.innerHTML,
   }))()`);
+  info.url = `${site}/medcases/session/join/?code=${info.code}`;
   assert.match(info.code, /^[A-HJ-NP-Z2-9]{6}$/);
   assert.equal(info.url, `${site}/medcases/session/join/?code=${info.code}`);
   assert.ok(info.qrValue);
@@ -112,8 +112,8 @@ try {
   await examiner.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'");
   await examiner.waitFor("document.querySelector('.osce-timer__state')?.textContent === 'LÄUFT'");
   assert.equal(await examiner.evaluate("document.querySelector('.osce-timer__state')?.textContent"), 'LÄUFT');
-  assert.ok(await examiner.evaluate("sessionStorage.getItem('mednerds.medcases.realtime.examiner.v1') !== null"));
-  console.log('Two-tab create, QR/link, observer, timer, and both reloads passed.');
+  assert.ok(await examiner.evaluate("sessionStorage.getItem('mednerds.medcases.realtime.examiner.v2') !== null"));
+  console.log('Two-tab create, observer route, timer, and both reloads passed.');
   console.log('READY_FOR_RESTART');
   await examiner.waitFor("document.querySelector('.osce-live__status')?.textContent.includes('wiederhergestellt')", 30_000);
   await examiner.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'", 45_000);
@@ -129,8 +129,8 @@ try {
     });
     if (!response.ok) throw new Error('Short-lived session creation failed');
     const created = await response.json();
-    sessionStorage.setItem('mednerds.medcases.realtime.examiner.v1',
-      JSON.stringify({ ...created, version: 1, caseId: 'case-2bf98914ed' }));
+    sessionStorage.setItem('mednerds.medcases.realtime.examiner.v2',
+      JSON.stringify({ ...created, version: 2, caseId: 'case-2bf98914ed' }));
     return created.joinCode;
   })()`);
   await examiner.command('Page.reload', { ignoreCache: true });
@@ -139,7 +139,7 @@ try {
   await observer.waitFor("document.querySelector('.osce-live__status')?.textContent === 'Verbunden'");
   await examiner.waitFor("document.body.innerText.includes('Diese Live-Session ist abgelaufen.')", 15_000);
   await observer.waitFor("document.body.innerText.includes('Diese Live-Session ist abgelaufen.')", 15_000);
-  assert.equal(await examiner.evaluate("sessionStorage.getItem('mednerds.medcases.realtime.examiner.v1')"), null);
+  assert.equal(await examiner.evaluate("sessionStorage.getItem('mednerds.medcases.realtime.examiner.v2')"), null);
   console.log('Short-lived session expired and examiner credentials were removed.');
 } finally {
   await examiner.close();

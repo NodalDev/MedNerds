@@ -26,6 +26,7 @@ for (const projection of [candidate, patient]) {
 }
 assert.equal('patient' in candidate, false);
 assert.equal('candidate' in patient, false);
+assert.deepEqual(patient.releasableMaterials.map(({ id }) => id), ['vitals-1']);
 assert.ok(candidate.candidate.tasks.length > 0);
 assert.ok(patient.patient.history.length > 0);
 
@@ -40,7 +41,7 @@ assert.equal(validTimerConfig({ durationSeconds: 600, warningRemainingSeconds: 6
 assert.equal(joinUrl('https://mednerds.ch', item.joinCode), 'https://mednerds.ch/medcases/join/?case=K7P4MX');
 
 const root = `dist/medcases/osce/${item.id}`;
-const [landingHtml, publicHtml, candidateHtml, patientHtml, examinerHtml, joinHtml, liveJoinHtml] = await Promise.all([
+const [landingHtml, publicHtml, candidateHtml, patientHtml, examinerHtml, joinHtml, liveJoinHtml, displayHtml, patientEntryHtml, livePatientHtml] = await Promise.all([
   readFile('dist/medcases/index.html', 'utf8'),
   readFile(`${root}/index.html`, 'utf8'),
   readFile(`${root}/candidate/index.html`, 'utf8'),
@@ -48,13 +49,19 @@ const [landingHtml, publicHtml, candidateHtml, patientHtml, examinerHtml, joinHt
   readFile(`${root}/examiner/index.html`, 'utf8'),
   readFile('dist/medcases/join/index.html', 'utf8'),
   readFile('dist/medcases/session/join/index.html', 'utf8'),
+  readFile('dist/medcases/session/display/index.html', 'utf8'),
+  readFile('dist/medcases/session/patient/index.html', 'utf8'),
+  readFile(`dist/medcases/session/patient/${item.id}/index.html`, 'utf8'),
 ]);
 assert.match(landingHtml, /data-pagefind-body/);
 assert.match(publicHtml, /data-pagefind-body/);
-for (const html of [joinHtml, liveJoinHtml, candidateHtml, patientHtml, examinerHtml]) {
+for (const html of [joinHtml, liveJoinHtml, displayHtml, patientEntryHtml, livePatientHtml, candidateHtml, patientHtml, examinerHtml]) {
   assert.match(html, /name="robots" content="noindex, nofollow"/);
   assert.doesNotMatch(html, /data-pagefind-body/);
 }
+assert.doesNotMatch(displayHtml, /Kernproblem|Checkliste|Gesamtscore|Diagnose/);
+assert.doesNotMatch(patientEntryHtml, /Kernproblem|Checkliste|Gesamtscore|Diagnose|vitals-1/);
+assert.doesNotMatch(livePatientHtml, /Kernproblem|Checkliste|Gesamtscore|Diagnose|osce-timer__display/);
 assert.doesNotMatch(candidateHtml, /Kernproblem|Bluthochdruck|Checkliste|Ausstrahlung|osce-timer__display/);
 assert.doesNotMatch(patientHtml, /Kernproblem|Checkliste|Gesamtscore|osce-timer__display/);
 assert.doesNotMatch(candidateHtml, /OsceParticipant.*client:load/);

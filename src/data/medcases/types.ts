@@ -14,6 +14,8 @@ export interface CaseMaterial {
   src?: string;
   alt?: string;
   lines?: string[];
+  /** Explicitly permits this material to be released to the patient in a live session. */
+  releaseToPatient?: boolean;
 }
 
 export interface ChecklistSection {
@@ -63,5 +65,5 @@ export interface OsceCase {
 
 export type PublicCase = Pick<OsceCase, 'id' | 'joinCode' | 'title' | 'specialty' | 'summary' | 'demo' | 'timer'>;
 export type CandidateCase = Pick<OsceCase, 'id' | 'title' | 'demo' | 'candidate'>;
-export type PatientCase = Pick<OsceCase, 'id' | 'title' | 'demo' | 'patient'>;
+export type PatientCase = Pick<OsceCase, 'id' | 'title' | 'demo' | 'patient'> & { releasableMaterials: CaseMaterial[] };
 export type MasterCase = OsceCase;

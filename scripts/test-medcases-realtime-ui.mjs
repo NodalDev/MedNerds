@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  EXAMINER_STORAGE_KEY, clearExaminerSession, cueForLiveEvent, normalizeSessionCode, restoreExaminerSession,
-  saveExaminerSession, sessionJoinUrl, validStoredSession, visibleRemainingMs,
+  EXAMINER_STORAGE_KEY, PATIENT_STORAGE_KEY, clearExaminerSession, clearPatientSession, cueForLiveEvent,
+  normalizeSessionCode, patientCapabilityFromFragment, patientInviteUrl, restoreExaminerSession,
+  restorePatientSession, saveExaminerSession, savePatientSession, sessionDisplayUrl, sessionJoinUrl,
+  validStoredSession, visibleRemainingMs,
 } from '../src/lib/medcases/realtime-ui.ts';
 
 const caseId = 'case-2bf98914ed';
 const valid = {
-  version: 1, caseId, sessionId: 'session_abcdef1234567890abcdef1234567890',
-  joinCode: 'K7P4MX', examinerCapability: 'a'.repeat(43), expiresAtMs: 200_000,
+  version: 2, caseId, sessionId: 'session_abcdef1234567890abcdef1234567890',
+  joinCode: 'K7P4MX', examinerCapability: 'a'.repeat(43), patientCapability: 'b'.repeat(43), expiresAtMs: 200_000,
 };
 function memoryStorage() {
   const values = new Map();
@@ -28,11 +30,38 @@ test('join link contains only the code and stays separate from static V1', () =>
   assert.ok(!sessionJoinUrl('http://localhost:4321/', valid.joinCode).includes(valid.sessionId));
 });
 
+test('display link contains only the code and uses its dedicated route', () => {
+  const url = sessionDisplayUrl('http://localhost:4321/other/', valid.joinCode);
+  assert.equal(url, 'http://localhost:4321/medcases/session/display/?code=K7P4MX');
+  for (const secret of [valid.sessionId, valid.examinerCapability, valid.caseId]) assert.ok(!url.includes(secret));
+});
+
+test('patient invite keeps its separate capability in the URL fragment and sessionStorage only', () => {
+  const invite = new URL(patientInviteUrl('https://mednerds.ch', valid.joinCode, valid.patientCapability));
+  assert.equal(invite.pathname, '/medcases/session/patient/');
+  assert.equal(invite.search, '?code=K7P4MX');
+  assert.equal(invite.hash, `#access=${valid.patientCapability}`);
+  assert.equal(invite.searchParams.has('access'), false);
+  for (const secret of [valid.examinerCapability, valid.sessionId, valid.caseId]) assert.ok(!invite.toString().includes(secret));
+  assert.equal(patientCapabilityFromFragment(invite.hash), valid.patientCapability);
+  assert.equal(patientCapabilityFromFragment('#access=short'), null);
+  assert.equal(patientCapabilityFromFragment(`#access=${valid.patientCapability}&extra=1`), null);
+  const storage = memoryStorage();
+  const patient = { version: 1, sessionId: valid.sessionId, joinCode: valid.joinCode,
+    patientCapability: valid.patientCapability, expiresAtMs: valid.expiresAtMs };
+  assert.equal(savePatientSession(storage, patient), true);
+  assert.deepEqual(restorePatientSession(storage, 100_000), patient);
+  clearPatientSession(storage);
+  assert.equal(storage.getItem(PATIENT_STORAGE_KEY), null);
+});
+
 test('sessionStorage restores only a complete, matching, unexpired examiner session', () => {
   const storage = memoryStorage();
+  storage.setItem('mednerds.medcases.realtime.examiner.v1', 'obsolete');
   assert.equal(saveExaminerSession(storage, valid), true);
   assert.deepEqual(restoreExaminerSession(storage, caseId, 100_000), valid);
-  assert.equal(validStoredSession({ ...valid, version: 2 }, caseId, 100_000), false);
+  assert.equal(storage.getItem('mednerds.medcases.realtime.examiner.v1'), null);
+  assert.equal(validStoredSession({ ...valid, version: 1 }, caseId, 100_000), false);
   assert.equal(validStoredSession({ ...valid, examinerCapability: '' }, caseId, 100_000), false);
   assert.equal(validStoredSession({ ...valid, joinCode: undefined }, caseId, 100_000), false);
   assert.equal(validStoredSession(valid, 'case-ffffffffee', 100_000), false);

@@ -1,4 +1,4 @@
-import type { SessionState, TimerCommand } from '../../lib/medcases/realtime-protocol';
+import type { SessionTimerState, TimerCommand } from '../../lib/medcases/realtime-protocol';
 import { formatTime } from '../../lib/medcases/timer';
 import { visibleRemainingMs } from '../../lib/medcases/realtime-ui';
 
@@ -12,7 +12,7 @@ const statusText = {
 export default function RealtimeTimer({
   state, serverNowMs, command, pending,
 }: {
-  state: SessionState;
+  state: { timer: SessionTimerState };
   serverNowMs: number;
   command?: (type: TimerCommand) => void;
   pending?: TimerCommand | null;

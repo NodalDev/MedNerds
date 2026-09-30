@@ -1,0 +1,20 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import RealtimePatient from '../../../../components/medcases/RealtimePatient';
+import { forPatient, osceCases } from '../../../../data/medcases/cases';
+import '../../../../styles/medcases.css';
+
+export function getStaticPaths() {
+  return osceCases.map((item) => ({ params: { caseId: item.id }, props: { item: forPatient(item) } }));
+}
+const { item } = Astro.props;
+---
+
+<StarlightPage hasSidebar={false} frontmatter={{
+  title: 'Schauspielpatient · Live-Session',
+  description: 'Schauspielpatientenansicht einer OSCE-Live-Session.',
+  pageLayout: 'hub', tableOfContents: false, pagefind: false,
+  head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' } }],
+}}>
+  <div class="osce"><RealtimePatient item={item} client:only="react" /></div>
+</StarlightPage>

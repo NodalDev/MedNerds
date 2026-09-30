@@ -1,6 +1,6 @@
 import type { CandidateCase, CaseMaterial, PatientCase } from '../../data/medcases/types';
 
-type Props = { role: 'candidate'; item: CandidateCase } | { role: 'patient'; item: PatientCase };
+type Props = { role: 'candidate'; item: CandidateCase } | { role: 'patient'; item: PatientCase; releasedMaterialIds?: string[] };
 
 function RoleMaterials({ materials }: { materials?: CaseMaterial[] }) {
   if (!materials?.length) return null;
@@ -25,6 +25,8 @@ export default function OsceParticipant(props: Props) {
           {props.item.patient.history.length > 0 && <section className="osce-panel"><h2>Nur auf Nachfrage</h2><div className="osce-details">{props.item.patient.history.map(({ topic, answer }) => <details key={topic}><summary>{topic}</summary><p>{answer}</p></details>)}</div></section>}
           {(props.item.patient.doNotVolunteer.length > 0 || props.item.patient.reactions.length > 0) && <section className="osce-panel"><h2>Verhalten</h2>{props.item.patient.doNotVolunteer.length > 0 && <><h3>Nicht spontan erwähnen</h3><ul>{props.item.patient.doNotVolunteer.map((line) => <li key={line}>{line}</li>)}</ul></>}{props.item.patient.reactions.length > 0 && <><h3>Reaktionen</h3><ul>{props.item.patient.reactions.map((line) => <li key={line}>{line}</li>)}</ul></>}</section>}
           <RoleMaterials materials={props.item.patient.materials} />
+          {props.releasedMaterialIds && <RoleMaterials materials={props.item.releasableMaterials.filter(({ id, releaseToPatient }) =>
+            releaseToPatient && props.releasedMaterialIds?.includes(id))} />}
         </>}
     </div>
   </div>;
