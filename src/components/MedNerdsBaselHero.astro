@@ -6,14 +6,19 @@ const tagline = data.hero?.tagline;
 const action = data.hero?.actions?.[0];
 
 const topics = [
-  'EKG',
-  'Echo',
-  'Sonographie',
-  'Notfallmedizin',
-  'Intensivmedizin',
-  'Anästhesiologie',
-  'Kardiologie',
+  { label: 'EKG', home: [0.13, 0.49], compactHome: [0.13, 0.51], fontSize: 15, opacity: 0.78, weight: 300, mass: 1 },
+  { label: 'Echo', home: [0.83, 0.18], compactHome: [0.85, 0.13], fontSize: 16, opacity: 0.8, weight: 300, mass: 1 },
+  { label: 'Sonographie', home: [0.63, 0.32], compactHome: [0.7, 0.3], fontSize: 24, opacity: 0.96, weight: 300, mass: 1.5 },
+  { label: 'Notfallmedizin', home: [0.72, 0.51], compactHome: [0.6, 0.51], fontSize: 25, opacity: 1, weight: 300, mass: 1.6 },
+  { label: 'Intensivmedizin', home: [0.76, 0.87], compactHome: [0.76, 0.93], fontSize: 19, opacity: 0.88, weight: 300, mass: 1.25 },
+  { label: 'Anästhesiologie', home: [0.3, 0.12], compactHome: [0.31, 0.09], fontSize: 18, opacity: 0.86, weight: 300, mass: 1.25 },
+  { label: 'Kardiologie', home: [0.24, 0.89], compactHome: [0.23, 0.92], fontSize: 23, opacity: 0.94, weight: 300, mass: 1.5 },
+  { label: 'Workshops', home: [0.3, 0.69], compactHome: [0.3, 0.66], fontSize: 19, opacity: 0.88, weight: 300, mass: 1.25 },
+  { label: 'OSCE', home: [0.17, 0.3], compactHome: [0.16, 0.3], fontSize: 18, opacity: 0.86, weight: 300, mass: 1 },
+  { label: 'Skills', home: [0.82, 0.72], compactHome: [0.83, 0.66], fontSize: 16, opacity: 0.8, weight: 300, mass: 1 },
 ] as const;
+
+const topicDescription = `${topics.slice(0, -1).map(({ label }) => label).join(', ')} und ${topics.at(-1)?.label}`;
 ---
 
 <header class="basel-hero not-content">
@@ -29,28 +34,343 @@ const topics = [
     )}
   </div>
 
-  <section class="basel-topics" aria-labelledby="basel-topics-title">
-    <h2 id="basel-topics-title" class="sr-only">Was uns interessiert</h2>
-    <ul class="topic-cloud">
-      {topics.map((topic) => <li class="topic-node"><span>{topic}</span></li>)}
-    </ul>
-  </section>
+  <p class="sr-only">Unsere Themen und Aktivitäten umfassen {topicDescription}.</p>
+  <mednerds-basel-topics data-topics={JSON.stringify(topics)} aria-hidden="true">
+    <canvas class="basel-topic-canvas" aria-hidden="true"></canvas>
+  </mednerds-basel-topics>
 </header>
+
+<script>
+  type TopicConfig = {
+    label: string;
+    home: [number, number];
+    compactHome: [number, number];
+    fontSize: number;
+    opacity: number;
+    weight: number;
+    mass: number;
+  };
+
+  type Bounds = { left: number; right: number; top: number; bottom: number };
+  type TopicParticle = {
+    config: TopicConfig;
+    homeX: number;
+    homeY: number;
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    fontSize: number;
+    halfWidth: number;
+    halfHeight: number;
+    phase: number;
+    bounds: Bounds;
+  };
+
+  const FIELD_GAP = 24;
+  const FIELD_INSET = 12;
+  const SPRING_STRENGTH = 3;
+  const DAMPING = 5.5;
+  const DRIFT_X = 1.5;
+  const DRIFT_Y = 1;
+  const INFLUENCE_RADIUS = 120;
+  const MAX_REPULSION = 110;
+  const MAX_DISPLACEMENT = 18;
+  const MAX_SPEED = 12;
+  const MAX_FRAME_SECONDS = 1 / 30;
+  const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+
+  class MedNerdsBaselTopics extends HTMLElement {
+    private canvas?: HTMLCanvasElement;
+    private context?: CanvasRenderingContext2D;
+    private hero?: HTMLElement;
+    private copy?: HTMLElement;
+    private configs: TopicConfig[] = [];
+    private topics: TopicParticle[] = [];
+    private field: Bounds = { left: 0, right: 0, top: 0, bottom: 0 };
+    private pointer?: { x: number; y: number };
+    private reducedMotion?: MediaQueryList;
+    private finePointer?: MediaQueryList;
+    private stackedLayout?: MediaQueryList;
+    private cleanup?: () => void;
+    private frame = 0;
+    private previousTime = 0;
+    private elapsed = 0;
+    private width = 0;
+    private height = 0;
+    private color = '';
+    private fontFamily = '';
+
+    connectedCallback() {
+      this.cleanup?.();
+      const canvas = this.querySelector<HTMLCanvasElement>('canvas');
+      const context = canvas?.getContext('2d');
+      const hero = this.closest<HTMLElement>('.basel-hero');
+      const copy = hero?.querySelector<HTMLElement>('.basel-hero-copy');
+      if (!canvas || !context || !hero || !copy) return;
+
+      this.canvas = canvas;
+      this.context = context;
+      this.hero = hero;
+      this.copy = copy;
+      this.configs = JSON.parse(this.dataset.topics ?? '[]') as TopicConfig[];
+      this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+      this.finePointer = matchMedia('(min-width: 40rem) and (any-hover: hover) and (any-pointer: fine)');
+      this.stackedLayout = matchMedia('(max-width: 62rem)');
+      const listeners = new AbortController();
+      const { signal } = listeners;
+      const resize = () => this.resizeCanvas();
+      const clearPointer = () => this.handlePointerLeave();
+      const changeMotion = () => {
+        this.stopAnimation();
+        clearPointer();
+        this.elapsed = 0;
+        this.initializeTopics();
+        this.drawTopics();
+        this.startAnimation();
+      };
+
+      // The hero owns pointer tracking; the decorative canvas never intercepts the CTA.
+      hero.addEventListener('pointermove', (event) => this.handlePointerMove(event), { signal });
+      hero.addEventListener('pointerleave', clearPointer, { signal });
+      hero.addEventListener('pointercancel', clearPointer, { signal });
+      window.addEventListener('scroll', clearPointer, { signal, passive: true });
+      window.addEventListener('resize', resize, { signal, passive: true });
+      window.addEventListener('pagehide', () => this.stopAnimation(), { signal });
+      window.addEventListener('pageshow', () => this.startAnimation(), { signal });
+      document.addEventListener('visibilitychange', () => {
+        clearPointer();
+        if (document.hidden) this.stopAnimation();
+        else this.startAnimation();
+      }, { signal });
+      this.reducedMotion.addEventListener('change', changeMotion, { signal });
+      this.finePointer.addEventListener('change', changeMotion, { signal });
+
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(hero);
+      resizeObserver.observe(copy);
+      const themeObserver = new MutationObserver(() => {
+        this.readAppearance();
+        this.drawTopics();
+      });
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+      this.cleanup = () => {
+        this.stopAnimation();
+        clearPointer();
+        listeners.abort();
+        resizeObserver.disconnect();
+        themeObserver.disconnect();
+      };
+      document.addEventListener('astro:before-swap', () => this.cleanup?.(), { once: true, signal });
+      this.readAppearance();
+      this.resizeCanvas();
+      void document.fonts.ready.then(() => {
+        if (!signal.aborted) {
+          this.readAppearance();
+          this.resizeCanvas();
+        }
+      });
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+      this.cleanup = undefined;
+    }
+
+    private readAppearance() {
+      if (!this.hero) return;
+      this.color = getComputedStyle(this).color;
+      this.fontFamily = getComputedStyle(this.hero).fontFamily;
+    }
+
+    private resizeCanvas() {
+      if (!this.hero || !this.copy || !this.canvas || !this.context) return;
+      const heroRect = this.hero.getBoundingClientRect();
+      const copyRect = this.copy.getBoundingClientRect();
+      this.width = heroRect.width;
+      this.height = heroRect.height;
+      if (!this.width || !this.height) {
+        this.stopAnimation();
+        return;
+      }
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.canvas.width = Math.round(this.width * dpr);
+      this.canvas.height = Math.round(this.height * dpr);
+      this.context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // The entire copy rectangle, including the CTA, stays outside the drawing bounds.
+      this.field = {
+        left: this.stackedLayout?.matches ? FIELD_INSET : copyRect.right - heroRect.left + FIELD_GAP,
+        right: this.width - FIELD_INSET,
+        top: this.stackedLayout?.matches ? copyRect.bottom - heroRect.top + FIELD_INSET : FIELD_INSET,
+        bottom: this.height - FIELD_INSET,
+      };
+      this.pointer = undefined;
+      this.initializeTopics();
+      this.drawTopics();
+      this.startAnimation();
+    }
+
+    private initializeTopics() {
+      const context = this.context;
+      if (!context) return;
+      const fieldWidth = this.field.right - this.field.left;
+      const fieldHeight = this.field.bottom - this.field.top;
+      const compact = this.stackedLayout?.matches;
+      const scale = compact ? clamp(fieldWidth / 520, 0.78, 1) : clamp(fieldWidth / 440, 0.9, 1);
+
+      this.topics = this.configs.map((config, index) => {
+        const fontSize = Math.max(compact ? 12.5 : 14, config.fontSize * scale);
+        context.font = `${config.weight} ${fontSize}px ${this.fontFamily}`;
+        const halfWidth = context.measureText(config.label).width / 2;
+        const halfHeight = fontSize * 0.6;
+        const bounds = {
+          left: this.field.left + halfWidth + FIELD_INSET,
+          right: this.field.right - halfWidth - FIELD_INSET,
+          top: this.field.top + halfHeight + FIELD_INSET,
+          bottom: this.field.bottom - halfHeight - FIELD_INSET,
+        };
+        const [x, y] = compact ? config.compactHome : config.home;
+        const homeX = clamp(this.field.left + x * fieldWidth, bounds.left, bounds.right);
+        const homeY = clamp(this.field.top + y * fieldHeight, bounds.top, bounds.bottom);
+        const phase = index * 1.7;
+        return { config, fontSize, halfWidth, halfHeight, bounds, phase, homeX, homeY,
+          x: homeX, y: homeY, vx: 0, vy: 0 };
+      });
+    }
+
+    private handlePointerMove(event: PointerEvent) {
+      if (!this.canAnimate() || event.pointerType === 'touch' || !this.canvas) {
+        this.handlePointerLeave();
+        return;
+      }
+      const rect = this.canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      // Physics uses CSS pixels; DPR is applied only by the drawing transform.
+      this.pointer = {
+        x: (event.clientX - rect.left) * this.width / rect.width,
+        y: (event.clientY - rect.top) * this.height / rect.height,
+      };
+    }
+
+    private handlePointerLeave() {
+      this.pointer = undefined;
+    }
+
+    private applyRepulsion(topic: TopicParticle) {
+      if (!this.pointer) return { ax: 0, ay: 0 };
+      const dx = topic.x - this.pointer.x;
+      const dy = topic.y - this.pointer.y;
+      // Measure proximity to the word, so wide labels respond near their edges too.
+      const distance = Math.hypot(
+        Math.max(0, Math.abs(dx) - topic.halfWidth),
+        Math.max(0, Math.abs(dy) - topic.halfHeight),
+      );
+      if (distance >= INFLUENCE_RADIUS) return { ax: 0, ay: 0 };
+      const centerDistance = Math.hypot(dx, dy);
+      const force = MAX_REPULSION * (1 - distance / INFLUENCE_RADIUS) ** 2 / topic.config.mass;
+      const directionX = centerDistance > 0.01 ? dx / centerDistance : Math.cos(topic.phase);
+      const directionY = centerDistance > 0.01 ? dy / centerDistance : Math.sin(topic.phase);
+      return { ax: directionX * force, ay: directionY * force };
+    }
+
+    private updateTopics(seconds: number) {
+      for (const topic of this.topics) {
+        const driftX = Math.sin(this.elapsed * 0.12 + topic.phase) * DRIFT_X;
+        const driftY = Math.sin(this.elapsed * 0.1 + topic.phase * 1.3) * DRIFT_Y;
+        const targetX = clamp(topic.homeX + driftX, topic.bounds.left, topic.bounds.right);
+        const targetY = clamp(topic.homeY + driftY, topic.bounds.top, topic.bounds.bottom);
+        const repulsion = this.applyRepulsion(topic);
+        const ax = (targetX - topic.x) * SPRING_STRENGTH + repulsion.ax;
+        const ay = (targetY - topic.y) * SPRING_STRENGTH + repulsion.ay;
+        const damping = Math.exp(-DAMPING * Math.sqrt(topic.config.mass) * seconds);
+        topic.vx = clamp((topic.vx + ax * seconds) * damping, -MAX_SPEED, MAX_SPEED);
+        topic.vy = clamp((topic.vy + ay * seconds) * damping, -MAX_SPEED, MAX_SPEED);
+        topic.x = clamp(topic.x + topic.vx * seconds, topic.bounds.left, topic.bounds.right);
+        topic.y = clamp(topic.y + topic.vy * seconds, topic.bounds.top, topic.bounds.bottom);
+
+        const offsetX = topic.x - topic.homeX;
+        const offsetY = topic.y - topic.homeY;
+        const displacement = Math.hypot(offsetX, offsetY);
+        if (displacement > MAX_DISPLACEMENT) {
+          const nx = offsetX / displacement;
+          const ny = offsetY / displacement;
+          topic.x = topic.homeX + nx * MAX_DISPLACEMENT;
+          topic.y = topic.homeY + ny * MAX_DISPLACEMENT;
+          // At the limit, discard outward velocity without bouncing or stopping tangential motion.
+          const outwardSpeed = Math.max(0, topic.vx * nx + topic.vy * ny);
+          topic.vx -= nx * outwardSpeed;
+          topic.vy -= ny * outwardSpeed;
+        }
+      }
+    }
+
+    private drawTopics() {
+      const context = this.context;
+      if (!context) return;
+      context.clearRect(0, 0, this.width, this.height);
+      context.fillStyle = this.color;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      for (const topic of this.topics) {
+        context.font = `${topic.config.weight} ${topic.fontSize}px ${this.fontFamily}`;
+        context.globalAlpha = topic.config.opacity;
+        context.fillText(topic.config.label, topic.x, topic.y);
+      }
+      context.globalAlpha = 1;
+    }
+
+    private canAnimate() {
+      return this.isConnected && !this.reducedMotion?.matches && this.finePointer?.matches;
+    }
+
+    private startAnimation() {
+      if (!this.frame && this.width && this.height && this.canAnimate() && !document.hidden) {
+        this.frame = requestAnimationFrame(this.renderFrame);
+      }
+    }
+
+    private stopAnimation() {
+      cancelAnimationFrame(this.frame);
+      this.frame = 0;
+      this.previousTime = 0;
+    }
+
+    private renderFrame = (time: number) => {
+      this.frame = 0;
+      if (!this.canAnimate() || document.hidden) {
+        this.handlePointerLeave();
+        return;
+      }
+      const seconds = this.previousTime ? Math.min((time - this.previousTime) / 1000, MAX_FRAME_SECONDS) : 0;
+      this.previousTime = time;
+      this.elapsed += seconds;
+      this.updateTopics(seconds);
+      this.drawTopics();
+      this.startAnimation();
+    };
+  }
+
+  if (!customElements.get('mednerds-basel-topics')) {
+    customElements.define('mednerds-basel-topics', MedNerdsBaselTopics);
+  }
+</script>
 
 <style>
   .basel-hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-    align-items: center;
-    gap: clamp(1rem, 2.5vw, 2.5rem);
-    padding-block: clamp(2.5rem, 5vw, 4rem) 1rem;
+    position: relative;
+    isolation: isolate;
+    padding-block: clamp(2rem, 3vw, 3rem) 0.5rem;
   }
 
   .basel-hero-copy {
+    position: relative;
+    z-index: 1;
     display: grid;
     justify-items: start;
-    gap: 1.5rem;
-    min-width: 0;
+    gap: 1.25rem;
+    max-width: min(60%, 42rem);
   }
 
   .basel-hero-copy h1 {
@@ -73,179 +393,40 @@ const topics = [
     justify-self: start;
   }
 
-  .basel-topics {
-    min-width: 0;
-    align-self: end;
-  }
-
-  .topic-cloud {
-    position: relative;
+  mednerds-basel-topics,
+  .basel-topic-canvas {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: 17rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    height: 100%;
+    pointer-events: none;
   }
 
-  .topic-node {
-    position: absolute;
+  mednerds-basel-topics {
+    z-index: 0;
+    display: block;
     color: color-mix(in srgb, var(--sl-color-accent) 75%, var(--sl-color-gray-1));
-    opacity: var(--topic-opacity, 0.9);
-    font-size: var(--topic-size, 1.05rem);
-    font-weight: var(--topic-weight, 600);
-    line-height: 1.3;
-    white-space: nowrap;
-    transform: translate(-50%, -50%);
-    animation: topic-drift var(--topic-duration, 10s) ease-in-out infinite alternate;
-    animation-delay: var(--topic-delay, 0s);
-  }
-
-  .topic-node::before {
-    position: absolute;
-    inset: -1rem;
-    content: '';
-  }
-
-  .topic-node span {
-    display: inline-block;
-    cursor: default;
-    user-select: none;
-    -webkit-user-select: none;
-    transition: transform 420ms cubic-bezier(0.2, 1.3, 0.35, 1);
-  }
-
-  .topic-node:nth-child(1) {
-    left: 9%;
-    top: 53%;
-    --topic-size: 0.95rem;
-    --topic-opacity: 0.84;
-    --topic-duration: 11s;
-    --topic-delay: -3s;
-    --drift-x: 5px;
-    --drift-y: -6px;
-    --hover-x: -14px;
-    --hover-y: 8px;
-  }
-
-  .topic-node:nth-child(2) {
-    left: 77%;
-    top: 15%;
-    --topic-size: 0.95rem;
-    --topic-opacity: 0.84;
-    --topic-duration: 12s;
-    --topic-delay: -5s;
-    --drift-x: -5px;
-    --drift-y: 6px;
-    --hover-x: 12px;
-    --hover-y: -10px;
-  }
-
-  .topic-node:nth-child(3) {
-    left: 46%;
-    top: 26%;
-    --topic-size: 1.2rem;
-    --topic-opacity: 0.98;
-    --topic-weight: 650;
-    --topic-duration: 10s;
-    --drift-x: -7px;
-    --drift-y: 5px;
-    --hover-x: 16px;
-    --hover-y: 6px;
-  }
-
-  .topic-node:nth-child(4) {
-    left: 76%;
-    top: 58%;
-    --topic-size: 1.24rem;
-    --topic-opacity: 1;
-    --topic-weight: 650;
-    --topic-duration: 12s;
-    --topic-delay: -4s;
-    --drift-x: 6px;
-    --drift-y: -8px;
-    --hover-x: -12px;
-    --hover-y: -14px;
-  }
-
-  .topic-node:nth-child(5) {
-    left: 48%;
-    top: 83%;
-    --topic-size: 1.07rem;
-    --topic-duration: 9s;
-    --topic-delay: -6s;
-    --drift-x: -5px;
-    --drift-y: -7px;
-    --hover-x: 10px;
-    --hover-y: 12px;
-  }
-
-  .topic-node:nth-child(6) {
-    left: 17%;
-    top: 15%;
-    --topic-size: 1.07rem;
-    --topic-duration: 13s;
-    --topic-delay: -2s;
-    --drift-x: 7px;
-    --drift-y: 5px;
-    --hover-x: -9px;
-    --hover-y: -13px;
-  }
-
-  .topic-node:nth-child(7) {
-    left: 16%;
-    top: 85%;
-    --topic-size: 1.2rem;
-    --topic-opacity: 0.98;
-    --topic-weight: 650;
-    --topic-duration: 11s;
-    --topic-delay: -7s;
-    --drift-x: 5px;
-    --drift-y: -9px;
-    --hover-x: -16px;
-    --hover-y: 5px;
-  }
-
-  @keyframes topic-drift {
-    to {
-      transform: translate(
-        calc(-50% + var(--drift-x)),
-        calc(-50% + var(--drift-y))
-      );
-    }
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .topic-node:hover span {
-      transform: translate(var(--hover-x), var(--hover-y));
-    }
   }
 
   @media (max-width: 62rem) {
     .basel-hero {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 1.25rem;
-      padding-block: 2.5rem 1rem;
+      padding-block: 2rem 14rem;
     }
 
-    .basel-topics {
-      width: min(100%, 44rem);
-      margin-inline-start: auto;
-    }
-
-    .topic-cloud {
-      height: 11rem;
+    .basel-hero-copy {
+      max-width: 42rem;
     }
   }
 
   @media (max-width: 40rem) {
     .basel-hero {
-      gap: 1.75rem;
-      padding-block: 1.5rem 0.5rem;
+      padding-block: 1.5rem 12rem;
     }
 
     .basel-hero-copy {
       justify-items: center;
       gap: 1rem;
+      max-width: 100%;
       text-align: center;
     }
 
@@ -255,51 +436,6 @@ const topics = [
 
     .basel-hero-action {
       justify-self: center;
-    }
-
-    .basel-topics {
-      width: 100%;
-    }
-
-    .topic-cloud {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.9rem 1.5rem;
-      height: auto;
-    }
-
-    .topic-node {
-      position: static;
-      animation: none;
-      transform: none;
-    }
-
-    .topic-node::before {
-      display: none;
-    }
-
-    .topic-node span {
-      transition: none;
-    }
-
-    .topic-node:hover span {
-      transform: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .topic-node {
-      animation: none;
-    }
-
-    .topic-node span {
-      transition: none;
-    }
-  }
-
-  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: reduce) {
-    .topic-node:hover span {
-      transform: none;
     }
   }
 </style>

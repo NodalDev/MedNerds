@@ -94,7 +94,41 @@ export default defineConfig({
           collapsed: true,
           items: [
             { label: 'Übersicht', link: '/meddocs/notfallmedizin/' },
-            { autogenerate: { directory: 'meddocs/notfallmedizin' } },
+            {
+              label: 'X – Critical Bleeding',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/notfallmedizin/x-critical-bleeding' } }],
+            },
+            {
+              label: 'A – Airway',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/notfallmedizin/a-airway' } }],
+            },
+            {
+              label: 'B – Breathing',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/notfallmedizin/b-breathing' } }],
+            },
+            {
+              label: 'C – Circulation',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/notfallmedizin/c-circulation' } }],
+            },
+            {
+              label: 'D – Disability',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/notfallmedizin/d-disability' } }],
+            },
+            {
+              label: 'E – Exposure',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/notfallmedizin/e-exposure' } }],
+            },
+            {
+              label: 'Diverses',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/notfallmedizin/diverses' } }],
+            },
           ],
         },
         {

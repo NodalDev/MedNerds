@@ -1,0 +1,224 @@
+---
+import { Icon } from 'astro-icon/components';
+import MedBlogCard from './MedBlogCard.astro';
+import { medBlogTypes, medBlogTypeIds, medBlogAreas, medBlogAreaIds } from '../data/medblog';
+import { getMedBlogPosts } from '../lib/medblog/posts';
+
+const posts = await getMedBlogPosts();
+const featured = posts.find(({ data }) => data.featured);
+const latest = posts.filter((post) => post !== featured);
+const tagCounts = new Map<string, number>();
+for (const { data } of posts) {
+  for (const tag of new Set(data.tags)) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+}
+const topics = [...tagCounts].sort(([a, countA], [b, countB]) => countB - countA || a.localeCompare(b, 'de-CH')).slice(0, 12);
+---
+
+<medblog-archive id="blog-browser" class="blog-archive not-content">
+  <nav class="type-navigation" aria-label="Nach Beitragstyp filtern">
+    <a href="/medblog/" data-filter-option="type" data-value="" aria-current="true">Alle</a>
+    {medBlogTypeIds.map((id) => (
+      <a href={`/medblog/${medBlogTypes[id].segment}/`} data-filter-option="type" data-value={id}>{medBlogTypes[id].plural}</a>
+    ))}
+  </nav>
+
+  <div class="archive-layout">
+    <aside class="archive-filters" aria-label="Blogfilter" data-filter-panel hidden>
+      <details class="filter-disclosure">
+        <summary><Icon name="tabler:adjustments-horizontal" aria-hidden="true" />Filter<span aria-hidden="true">⌄</span></summary>
+        <div class="filter-content">
+          <h2 class="filter-heading">Filter</h2>
+          <fieldset>
+            <legend>Bereiche</legend>
+            <div class="area-options">
+              <a href="/medblog/" data-filter-option="area" data-value="" aria-current="true">Alle Bereiche</a>
+              {medBlogAreaIds.map((id) => (
+                <a href={`/medblog/?area=${id}`} data-filter-option="area" data-value={id}>{medBlogAreas[id].label}</a>
+              ))}
+            </div>
+          </fieldset>
+          {topics.length > 0 && (
+            <fieldset>
+              <legend>Themen</legend>
+              <div class="topic-options">
+                <a href="/medblog/" data-filter-option="tag" data-value="" aria-current="true">Alle Themen</a>
+                {topics.map(([tag, count]) => (
+                  <a href={`/medblog/?tag=${encodeURIComponent(tag)}`} data-filter-option="tag" data-value={tag}>
+                    <span>{tag}</span><span class="topic-count" aria-label={`${count} ${count === 1 ? 'Beitrag' : 'Beiträge'}`}>{count}</span>
+                  </a>
+                ))}
+              </div>
+            </fieldset>
+          )}
+        </div>
+      </details>
+    </aside>
+
+    <section class="blog-feed" aria-label="Blogbeiträge">
+      <div class="result-toolbar">
+        <p class="result-count" role="status" aria-live="polite" aria-atomic="true" data-result-count>{posts.length} {posts.length === 1 ? 'Beitrag' : 'Beiträge'}</p>
+        <a class="reset-link" href="/medblog/#blog-browser" data-reset hidden>Filter zurücksetzen</a>
+      </div>
+
+      {featured && (
+        <section class="feed-section" data-blog-group aria-labelledby="blog-featured">
+          <h2 id="blog-featured">Ausgewählt</h2>
+          <MedBlogCard post={featured} variant="editorial" />
+        </section>
+      )}
+      {latest.length > 0 && (
+        <section class="feed-section" data-blog-group aria-labelledby="blog-latest">
+          <h2 id="blog-latest">Neueste Beiträge</h2>
+          <div class="blog-grid">
+            {latest.map((post) => <MedBlogCard post={post} />)}
+          </div>
+        </section>
+      )}
+      <div class="empty-state" data-empty hidden={posts.length > 0}>
+        <h2>Keine Beiträge für diese Filter gefunden.</h2>
+        <a href="/medblog/#blog-browser" data-reset>Filter zurücksetzen</a>
+      </div>
+    </section>
+  </div>
+</medblog-archive>
+
+<script>
+  import { matchesMedBlogFilters, readMedBlogFilters, medBlogFilterUrl, type MedBlogFilters } from '../lib/medblog/filters';
+  import type { MedBlogArea, MedBlogType } from '../data/medblog';
+
+  class MedBlogArchive extends HTMLElement {
+    private listeners?: AbortController;
+    private filters: MedBlogFilters = {};
+    private cards: { element: HTMLElement; data: { type: MedBlogType; areas: MedBlogArea[]; tags: string[] } }[] = [];
+    private options: HTMLAnchorElement[] = [];
+    private tags: string[] = [];
+
+    connectedCallback() {
+      this.listeners?.abort();
+      this.listeners = new AbortController();
+      const { signal } = this.listeners;
+      this.cards = [...this.querySelectorAll<HTMLElement>('[data-blog-post]')].map((element) => ({
+        element,
+        data: {
+          type: element.dataset.type as MedBlogType,
+          areas: (element.dataset.areas ?? '').split(' ') as MedBlogArea[],
+          tags: JSON.parse(element.dataset.tags ?? '[]') as string[],
+        },
+      }));
+      this.options = [...this.querySelectorAll<HTMLAnchorElement>('[data-filter-option]')];
+      this.tags = this.options.filter(({ dataset }) => dataset.filterOption === 'tag' && dataset.value).map(({ dataset }) => dataset.value!);
+      this.addEventListener('click', (event) => this.handleFilterClick(event), { signal });
+      window.addEventListener('popstate', () => this.readUrl(), { signal });
+      document.addEventListener('astro:before-swap', () => this.listeners?.abort(), { signal, once: true });
+
+      const desktop = matchMedia('(min-width: 64rem)');
+      const disclosure = this.querySelector<HTMLDetailsElement>('details');
+      const syncDisclosure = () => { if (disclosure) disclosure.open = desktop.matches; };
+      desktop.addEventListener('change', syncDisclosure, { signal });
+      syncDisclosure();
+      this.readUrl();
+      this.querySelector<HTMLElement>('[data-filter-panel]')?.removeAttribute('hidden');
+    }
+
+    disconnectedCallback() { this.listeners?.abort(); }
+
+    private readUrl() {
+      this.filters = readMedBlogFilters(new URLSearchParams(location.search), this.tags);
+      this.applyFilters();
+    }
+
+    private handleFilterClick(event: MouseEvent) {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('[data-filter-option], [data-reset]') : null;
+      if (!link || !this.contains(link)) return;
+      event.preventDefault();
+      this.filters = readMedBlogFilters(new URL(link.href).searchParams, this.tags);
+      const url = medBlogFilterUrl(new URL(location.href), this.filters);
+      if (url.href !== location.href) history.pushState(null, '', url);
+      this.applyFilters();
+      // Reset can hide its own link; keep keyboard focus on a visible, stable control.
+      if (link.hasAttribute('data-reset')) this.options.find(({ dataset }) => dataset.filterOption === 'type' && dataset.value === '')?.focus();
+    }
+
+    private applyFilters() {
+      let count = 0;
+      for (const { element, data } of this.cards) {
+        const matches = matchesMedBlogFilters(data, this.filters);
+        element.hidden = !matches;
+        if (matches) count++;
+      }
+      for (const group of this.querySelectorAll<HTMLElement>('[data-blog-group]')) {
+        group.hidden = !group.querySelector('[data-blog-post]:not([hidden])');
+      }
+      const status = this.querySelector<HTMLElement>('[data-result-count]');
+      if (status) status.textContent = `${count} ${count === 1 ? 'Beitrag' : 'Beiträge'}`;
+      const empty = this.querySelector<HTMLElement>('[data-empty]');
+      if (empty) empty.hidden = count > 0;
+      const active = Object.values(this.filters).some(Boolean);
+      const current = new URL(location.href);
+      for (const link of this.querySelectorAll<HTMLAnchorElement>('[data-reset]')) {
+        link.href = medBlogFilterUrl(current, {}).href;
+        if (!link.closest('[data-empty]')) link.hidden = !active;
+      }
+      this.syncFilterLinks(current);
+    }
+
+    private syncFilterLinks(current: URL) {
+      for (const link of this.options) {
+        const key = link.dataset.filterOption as keyof MedBlogFilters;
+        const value = link.dataset.value || undefined;
+        const selected = this.filters[key] === value;
+        if (selected) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+        link.href = medBlogFilterUrl(current, { ...this.filters, [key]: value }).href;
+      }
+    }
+  }
+
+  if (!customElements.get('medblog-archive')) customElements.define('medblog-archive', MedBlogArchive);
+</script>
+
+<style>
+  .blog-archive { display: block; color: var(--sl-color-gray-2); scroll-margin-top: calc(var(--sl-nav-height) + 4rem); }
+  .blog-archive [hidden] { display: none !important; }
+  p, h2 { margin: 0; }
+  a { text-decoration: none; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 4px; border-radius: 0.25rem; }
+  .type-navigation { display: flex; border-bottom: 1px solid var(--sl-color-hairline); gap: clamp(0.5rem, 3vw, 2rem); margin-bottom: 2rem; }
+  .type-navigation a { min-height: 2.75rem; display: flex; align-items: center; padding: 0.75rem 0.5rem; border-bottom: 3px solid transparent; color: var(--sl-color-gray-2); font-size: var(--sl-text-sm); font-weight: 500; }
+  .type-navigation a[aria-current] { border-color: var(--sl-color-accent); color: var(--sl-color-accent); font-weight: 650; }
+  .type-navigation a:hover { color: var(--sl-color-accent); }
+  .archive-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+  .archive-filters { min-width: 0; }
+  .filter-disclosure { border: 1px solid var(--sl-color-hairline); border-radius: 0.5rem; }
+  summary { display: flex; align-items: center; gap: 0.625rem; min-height: 2.75rem; padding: 0.75rem 1rem; color: var(--sl-color-white); font-size: var(--sl-text-sm); font-weight: 600; cursor: pointer; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary :global(svg) { width: 1.125rem; height: 1.125rem; }
+  summary > span { margin-left: auto; }
+  .filter-content { display: grid; gap: 1.75rem; padding: 1rem; }
+  .filter-heading { display: none; }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  legend { padding: 0; margin-bottom: 0.75rem; color: var(--sl-color-white); font-size: var(--sl-text-sm); font-weight: 650; }
+  .area-options, .topic-options { display: grid; gap: 0.125rem; }
+  .area-options a, .topic-options a { display: flex; gap: 0.5rem; align-items: center; justify-content: space-between; min-height: 2.75rem; padding: 0.5rem 0.75rem; border-left: 2px solid transparent; border-radius: 0 0.375rem 0.375rem 0; color: var(--sl-color-gray-2); font-size: var(--sl-text-sm); overflow-wrap: anywhere; }
+  .area-options a[aria-current], .topic-options a[aria-current] { border-left-color: var(--sl-color-accent); background: var(--sl-color-accent-low); color: var(--sl-color-accent-high); font-weight: 600; }
+  .area-options a:hover, .topic-options a:hover { color: var(--sl-color-accent); }
+  .topic-count { font-size: var(--sl-text-xs); font-variant-numeric: tabular-nums; color: var(--sl-color-gray-3); }
+  .blog-feed { min-width: 0; container: medblog-feed / inline-size; }
+  .result-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 1.5rem; min-height: 2.75rem; }
+  .result-count { font-size: var(--sl-text-sm); color: var(--sl-color-gray-3); }
+  .reset-link, .empty-state a { color: var(--sl-color-accent); font-size: var(--sl-text-sm); text-decoration: underline; text-underline-offset: 0.2em; min-height: 2.75rem; display: inline-flex; align-items: center; }
+  .feed-section + .feed-section { margin-top: 2.5rem; }
+  .feed-section h2 { margin-bottom: 1rem; color: var(--sl-color-white); font-size: 1.125rem; font-weight: 650; }
+  .blog-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  .empty-state { padding-block: 2rem; }
+  .empty-state h2 { color: var(--sl-color-white); font-size: 1.25rem; line-height: 1.5; margin-bottom: 0.75rem; }
+  @media (min-width: 64rem) {
+    @container medblog-feed (min-width: 36rem) { .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .archive-layout:has(.archive-filters:not([hidden])) { grid-template-columns: 13rem minmax(0, 1fr); gap: clamp(2rem, 4vw, 3rem); }
+    .filter-disclosure { border: 0; border-radius: 0; }
+    summary { display: none; }
+    .filter-content { padding: 0; }
+    .filter-heading { display: block; font-size: 1.125rem; color: var(--sl-color-white); font-weight: 650; }
+  }
+</style>

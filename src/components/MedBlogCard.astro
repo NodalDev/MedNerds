@@ -7,7 +7,7 @@ import type { MedBlogPost } from '../lib/medblog/posts';
 
 interface Props {
   post: MedBlogPost;
-  variant?: 'featured' | 'compact' | 'standard';
+  variant?: 'featured' | 'editorial' | 'compact' | 'standard';
 }
 
 const { post, variant = 'standard' } = Astro.props;
@@ -20,6 +20,7 @@ const href = medBlogPostHref(data.type, post.id);
   data-blog-post
   data-type={data.type}
   data-areas={data.areas.join(' ')}
+  data-tags={JSON.stringify(data.tags)}
 >
   {data.image && (
     <div class="card-image" data-fit={data.image.fit}>
@@ -90,6 +91,20 @@ const href = medBlogPostHref(data.type, post.id);
   .blog-card--compact h3 { font-size: 1.0625rem; }
   .blog-card--featured h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
   .blog-card--article .card-description { line-height: 1.75; }
+
+  /* Used only by the public archive; existing type-overview variants stay unchanged. */
+  .blog-card--editorial { border-top: 3px solid var(--sl-color-accent); }
+  .blog-card--editorial h3 { font-size: clamp(1.5rem, 2.5vw, 2rem); line-height: 1.25; }
+  .blog-card--editorial .card-copy { padding: clamp(1.25rem, 2vw, 2rem); gap: 1rem; }
+  .blog-card--editorial .card-image { background: var(--sl-color-accent-low); }
+  .blog-card--editorial .card-image :global(img) { max-height: 18rem; }
+  .blog-card--editorial .card-image[data-fit='contain'] :global(img) { padding: 2rem; }
+  .blog-card--editorial .read-more { font-size: var(--sl-text-sm); }
+  @container medblog-feed (min-width: 36rem) {
+    .blog-card--editorial:has(.card-image) { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); }
+    .blog-card--editorial .card-image { border-radius: 0.7rem 0 0 0.7rem; }
+    .blog-card--editorial .card-image :global(img) { height: 100%; max-height: none; }
+  }
 
   @media (min-width: 50rem) {
     .blog-card--featured:has(.card-image) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }

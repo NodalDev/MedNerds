@@ -46,7 +46,8 @@ Veröffentlichungs-/Aktualisierungsdaten werden bewusst gepflegt.
 
 ## Routen und Darstellung
 
-Die bestehende `/medblog/`-Seite bindet `MedBlogHub` ein. Statische Astro-Routen
+Die `/medblog/`-Seite bindet `MedBlogArchive` ein. `MedBlogHub` bleibt für die
+bestehenden Typübersichten zuständig. Statische Astro-Routen
 unter `src/pages/medblog/[type]/` erzeugen Typübersichten und Detailseiten mit
 `StarlightPage`. Header, Website-Footer und Mobile Drawer bleiben vorhanden;
 die MedDocs-Sidebar und ein TOC werden im Blog nicht eingeblendet.
@@ -60,9 +61,10 @@ veröffentlichten Beiträgen redaktionell mit einer Weiterleitung geplant werden
 Die Auswahl ist nach `published DESC` sortiert, bei gleichem Datum nach Slug.
 Produktions-Builds schließen Drafts zentral aus; lokal sind sie sichtbar.
 
-`MedBlogCard` unterstützt Featured-, Standard- und kompakte Update-Darstellungen.
-Der Hub zeigt Featured-Beiträge zuerst (nach Datum), danach normale Karten und
-Updates. Ein Beitrag wird nur einmal dargestellt. Bilder haben ein festes
+`MedBlogCard` unterstützt Featured-, Standard-, kompakte Update- und die nur im
+Archiv verwendete Editorial-Darstellung. Das Archiv hebt den neuesten Featured-
+Beitrag hervor und zeigt alle übrigen Beiträge chronologisch im gemeinsamen Feed.
+Ein Beitrag wird nur einmal dargestellt. Bilder haben ein festes
 Seitenverhältnis; Karten ohne Bild erhalten keine leere Bildfläche.
 
 `MedBlogPost` verwendet die bestehende Meta-Zeile für Autoren und Datum und
@@ -71,8 +73,12 @@ ergänzt Typ, Areas, Tags, optionales Bild und optionalen CTA am Ende.
 ## Filter
 
 Ein natives Custom Element filtert die bereits serverseitig gerenderten Karten.
-Typ und Area sind kombinierbar. Leere Gruppen werden ausgeblendet; ohne Treffer
-erscheint ein erklärender Zustand. Query-Parameter `type` und `area` sind teilbar.
+Typ und Area sind kombinierbar, im Archiv zusätzlich ein Thema aus den echten Tags.
+Dort werden höchstens zwölf Themen nach Häufigkeit und anschließend alphabetisch
+angeboten. `filters.ts` validiert URL-Werte und bündelt die Filterbedingungen für
+die Datenauswahl und das Archiv. Leere Gruppen werden ausgeblendet; ohne Treffer
+erscheint ein erklärender Zustand mit Reset. Query-Parameter `type`, `area` und
+im Archiv `tag` sind teilbar.
 `pushState` und `popstate` unterstützen Zurück/Vorwärts ohne neue Requests.
 Typübersichten behalten ihren festen Typ und bieten weiterhin den Area-Filter.
 Event-Listener werden bei Entfernung des Elements aufgeräumt.

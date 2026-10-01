@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { medBlogEditorialSchema as schema } from '../src/lib/medblog/schema.ts';
 import { selectMedBlogPosts } from '../src/lib/medblog/selection.ts';
+import { matchesMedBlogFilters, readMedBlogFilters, medBlogFilterUrl } from '../src/lib/medblog/filters.ts';
 import { medBlogTypes, medBlogTypeIds, medBlogTypeFromSegment, medBlogPostHref } from '../src/data/medblog.ts';
 
 const base = { title: 'Demo', description: 'Beispielbeitrag', type: 'news', areas: ['medtools'], authors: ['orlando-frey'], published: '2026-09-27' };
@@ -71,5 +72,37 @@ check('Typ und Area kombinieren', () => {
   assert.deepEqual(selectMedBlogPosts(posts, { type: 'article', area: 'meddocs' }).map(({ id }) => id), ['older']);
 });
 check('Filter ohne Treffer', () => assert.deepEqual(selectMedBlogPosts(posts, { type: 'article', area: 'medtools' }), []));
+
+check('Typ, Bereich und ein tatsächliches Thema gemeinsam filtern', () => {
+  const taggedPosts = [
+    { id: 'match', data: schema.parse({ ...base, tags: ['EKG', 'Lernen'] }) },
+    { id: 'other', data: schema.parse({ ...base, tags: ['Navigation'] }) },
+  ];
+  const filters = { type: 'news', area: 'medtools', tag: 'EKG' };
+  assert.deepEqual(selectMedBlogPosts(taggedPosts, filters).map(({ id }) => id), ['match']);
+  assert.equal(matchesMedBlogFilters(taggedPosts[0].data, filters), true);
+  assert.equal(matchesMedBlogFilters(taggedPosts[1].data, filters), false);
+  assert.deepEqual(selectMedBlogPosts(taggedPosts, { ...filters, tag: 'Wissen' }), []);
+  assert.equal(matchesMedBlogFilters({ type: 'news', areas: ['medtools'] }, { tag: 'EKG' }), false);
+});
+check('URL-Filter validieren und echte Tags mit Leerzeichen erhalten', () => {
+  const tags = ['EKG', 'Freies Wissen'];
+  assert.deepEqual(readMedBlogFilters(new URLSearchParams('type=article&area=meddocs&tag=Freies+Wissen'), tags), {
+    type: 'article', area: 'meddocs', tag: 'Freies Wissen',
+  });
+  assert.deepEqual(readMedBlogFilters(new URLSearchParams('type=invalid&area=invalid&tag=invalid'), tags), {
+    type: undefined, area: undefined, tag: undefined,
+  });
+  assert.equal(matchesMedBlogFilters(posts[0].data, readMedBlogFilters(new URLSearchParams(), tags)), true);
+});
+check('Teilbare kombinierte URLs und Reset ohne fremde Parameter zu verlieren', () => {
+  const original = new URL('https://mednerds.ch/medblog/?source=demo#blog-browser');
+  const filtered = medBlogFilterUrl(original, { type: 'article', area: 'meddocs', tag: 'Freies Wissen' });
+  assert.deepEqual(readMedBlogFilters(filtered.searchParams, ['Freies Wissen']), { type: 'article', area: 'meddocs', tag: 'Freies Wissen' });
+  assert.equal(original.searchParams.has('type'), false);
+  const reset = medBlogFilterUrl(filtered, {});
+  assert.equal(reset.href, original.href);
+  assert.deepEqual(selectMedBlogPosts(posts, readMedBlogFilters(reset.searchParams, [])).map(({ id }) => id), ['newest', 'middle', 'older']);
+});
 
 console.log(`${checks} Prüfungen erfolgreich.`);
