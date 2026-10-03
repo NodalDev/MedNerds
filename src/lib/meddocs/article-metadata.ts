@@ -8,6 +8,11 @@ export interface ArticleMetadata {
   published: Date;
   updated?: Date;
   reviewers: readonly Person[];
+  reviewed?: Date;
+  tags?: readonly string[];
+  synonyms?: readonly string[];
+  english?: readonly string[];
+  abbreviations?: readonly string[];
   license: License;
 }
 
@@ -29,6 +34,11 @@ export function getMedDocsArticleMetadata(entry: ArticleEntry): ArticleMetadata 
     published: data.published,
     updated: data.updated && data.updated.getTime() !== data.published.getTime() ? data.updated : undefined,
     reviewers: (data.reviewers ?? []).map((id) => authors[id]),
+    reviewed: data.reviewed,
+    tags: data.tags,
+    synonyms: data.synonyms,
+    english: data.english,
+    abbreviations: data.abbreviations,
     license: licenses[data.license ?? defaultMedDocsLicense],
   };
 }
@@ -36,6 +46,12 @@ export function getMedDocsArticleMetadata(entry: ArticleEntry): ArticleMetadata 
 const dateFormatter = new Intl.DateTimeFormat('de-CH', {
   day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
 });
+
+const nameFormatter = new Intl.ListFormat('de', { style: 'long', type: 'conjunction' });
+
+export function formatAuthorNames(names: readonly string[]): string {
+  return nameFormatter.format(names);
+}
 
 export function formatArticleDate(date: Date): string {
   return dateFormatter.format(date);

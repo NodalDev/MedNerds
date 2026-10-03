@@ -5,9 +5,22 @@ import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import icon from 'astro-icon';
 
+// Starlight autogenerate cannot interleave direct articles and explicit subgroups.
+// These Echo articles are drafts: omit their explicit slugs from production.
+// When publishing an article, move its reference outside this draft-only helper.
+/** @param {string[]} slugs */
+function echoDraftItems(slugs) {
+  return process.env.NODE_ENV === 'production'
+    ? []
+    : slugs.map((slug) => ({ slug: `meddocs/echokardiographie/${slug}` }));
+}
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://mednerds.ch',
+  redirects: {
+    '/meddocs/echokardiographie/theorie-grundlagen/test/': '/meddocs/echokardiographie/grundlagen-technik/anatomie-des-herzens/',
+  },
   
   integrations: [
     starlight({
@@ -65,7 +78,90 @@ export default defineConfig({
           collapsed: true,
           items: [
             { label: 'Übersicht', link: '/meddocs/ekg/' },
-            { autogenerate: { directory: 'meddocs/ekg' } },
+            {
+              label: 'Theorie & Elektrophysiologie',
+              collapsed: true,
+              items: [
+                { autogenerate: { directory: 'meddocs/ekg/theorie-elektrophysiologie' } },
+                { autogenerate: { directory: 'meddocs/ekg/theorie-grundlagen-ekg' } },
+              ],
+            },
+            {
+              label: 'Befundung & Systematik',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/ekg/befundung-systematik' } }],
+            },
+            {
+              label: 'Pathologische Muster',
+              collapsed: true,
+              items: [
+                {
+                  label: 'Rhythmusstörungen',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/rhythmusstoerungen' } }],
+                },
+                {
+                  label: 'Erregungsleitungsstörungen',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/erregungsleitungsstoerungen' } }],
+                },
+                {
+                  label: 'Ischämie & Myokardinfarkt',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/ischaemie-myokardinfarkt' } }],
+                },
+                {
+                  label: 'Hypertrophie & Herzbelastung',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/hypertrophie-herzbelastung' } }],
+                },
+                {
+                  label: 'Elektrolytstörungen',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/elektrolytstoerungen' } }],
+                },
+                {
+                  label: 'Medikamente & Intoxikationen',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/medikamente-intoxikationen' } }],
+                },
+                {
+                  label: 'Perikard & Myokard',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/perikard-myokard' } }],
+                },
+                {
+                  label: 'Pulmonale Erkrankungen',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/pulmonale-erkrankungen' } }],
+                },
+                {
+                  label: 'Kardiomyopathien',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/kardiomyopathien' } }],
+                },
+                {
+                  label: 'Kanalopathien',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/kanalopathien' } }],
+                },
+                {
+                  label: 'Schrittmacher & Devices',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/schrittmacher-devices' } }],
+                },
+                {
+                  label: 'Spezielle EKG-Muster',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/spezielle-ekg-muster' } }],
+                },
+                {
+                  label: 'Besondere Patientengruppen',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/ekg/pathologische-muster/besondere-patientengruppen' } }],
+                },
+              ],
+            },
           ],
         },
         {
@@ -77,16 +173,78 @@ export default defineConfig({
               link: '/meddocs/echokardiographie/',
             },
             {
-              label: 'Theorie & Grundlagen',
+              label: 'Grundlagen & Technik',
               collapsed: true,
               items: [
+                { autogenerate: { directory: 'meddocs/echokardiographie/grundlagen-technik' } },
+              ],
+            },
+            {
+              label: 'Standardschnitte',
+              collapsed: true,
+              items: [
+                ...echoDraftItems(['standardschnitte/schallfenster-standardschnitte']),
                 {
-                  autogenerate: {
-                    directory: 'meddocs/echokardiographie/theorie-grundlagen',
-                  },
+                  label: 'Parasternale Schnitte',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/echokardiographie/standardschnitte/parasternale-schnitte' } }],
+                },
+                {
+                  label: 'Apikale Schnitte',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/echokardiographie/standardschnitte/apikale-schnitte' } }],
+                },
+                {
+                  label: 'Subkostale Schnitte',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/echokardiographie/standardschnitte/subkostale-schnitte' } }],
+                },
+                {
+                  label: 'Suprasternale Schnitte',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/echokardiographie/standardschnitte/suprasternale-schnitte' } }],
                 },
               ],
             },
+            {
+              label: 'Messungen & Quantifizierung',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/echokardiographie/messungen-quantifizierung' } }],
+            },
+            {
+              label: 'Pathologische Befunde & Erkrankungen',
+              collapsed: true,
+              items: [
+                {
+                  label: 'Ventrikuläre Dysfunktion',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/echokardiographie/pathologische-befunde-erkrankungen/ventrikulaere-dysfunktion' } }],
+                },
+                {
+                  label: 'Klappenerkrankungen',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/echokardiographie/pathologische-befunde-erkrankungen/klappenerkrankungen' } }],
+                },
+                {
+                  label: 'Perikarderkrankungen',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/echokardiographie/pathologische-befunde-erkrankungen/perikarderkrankungen' } }],
+                },
+                {
+                  label: 'Kardiomyopathien',
+                  collapsed: true,
+                  items: [{ autogenerate: { directory: 'meddocs/echokardiographie/pathologische-befunde-erkrankungen/kardiomyopathien' } }],
+                },
+                ...echoDraftItems([
+                  'pathologische-befunde-erkrankungen/pulmonale-hypertonie-rechtsherzbelastung',
+                  'pathologische-befunde-erkrankungen/aortenerkrankungen',
+                  'pathologische-befunde-erkrankungen/endokarditis',
+                  'pathologische-befunde-erkrankungen/intrakardiale-thromben-raumforderungen',
+                  'pathologische-befunde-erkrankungen/shunts-angeborene-herzfehler',
+                ]),
+              ],
+            },
+            ...echoDraftItems(['formeln', 'echokardiographie-notfallmedizin']),
           ],
         },
         {
@@ -136,7 +294,27 @@ export default defineConfig({
           collapsed: true,
           items: [
             { label: 'Übersicht', link: '/meddocs/sonographie/' },
-            { autogenerate: { directory: 'meddocs/sonographie' } },
+            {
+              label: 'Grundlagen',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/ultraschall/grundlagen' } }],
+            },
+            {
+              label: 'Organe & Regionen',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/ultraschall/organe-regionen' } }],
+            },
+            {
+              label: 'Ultraschall in der Notfallmedizin',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/ultraschall/notfallmedizin' } }],
+            },
+            // Drafts have no production routes. When publishing, move their
+            // explicit references outside this draft-only condition.
+            ...(process.env.NODE_ENV === 'production' ? [] : [
+              { slug: 'meddocs/ultraschall/sgum-zertifikate' },
+              { slug: 'meddocs/ultraschall/befunde-textvorlagen' },
+            ]),
           ],
         },
         {

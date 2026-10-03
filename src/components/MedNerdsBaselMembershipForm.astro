@@ -1,0 +1,363 @@
+<form
+  id="mn-basel-membership-form"
+  class="inf-form mn-membership"
+  method="post"
+  action="https://newsletter.infomaniak.com/v3/api/1/newsletters/webforms/26160/submit"
+  aria-labelledby="basel-membership-title"
+>
+  <input
+    class="membership-trap"
+    type="text"
+    name="inf_email_check"
+    autocomplete="off"
+    tabindex="-1"
+    aria-hidden="true"
+  />
+  <input
+    class="membership-trap"
+    type="text"
+    name="website"
+    autocomplete="off"
+    tabindex="-1"
+    aria-hidden="true"
+  />
+  <input
+    type="hidden"
+    name="key"
+    value="eyJpdiI6ImRRNThFaGNWTm9jdVJVSUZwbkswXC9LMWRRYm5UT1R5NW9Ca1poOXExSzZRPSIsIm1hYyI6IjFjNTJhZDBkOWE0Yjc0NTdjOGIyNjM2NTA4NDE1MTczZTU4MTEyNTNiNzU4NzYyNzE0NzA0MWFhZGU2MjdjYTYiLCJ2YWx1ZSI6Ik11ZUxKVUtsSWpkQ256TU1YdXpobVg0alYxcEFZZDVxOXRVRkg1YzA4Mjg9In0="
+  />
+  <input type="hidden" name="webform_id" value="26160" />
+
+  <div class="inf-success" style="display:none" role="status" aria-live="polite">
+    <p>Vielen Dank für deine Anfrage. Wir haben deine Angaben erhalten und melden uns bei dir.</p>
+  </div>
+
+  <div class="inf-content" aria-live="polite">
+    <p class="membership-hint">
+      E-Mail-Adresse, Vorname, Nachname und die Bestätigung sind erforderlich.
+      Die Nachricht ist optional.
+    </p>
+
+    <div class="inf-input inf-input-text">
+      <label for="mn-basel-membership-email">E-Mail-Adresse</label>
+      <input
+        id="mn-basel-membership-email"
+        type="email"
+        name="inf[1]"
+        data-inf-meta="1"
+        data-inf-error=""
+        autocomplete="email"
+        placeholder="name@beispiel.ch"
+        required
+      />
+    </div>
+
+    <div class="membership-names">
+      <div class="inf-input inf-input-text">
+        <label for="mn-basel-membership-first-name">Vorname</label>
+        <input
+          id="mn-basel-membership-first-name"
+          type="text"
+          name="inf[92350]"
+          data-inf-meta="92350"
+          data-inf-error=""
+          autocomplete="given-name"
+          required
+        />
+      </div>
+      <div class="inf-input inf-input-text">
+        <label for="mn-basel-membership-last-name">Nachname</label>
+        <input
+          id="mn-basel-membership-last-name"
+          type="text"
+          name="inf[92351]"
+          data-inf-meta="92351"
+          data-inf-error=""
+          autocomplete="family-name"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="inf-input inf-input-text">
+      <label for="mn-basel-membership-message">Nachricht <span class="optional">Optional</span></label>
+      <!-- Infomaniak's field-error selector requires an input[data-inf-meta]. -->
+      <input
+        id="mn-basel-membership-message"
+        type="text"
+        name="inf[92784]"
+        data-inf-meta="92784"
+        data-inf-error=""
+      />
+    </div>
+
+    <div class="inf-input inf-input-checkbox membership-consent">
+      <input
+        id="mn-basel-membership-consent"
+        type="checkbox"
+        name="inf[92785]"
+        data-inf-meta="92785"
+        data-inf-error=""
+        aria-describedby="mn-basel-membership-privacy"
+        required
+      />
+      <label for="mn-basel-membership-consent">
+        Ich wünsche eine Kontaktaufnahme bezüglich einer Vereinsmitgliedschaft.
+      </label>
+    </div>
+
+    <div id="mn-basel-membership-privacy" class="inf-rgpd">
+      Deine Angaben werden ausschließlich zur Bearbeitung deiner Anfrage zur Vereinsmitgliedschaft
+      verwendet. Du erhältst dadurch keinen Newsletter. Für die Aufbewahrung und Löschung deiner
+      Daten gelten die Angaben in unserer <a href="/datenschutz/">Datenschutzerklärung</a>.
+    </div>
+
+    <script
+      is:inline
+      src="https://newsletter.infomaniak.com/v3/static/mcaptcha/altcha.min.js?v=1790884800"
+      type="module"
+    ></script>
+    <altcha-widget
+      hidelogo
+      hidefooter
+      floating
+      challengeurl="https://newsletter.infomaniak.com/v3/altcha-challenge"
+    ></altcha-widget>
+    <script
+      is:inline
+      src="https://newsletter.infomaniak.com/v3/static/mcaptcha/altcha-index.js?v=1790884800"
+      defer
+    ></script>
+    <script
+      is:inline
+      src="https://newsletter.infomaniak.com/v3/static/webform_index.js?v=1790884800"
+    ></script>
+
+    <div class="inf-submit">
+      <input type="submit" value="Anfrage senden" />
+    </div>
+  </div>
+</form>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#mn-basel-membership-form');
+
+  if (form) {
+    // Associate vendor-inserted error text with its field without changing submission logic.
+    const updateErrorDescriptions = () => {
+      for (const field of form.querySelectorAll<HTMLElement>('.inf-input')) {
+        const input = field.querySelector<HTMLInputElement>('input[data-inf-meta]');
+        if (!input) continue;
+        const message = field.querySelector<HTMLElement>('.inf-message');
+        const errorId = `${input.id}-error`;
+        const descriptions = (input.getAttribute('aria-describedby') ?? '')
+          .split(' ').filter((id) => id && id !== errorId);
+
+        if (message) {
+          message.id = errorId;
+          input.setAttribute('aria-invalid', 'true');
+          descriptions.push(errorId);
+        } else {
+          input.removeAttribute('aria-invalid');
+        }
+
+        if (descriptions.length) input.setAttribute('aria-describedby', descriptions.join(' '));
+        else input.removeAttribute('aria-describedby');
+      }
+    };
+
+    updateErrorDescriptions();
+    new MutationObserver(updateErrorDescriptions).observe(form, { childList: true, subtree: true });
+  }
+</script>
+
+<style>
+  .mn-membership {
+    position: relative;
+    min-width: 0;
+    padding: clamp(1.1rem, 3vw, 2rem);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.85rem;
+    background: var(--mn-surface);
+  }
+
+  .membership-trap {
+    position: absolute;
+    box-sizing: border-box;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .inf-content {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .membership-hint,
+  .inf-rgpd {
+    margin: 0;
+    color: var(--sl-color-gray-3);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .inf-rgpd {
+    max-width: 80ch;
+  }
+
+  .membership-names {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    min-width: 0;
+  }
+
+  .inf-input {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  label {
+    color: var(--sl-color-white);
+    font-size: 0.9rem;
+    font-weight: 650;
+    line-height: 1.5;
+  }
+
+  .optional {
+    margin-inline-start: 0.35rem;
+    color: var(--sl-color-gray-3);
+    font-size: 0.8rem;
+    font-weight: 400;
+  }
+
+  .inf-input-text input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--sl-color-gray-4);
+    border-radius: 0.65rem;
+    color: var(--sl-color-white);
+    background: var(--sl-color-bg);
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  input::placeholder {
+    color: var(--sl-color-gray-3);
+    opacity: 1;
+  }
+
+  .membership-consent {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    column-gap: 0.75rem;
+  }
+
+  .membership-consent input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0.2rem 0 0;
+    accent-color: var(--sl-color-accent);
+  }
+
+  .membership-consent label {
+    display: flex;
+    align-items: flex-start;
+    min-height: 2.75rem;
+    cursor: pointer;
+  }
+
+  .mn-membership :global(.inf-message) {
+    color: var(--sl-color-red-high);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .membership-consent :global(.inf-message) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .inf-input input:user-invalid,
+  .mn-membership :global(.inf-input.inf-error) input {
+    border-color: var(--sl-color-red);
+  }
+
+  .mn-membership :is(input, a):focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .inf-rgpd a {
+    color: var(--sl-color-accent);
+    text-underline-offset: 0.15em;
+  }
+
+  altcha-widget {
+    min-width: 0;
+    max-width: 100%;
+    --altcha-color-base: var(--mn-surface);
+    --altcha-color-border: var(--sl-color-hairline);
+    --altcha-color-text: var(--sl-color-white);
+    --altcha-color-border-focus: var(--sl-color-accent);
+    --altcha-color-active: var(--sl-color-accent);
+    --altcha-color-error-text: var(--sl-color-red-high);
+  }
+
+  .inf-submit input {
+    min-height: 2.75rem;
+    max-width: 100%;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--sl-color-accent);
+    border-radius: 0.55rem;
+    color: var(--sl-color-black);
+    background: var(--sl-color-accent);
+    font: inherit;
+    font-weight: 700;
+    white-space: normal;
+    cursor: pointer;
+  }
+
+  .inf-submit input:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .inf-submit input:hover:not(:disabled) {
+      background: var(--sl-color-accent-high);
+    }
+  }
+
+  .inf-success {
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--sl-color-green);
+    border-radius: 0.65rem;
+    color: var(--sl-color-green-high);
+    background: var(--sl-color-green-low);
+    line-height: 1.6;
+  }
+
+  .inf-success p {
+    margin: 0;
+  }
+
+  @media (max-width: 40rem) {
+    .membership-names {
+      grid-template-columns: 1fr;
+    }
+
+    .inf-submit input {
+      width: 100%;
+    }
+  }
+</style>

@@ -602,6 +602,11 @@
     margin-top: 0.25rem;
   }
 
+  /* Abstand zwischen Einträgen, ohne die Zeilen eines Labels zu verändern. */
+  .sidebar-content .top-level details > ul > li + li {
+    margin-block-start: 0.35rem;
+  }
+
   /*
    * Desktop-Sidebar:
    * flach, rahmenlos, leicht eingefärbt.

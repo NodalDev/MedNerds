@@ -41,6 +41,22 @@ const { metadata } = Astro.props;
         <dd><time datetime={articleDateTime(metadata.updated)}>{formatArticleDate(metadata.updated)}</time></dd>
       </div>
     )}
+    {metadata.reviewed && (
+      <div>
+        <dt>Letzte fachliche Prüfung</dt>
+        <dd><time datetime={articleDateTime(metadata.reviewed)}>{formatArticleDate(metadata.reviewed)}</time></dd>
+      </div>
+    )}
+    {(metadata.tags?.length ?? 0) > 0 && (
+      <div>
+        <dt>Themen</dt>
+        <dd>
+          <ul class="article-tags" role="list">
+            {metadata.tags?.map((tag) => <li>{tag}</li>)}
+          </ul>
+        </dd>
+      </div>
+    )}
     <div class="license">
       <dt>Lizenz</dt>
       <dd>
@@ -97,6 +113,20 @@ const { metadata } = Astro.props;
 
   .person + .person {
     margin-block-start: 0.875rem;
+  }
+
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .article-tags li + li::before {
+    content: '·';
+    margin-inline-end: 0.5rem;
   }
 
   .person-name {

@@ -1,5 +1,5 @@
 ---
-import { articleDateTime, formatArticleDate, type ArticleMetadata } from '../lib/meddocs/article-metadata';
+import { articleDateTime, formatArticleDate, formatAuthorNames, type ArticleMetadata } from '../lib/meddocs/article-metadata';
 
 interface Props {
   metadata: Pick<ArticleMetadata, 'authors' | 'published' | 'updated'>;
@@ -9,7 +9,7 @@ const { metadata } = Astro.props;
 ---
 
 <ul class="article-meta" role="list">
-  <li>{metadata.authors.map(({ name }) => name).join(', ')}</li>
+  <li>{formatAuthorNames(metadata.authors.map(({ name }) => name))}</li>
   <li>Veröffentlicht <time datetime={articleDateTime(metadata.published)}>{formatArticleDate(metadata.published)}</time></li>
   {metadata.updated && (
     <li>Aktualisiert <time datetime={articleDateTime(metadata.updated)}>{formatArticleDate(metadata.updated)}</time></li>

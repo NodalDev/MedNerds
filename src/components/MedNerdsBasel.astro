@@ -1,5 +1,6 @@
 ---
 import MedNerdsIcon from './MedNerdsIcon.astro';
+import MedNerdsBaselMembershipForm from './MedNerdsBaselMembershipForm.astro';
 
 const activities = [
   {
@@ -51,17 +52,48 @@ const activities = [
         </div>
         <h3>Vor Ort & miteinander</h3>
         <p>Workshops, Fälle, Skills, Simulationen und gemeinsames Lernen.</p>
-        <a class="pillar-cta" href="mailto:mednerds@mednerds.ch?subject=Mitgliedschaft%20bei%20MedNerds%20Basel">
+        <a class="pillar-cta" href="#mitglied-werden">
           Mitglied werden
           <MedNerdsIcon name="tabler:arrow-right" size="sm" />
         </a>
       </article>
     </div>
   </section>
+  <section
+    id="mitglied-werden"
+    class="basel-section basel-section--membership"
+    aria-labelledby="basel-membership-title"
+  >
+    <div class="section-heading">
+      <p class="section-label">MedNerds Basel</p>
+      <h2 id="basel-membership-title">Mitglied werden</h2>
+    </div>
+    <div class="membership-intro">
+      <p>Du möchtest Teil von MedNerds Basel werden? Sende uns deine Kontaktdaten und wir melden uns bei dir.</p>
+      <p class="membership-contact">
+        Alternativ erreichst du uns unter <a href="mailto:mednerds@mednerds.ch">mednerds@mednerds.ch</a>.
+      </p>
+    </div>
+    <MedNerdsBaselMembershipForm />
+  </section>
+  <section id="spenden" class="basel-section" aria-labelledby="basel-donations-title">
+    <div class="section-heading">
+      <p class="section-label">MedNerds Basel</p>
+      <h2 id="basel-donations-title">Spenden</h2>
+    </div>
+    <p class="section-description">
+      Mit deiner Unterstützung hilfst du MedNerds Basel dabei, offene medizinische Bildung,
+      Workshops und Projekte weiter auszubauen. Das Spendenformular folgt in einem nächsten Schritt.
+    </p>
+  </section>
 </div>
 
 <style>
   .mn-basel {
+    --basel-section-space: clamp(2.5rem, 5vw, 4.5rem);
+    display: grid;
+    gap: var(--basel-section-space);
+    padding-block-start: var(--basel-section-space);
     color: var(--sl-color-gray-2);
   }
 
@@ -88,6 +120,30 @@ const activities = [
 
   .basel-section--pillars {
     border-top: 0;
+  }
+
+  .basel-section[id] {
+    scroll-margin-top: calc(var(--sl-nav-height) + 1rem);
+  }
+
+  .membership-intro {
+    display: grid;
+    gap: 0.5rem;
+    line-height: 1.6;
+  }
+
+  .membership-contact {
+    font-size: 0.9rem;
+  }
+
+  .membership-contact a {
+    color: var(--sl-color-accent);
+    text-underline-offset: 0.15em;
+  }
+
+  .section-description {
+    max-width: 75ch;
+    line-height: 1.6;
   }
 
   .section-heading {

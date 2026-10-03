@@ -5,6 +5,7 @@ import MedNerdsMobileTableOfContents from './MedNerdsMobileTableOfContents.astro
 import type { StarlightRouteData } from '@astrojs/starlight/route-data';
 import { resolvePageLayout } from '../data/page-layouts';
 import MedDocsArticleMeta from './MedDocsArticleMeta.astro';
+import MedDocsArticleTerminology from './MedDocsArticleTerminology.astro';
 import { getMedDocsArticleMetadata } from '../lib/meddocs/article-metadata';
 
 type SidebarEntry = StarlightRouteData['sidebar'][number];
@@ -165,6 +166,7 @@ if (isMedDocs && pathname !== '/meddocs/') {
       {articleMetadata && (
         <>
           {route.entry.data.description && <p class="article-description">{route.entry.data.description}</p>}
+          <MedDocsArticleTerminology metadata={articleMetadata} />
           <MedDocsArticleMeta metadata={articleMetadata} />
         </>
       )}

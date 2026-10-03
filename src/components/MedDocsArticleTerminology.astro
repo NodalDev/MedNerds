@@ -1,0 +1,54 @@
+---
+import type { ArticleMetadata } from '../lib/meddocs/article-metadata';
+
+interface Props {
+  metadata: Pick<ArticleMetadata, 'synonyms' | 'english' | 'abbreviations'>;
+}
+
+const { metadata } = Astro.props;
+const groups = [
+  { label: 'Synonyme', values: metadata.synonyms },
+  { label: 'Englisch', values: metadata.english, lang: 'en' },
+  { label: metadata.abbreviations?.length === 1 ? 'Abkürzung' : 'Abkürzungen', values: metadata.abbreviations },
+].filter(({ values }) => values?.length);
+---
+
+{groups.length > 0 && (
+  <dl class="article-terminology">
+    {groups.map(({ label, values, lang }) => (
+      <div>
+        <dt>{label}:</dt>
+        <dd lang={lang}>{values?.join(' · ')}</dd>
+      </div>
+    ))}
+  </dl>
+)}
+
+<style>
+  .article-terminology {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0.75rem 0 0;
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .article-terminology > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.375rem;
+    min-width: 0;
+  }
+
+  dt {
+    color: var(--sl-color-gray-3);
+  }
+
+  dd {
+    min-width: 0;
+    margin: 0;
+  }
+</style>
