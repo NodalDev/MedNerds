@@ -20,9 +20,9 @@ export const sidebarBadges: readonly BadgeAssignment[] = [
   { group: ['Anästhesie'], badge: 'planned' },
   { group: ['EKG'], badge: 'planned' },
   { group: ['Echokardiographie'], badge: 'new' },
-  { group: ['Notfallmedizin'], badge: 'top' },
-  { group: ['Ultraschall'], badge: 'soon' },
-  { group: ['Diverses'], badge: 'popular' },
+  { group: ['Notfallmedizin'], badge: 'planned' },
+  { group: ['Ultraschall'], badge: 'planned' },
+  { group: ['Diverses'], badge: 'planned' },
   // { href: '/meddocs/echokardiographie/', badge: 'new' },
 ];
 

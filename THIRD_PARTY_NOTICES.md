@@ -1,6 +1,10 @@
 # Third-Party Notices
 
-The following notices apply to `qrcode.react` and the QR Code Generator bundled with it. They do not change the MedNerds project license in [LICENSE](./LICENSE).
+The following notices apply to third-party components used by MedNerds. They do not change the MedNerds project license in [LICENSE](./LICENSE).
+
+## Fancybox / Fancyapps 6.1.15
+
+Fancybox / Fancyapps is used under a separately obtained commercial license and with permission for use in this project.
 
 ## qrcode.react 4.2.0
 

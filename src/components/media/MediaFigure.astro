@@ -1,0 +1,87 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { validateFigureUrl } from '../../lib/media/urls';
+import { resolveFigureDownload } from '../../lib/media/download';
+import type { FigureMetadata } from '../../lib/media/figure-metadata';
+
+export interface Props {
+  src: ImageMetadata | string;
+  alt: string;
+  align?: 'start' | 'center' | 'end';
+  captionTitle?: string;
+  caption?: string;
+  /** Structured, text-only editorial metadata supplied by a figure wrapper. */
+  lightboxMetadata?: Pick<FigureMetadata, 'captionTitle' | 'caption' | 'credits'>;
+  fullSrc?: string;
+  gallery?: string;
+  zoomable?: boolean;
+  downloadable?: boolean;
+  downloadSrc?: string;
+  downloadFilename?: string;
+  /** Known dimensions for string sources reserve space before loading. */
+  width?: number;
+  height?: number;
+  class?: string;
+}
+
+const {
+  src, alt, align = 'start', captionTitle, caption, lightboxMetadata, fullSrc, gallery, zoomable = true,
+  downloadable = false, downloadSrc, downloadFilename, width, height,
+  class: className,
+} = Astro.props;
+const previewSrc = typeof src === 'string' ? validateFigureUrl(src) : src.src;
+const imageHref = fullSrc ? validateFigureUrl(fullSrc) : previewSrc;
+const downloadHref = resolveFigureDownload({ src: previewSrc, fullSrc: imageHref, downloadable, downloadSrc });
+const captionText = lightboxMetadata?.caption ?? caption;
+const titleText = lightboxMetadata?.captionTitle ?? captionTitle?.trim();
+const hasCaption = Boolean(titleText || captionText || Astro.slots.has('credit'));
+const Tag = zoomable ? 'a' : 'div';
+---
+
+<figure class:list={['mn-media-figure', className]} data-align={align}>
+  <Tag
+    class="figure-image"
+    href={zoomable ? imageHref : undefined}
+    aria-label={zoomable ? `Bild vergrößern: ${alt}` : undefined}
+    data-mednerds-fancybox={zoomable ? '' : undefined}
+    data-fancybox={zoomable ? gallery?.trim() || undefined : undefined}
+    data-type={zoomable ? 'image' : undefined}
+    data-mn-caption={zoomable ? captionText : undefined}
+    data-mn-caption-title={zoomable ? titleText : undefined}
+    data-mn-credits={zoomable && lightboxMetadata?.credits.length ? JSON.stringify(lightboxMetadata.credits) : undefined}
+    data-download-src={zoomable ? downloadHref : undefined}
+    data-download-filename={zoomable && downloadable ? downloadFilename : undefined}
+  >
+    {typeof src === 'string' ? (
+      <img src={previewSrc} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+    ) : (
+      <Image src={src} alt={alt} width={width} height={height} layout="constrained" loading="lazy" decoding="async" />
+    )}
+  </Tag>
+  {hasCaption && (
+    <figcaption>
+      {titleText && <p class="figure-caption-title">{titleText}</p>}
+      {captionText && <p class="figure-caption">{captionText}</p>}
+      <slot name="credit" />
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .mn-media-figure { display: grid; width: fit-content; max-width: 100%; margin: 1.5rem 0; min-width: 0; }
+  .mn-media-figure[data-align='center'] { margin-inline: auto; }
+  .mn-media-figure[data-align='end'] { margin-inline-start: auto; margin-inline-end: 0; }
+  .figure-image { display: block; width: fit-content; max-width: 100%; }
+  a.figure-image { cursor: zoom-in; }
+  a.figure-image:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 4px;
+    border-radius: 0.25rem;
+  }
+  .figure-image > :global(img) { display: block; max-width: 100%; height: auto; }
+  /* Caption length must not widen the media block; its height still grows naturally. */
+  figcaption { contain: inline-size; min-width: 0; display: grid; gap: 0.15rem; margin-top: 0.75rem; text-align: start; overflow-wrap: anywhere; }
+  .figure-caption-title { margin: 0; color: var(--sl-color-text); font-size: var(--sl-text-sm); font-weight: 600; line-height: 1.4; }
+  .figure-caption { margin: 0; color: var(--sl-color-gray-1); font-size: var(--sl-text-xs); line-height: 1.6; }
+</style>

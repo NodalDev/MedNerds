@@ -4,7 +4,6 @@ import MedNerdsIcon from './MedNerdsIcon.astro';
 import MedNerdsMobileTableOfContents from './MedNerdsMobileTableOfContents.astro';
 import type { StarlightRouteData } from '@astrojs/starlight/route-data';
 import { resolvePageLayout } from '../data/page-layouts';
-import MedDocsArticleMeta from './MedDocsArticleMeta.astro';
 import MedDocsArticleTerminology from './MedDocsArticleTerminology.astro';
 import { getMedDocsArticleMetadata } from '../lib/meddocs/article-metadata';
 
@@ -165,9 +164,7 @@ if (isMedDocs && pathname !== '/meddocs/') {
       <DefaultPageTitle />
       {articleMetadata && (
         <>
-          {route.entry.data.description && <p class="article-description">{route.entry.data.description}</p>}
           <MedDocsArticleTerminology metadata={articleMetadata} />
-          <MedDocsArticleMeta metadata={articleMetadata} />
         </>
       )}
       <MedNerdsMobileTableOfContents />
@@ -176,13 +173,6 @@ if (isMedDocs && pathname !== '/meddocs/') {
 }
 
 <style>
-  .article-description {
-    margin: 0.75rem 0 0;
-    color: var(--sl-color-gray-2);
-    line-height: 1.6;
-    text-wrap: pretty;
-  }
-
   .mednerds-breadcrumbs {
     margin-block-start: 1rem;
     margin-block-end: -0.5rem;

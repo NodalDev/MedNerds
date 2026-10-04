@@ -1,0 +1,136 @@
+---
+title: Physikalische & Technische Grundlagen
+description: Physikalische & Technische Grundlagen der Echokardiographie.
+authors:
+  - orlando-frey
+published: 2026-10-01
+updated: 2026-10-01
+draft: false
+pagefind: true
+sidebar:
+  label: Physikalische & Technische Grundlagen
+  order: 30
+
+# CONTENT-TODO:
+# - Ultraschallprinzipien nur soweit für Echo nötig
+# - A-Mode
+# - B-Mode / 2D
+# - M-Mode
+# - Dopplerprinzip
+# - PW-Doppler
+# - CW-Doppler
+# - Farbdoppler
+# - Sample Volume
+# - Aliasing
+# - Schallköpfe
+# - Sektor-/Phased-Array-Schallkopf
+# - Frequenz / Eindringtiefe / Auflösung
+# - Patientenlagerung
+# - Untersucherposition
+# - Bildorientierung
+# - Marker-Konvention
+# - Verschieben
+# - Kippen
+# - Angulieren
+# - Drehen
+# - Gain
+# - Depth
+# - Focus
+# - TGC
+# - Dynamic Range
+# - allgemeine Bildoptimierung
+# - typische technische Fehler
+---
+
+import MedDocsFigure from '../../../../../components/meddocs/MedDocsFigure.astro';
+
+:::note[Hinweis]
+In diesem Kapitel wird nicht detailliert auf die physikalischen Grundlagen des Ultraschalls eingegangen.
+Diese Grundlagen - insbesondere zur Schallentstehung, -ausbreitung und Bildentstehung - 
+werden im Bereich [Ultraschall](/meddocs/sonographie) ausführlich behandelt.
+
+Im Rahmen dieses Kapitels wird jedoch auf einige für die Echokardiographie relevanten Besonderheiten des Ultraschalls eingegangen.
+:::
+
+## Bildgebungsmodi
+- **A-Mode (Amplitude-Mode):** Stellt reﬂektierte Echos als Peaks dar und erlaubt die Bestimmung von Tiefe und Reﬂexionsstärke einzelner Strukturen.
+- **B-Mode (Brightness-Mode) bzw. 2D-Bild:** Ermöglicht die zweidimensionale Darstellung der Herzstrukturen und bildet die Grundlage jeder echokardiograﬁschen Untersuchung und dient der Beurteilung von Anatomie und Morphologie.
+- **M-Mode (Motion-Mode):** Bietet eine eindimensionale Ansicht aller reﬂektierenden Strukturen entlang  einer  Zeitachse  und  erlaubt  damit  z.B.  eine  exakte  Analyse  von  sich  bewegenden Strukturen wie Wandbewegungen und Klappenöﬀnungen
+- **Doppler-Verfahren:** Dienen der Beurteilung hämodynamischer Prozesse, insbesondere von Flussrichtung und -geschwindigkeit.
+  - **PW-Doppler    (Pulsed-Wave-Doppler):**    Ermöglicht    die    Flussmessung    an    einem deﬁnierten Ort, ist aber bei höheren Geschwindigkeiten limitiert.
+  - **Color-Doppler (Farbdoppler):** Visualisiert Flussrichtungen farbcodiert im 2D-Bild und ermöglicht  so  eine  schnelle  Übersicht  über  Strömungsverhältnisse  und  mögliche Turbulenzen.
+  - **CW-Doppler  (Continuous-Wave-Doppler):**  Erlaubt  die  Messung  auch  sehr  hoher Flussgeschwindigkeiten, jedoch ohne exakte Ortsauﬂösung.
+
+### A-Mode
+Beim A-Mode werden die reﬂektierten Schallwellen entlang einer einzigen Linie aufgezeichnet, 
+wobei die Amplitude der Echos als Ausschlag nach oben dargestellt wird. 
+Er stellt die ursprünglichste Form der Ultraschall-Darstellung dar und wird heute nur noch in wenigen, 
+speziﬁschen Einsatzgebieten ausserhalb der Echokardiographie verwendet. 
+Alle weiteren Modi bauen jedoch auf diesem Prinzip auf.
+
+
+### B-Mode
+Beim B-Mode wird ebenfalls entlang einer Linie gemessen. 
+Jeder reﬂektierte Schallimpuls wird als Punkt mit einer bestimmten Helligkeit dargestellt 
+(starke Reﬂexion = heller Punkt, schwache Reﬂexion = dunkler Punkt). 
+Werden nun viele solcher Linien nebeneinandergesetzt, entsteht das typische zweidimensionale Ultraschallbild, 
+das die Herzstrukturen in Echtzeit darstellt.
+
+<MedDocsFigure
+  src="https://pub-f6492bc4be904562ae1c178ac07f1b52.r2.dev/meddocs/echokardiographie/grundlagen-technik/physikalische-grundlagen/B-Mode-preview.webp"
+  fullSrc="https://pub-f6492bc4be904562ae1c178ac07f1b52.r2.dev/meddocs/echokardiographie/grundlagen-technik/physikalische-grundlagen/B-Mode-large.webp"
+  downloadSrc="https://pub-f6492bc4be904562ae1c178ac07f1b52.r2.dev/meddocs/echokardiographie/grundlagen-technik/physikalische-grundlagen/B-Mode.png"
+  downloadFilename="MedNerds_B-Mode.png"
+  alt="blabla"
+  align='center'
+  captionTitle='Prinzip des B-Mode'
+  caption="Ein ausgesandter Ultraschallpuls (rot) wird von verschiedenen Gewebeschichten reﬂektiert. Die 
+reﬂektierten Echos werden nicht als Peaks (wie beim A-Mode), sondern als Punkte unterschiedlicher Helligkeit dargestellt – je nach Stärke des Echos heller oder dunkler."
+  organization='MedNerds'
+  license='CC BY-NC-SA 4.0'
+  licenseUrl='https://creativecommons.org/licenses/by-nc-sa/4.0/'
+  downloadable
+/>
+
+### M-Mode
+Beim M-Mode wird die Reﬂexion entlang einer einzelnen Abtastlinie über die Zeit hinweg aufgezeichnet. 
+Es  entsteht  somit  eine  eindimensionale  Darstellung  der  Strukturen  entlang  dieser  Linie  auf  einer Zeitachse. 
+Dadurch lassen sich Bewegungen, wie z. B. das Öﬀnen und Schließen der Herzklappen oder die Wandbewegungen der Ventrikel, 
+mit sehr hoher zeitlicher Auﬂösung analysieren.
+
+### Doppler-Verfahren
+Bei  den  Doppler-Verfahren  wird  der  physikalische  Doppler-Eﬀekt  genutzt, 
+um  Bewegungen  von Erythrozyten  im  Blutstrom  zu  erfassen. 
+Aus  einer  Frequenzverschiebung  der  reﬂektierten Ultraschallwellen können Richtung und Geschwindigkeit des Blutﬂusses bestimmt werden.
+
+#### PW-Doppler
+Beim  PW-Doppler  werden  Ultraschallimpulse  ausgesendet  und  die  Echos  aus  einem  deﬁnierten Abtastvolumen (Sample Volume) analysiert. 
+Dadurch kann der Blutﬂuss gezielt an einer bestimmten Stelle gemessen werden. 
+Nachteil ist eine begrenzte maximale Flussgeschwindigkeit (Aliasing-Eﬀekt).
+
+#### Colour-Doppler
+Der Farbdoppler basiert auf dem PW-Doppler. 
+Er führt entlang vieler Abtastlinien Messungen durch und berechnet mittlere Flussgeschwindigkeiten. 
+Diese werden farbkodiert (meist Rot und Blau) in das B-Bild eingetragen, wodurch Richtung und Verteilung des Blutﬂusses in Echtzeit sichtbar werden.
+
+#### CW-Doppler
+Beim CW-Doppler sendet die Ultraschallsonde kontinuierlich Signale aus und empfängt gleichzeitig die Echos. 
+Dadurch lassen sich auch sehr hohe Flussgeschwindigkeiten ohne Aliasing messen. 
+Der Nachteil ist, dass keine Tiefenselektion möglich ist – der gesamte Schallstrahl wird analysiert.
+
+## Ultraschallsonde
+Der Schallkopf, auch Sonde genannt, enthält piezoelektrische Kristalle, welche elektrische Impulse in Schallwellen 
+umwandeln  und  umgekehrt  auch  die  reﬂektierten  Echos  wieder  aufnehmen.  Je  nach Bauform  und  Frequenzbereich  
+eignen  sich  verschiedene  Schallköpfe  für  unterschiedliche Fragestellungen:
+
+- **Linear-Schallkopf:** Arbeitet mit hohen Frequenzen (z.B. 7-15 MHz) und liefert hochauﬂösende Bilder oberﬂächlicher Strukturen.
+- **Konvex-Schallkopf (Curved Array):** Hat eine gekrümmte Oberﬂäche und arbeitet mit mittleren Frequenzen (z.B. 2-6 MHz) und ermöglicht eine gute Darstellung abdomineller Organe.
+- **Sektor-Schallkopf (Phased Array):** Kleiner Kopf mit schmalem Ankopplungsbereich, welcher fächerförmige Bilder erzeugt und in der Echokardiographie eingesetzt wird.
+- **Spezielle  Sonden:**  Es  existiert  eine  Vielfalt  weiterer  Schallköpfe  z.B.  auch  für  den  Einsatz endokavitär z.B. in der transösophagealen Echokardiographie. 
+
+### Sektor-Schallkopf
+Der Sektor-Schallkopf hat eine kleine Ankopplungsﬂäche und eignet sich daher besonders bei engem Schallzugang, zum Beispiel zwischen den Rippen. Charakteristisch ist das fächerförmige Bild, das sich aus einer schmalen Eintrittsﬂäche ausbreitet.
+
+Er arbeitet mit der Phased-Array-Technik: Viele kleine Piezoelemente werden in Gruppen angesteuert. Durch minimale Phasenverschiebungen (zeitliche Verzögerungen) zwischen den Elementen lässt sich die Schallrichtung gezielt steuern, wodurch ein fächerförmige Bild entsteht.
+
+Die Frequenz liegt in der Regel zwischen 1-5 MHz. Das ermöglicht eine gute Eindringtiefe, allerdings auf Kosten der Detailauﬂösung. 

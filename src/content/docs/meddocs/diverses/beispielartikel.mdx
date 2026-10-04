@@ -42,8 +42,10 @@ import {
   TabItem,
   Tabs,
 } from '@astrojs/starlight/components';
-import { Image } from 'astro:assets';
+import MedDocsFigure from '../../../../components/meddocs/MedDocsFigure.astro';
 import demoImage from '../../../../assets/Logos/MedNerds - icon.webp';
+import demoDownload from '../../../../assets/Logos/MedNerds - icon.svg?url';
+import demoLogo from '../../../../assets/Logos/MedNerds - horizontal - dunkel.webp';
 
 Diese Seite zeigt Markdown, MDX und die vorhandenen Starlight-Komponenten im
 normalen MedDocs-Design. Alle Texte und Beispiele sind rein demonstrativ;
@@ -175,13 +177,51 @@ Auch dieser auffällige Hinweis enthält keine fachliche Warnung oder medizinisc
 
 ## Lokales Bild
 
-Das folgende Bild ist das vorhandene MedNerds-Markenicon. Es wird lokal
-eingebunden; seine Darstellung nutzt die normalen Inhaltsregeln.
+Das folgende Bild ist das vorhandene MedNerds-Markenicon. Ein Klick öffnet die
+große Darstellung. Die Rechtehinweise für Logos bleiben maßgeblich;
+die allgemeine Inhaltslizenz wird hier nicht auf das Branding übertragen.
+Der direkte Download-Link unter dem Bild führt zur vorhandenen SVG-Datei.
 
-<Image
+<MedDocsFigure
   src={demoImage}
   alt="MedNerds-Markenicon: stilisiertes Gehirn aus symmetrischen blauen Flächen."
-  loading="lazy"
+  align="center"
+  captionTitle="MedNerds-Markenicon"
+  caption="Lokales MedNerds-Markenicon als Demonstration einer einzelnen Abbildung."
+  citationTitle="MedNerds-Markenicon"
+  organization="MedNerds Basel"
+  license="Rechtehinweise zum Logo"
+  licenseUrl="/urheberrecht/"
+  sourceUrl="https://github.com/NodalDev/MedNerds"
+  downloadable
+  downloadSrc={demoDownload}
+  downloadFilename="mednerds-icon.svg"
+/>
+
+### Galerie mit zwei vorhandenen Assets
+
+Diese beiden Abbildungen bilden eine eigene Galerie. Nur das Icon bietet einen
+Download an; die Wortmarke zeigt die Ansicht ohne Download-Freigabe.
+
+<MedDocsFigure
+  src={demoImage}
+  alt="Blaues MedNerds-Markenicon."
+  captionTitle="MedNerds-Galerieicon"
+  caption="Galerie: das Markenicon."
+  organization="MedNerds Basel"
+  license="Rechtehinweise zum Logo"
+  licenseUrl="/urheberrecht/"
+  gallery="showcase-markenassets"
+  downloadable
+  downloadSrc={demoDownload}
+  downloadFilename="mednerds-icon.svg"
+/>
+
+<MedDocsFigure
+  src={demoLogo}
+  alt="MedNerds-Wortmarke mit blauem Gehirnicon und dunkler Schrift."
+  caption="Galerie: die horizontale Wortmarke."
+  gallery="showcase-markenassets"
 />
 
 ## Codeblöcke

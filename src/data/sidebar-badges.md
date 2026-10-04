@@ -18,7 +18,7 @@ Alle Zuordnungen stehen in `sidebar-badges.ts` im Array `sidebarBadges`.
 | `new` | Neu | Grün |
 | `top` | Top | Rot |
 | `soon` | Bald | Blau |
-| `planned` | Geplant | Violett |
+| `planned` | Geplant | Grau |
 | `popular` | Beliebt | Orange |
 
 Zum Entfernen eines Status die entsprechende Zeile löschen. Nicht zugeordnete

@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'astro/types';
 import type MedNerdsIcon from '../components/MedNerdsIcon.astro';
 import { sidebarIcons } from './sidebar-icons';
+import { medBlogTypes } from './medblog';
 
 export type ProductStatus = 'active' | 'building' | 'planned';
 
@@ -43,7 +44,11 @@ export const productLinks = [
     description:
       'Neuigkeiten zu MedNerds und Beiträge zu spannenden Themen.',
     status: 'building',
-    children: [],
+    children: [
+      { label: medBlogTypes.article.plural, href: `/medblog/${medBlogTypes.article.segment}/`, icon: 'tabler:file-text' },
+      { label: medBlogTypes.news.plural, href: `/medblog/${medBlogTypes.news.segment}/`, icon: 'tabler:news' },
+      { label: medBlogTypes.update.plural, href: `/medblog/${medBlogTypes.update.segment}/`, icon: 'tabler:refresh' },
+    ],
   },
   {
     label: 'MedLearn',
@@ -90,7 +95,11 @@ export const productLinks = [
     description:
       'Der Verein hinter dem Projekt MedNerds.',
     status: 'active',
-    children: [],
+    children: [
+      { label: 'Mitmachen', href: '/mednerds-basel/#mitglied-werden', icon: 'tabler:user-plus' },
+      { label: 'Spenden', href: '/mednerds-basel/#spenden', icon: 'tabler:heart-handshake' },
+      { label: 'FAQ', href: '/faq/#mednerds-basel', icon: 'tabler:help-circle' },
+    ],
   },
 ] as const satisfies readonly {
   label: string;

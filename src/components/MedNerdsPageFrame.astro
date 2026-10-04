@@ -82,6 +82,11 @@ const activeProduct = getActiveProduct(Astro.url.pathname);
 
 <MedNerdsSiteFooter />
 
+<script>
+  import { initializeMediaLightbox } from '../lib/media/fancybox';
+  void initializeMediaLightbox();
+</script>
+
 <style>
   @layer starlight.core {
     /* ========================================

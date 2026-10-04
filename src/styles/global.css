@@ -428,7 +428,7 @@
     --mn-badge-new: var(--color-green-300);
     --mn-badge-top: var(--color-MedLearn-300);
     --mn-badge-soon: var(--color-MedNerds-300);
-    --mn-badge-planned: var(--color-MedBlog-300);
+    --mn-badge-planned: var(--color-background-300);
     --mn-badge-popular: var(--color-orange-300);
   }
 
@@ -436,7 +436,7 @@
     --mn-badge-new: var(--color-green-800);
     --mn-badge-top: var(--color-MedLearn-700);
     --mn-badge-soon: var(--color-MedNerds-700);
-    --mn-badge-planned: var(--color-MedBlog-700);
+    --mn-badge-planned: var(--color-background-700);
     --mn-badge-popular: var(--color-orange-800);
   }
 

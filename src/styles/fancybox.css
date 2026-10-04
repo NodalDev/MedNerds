@@ -1,0 +1,75 @@
+@import '@fancyapps/ui/dist/fancybox/fancybox.css';
+
+.fancybox__container.mn-fancybox {
+  --fancybox-color: var(--sl-color-white);
+  --fancybox-backdrop-bg: color-mix(in srgb, var(--sl-color-bg) 96%, transparent);
+  --f-button-color: var(--sl-color-white);
+  --f-button-hover-color: var(--sl-color-white);
+  --f-button-bg: var(--sl-color-gray-6);
+  --f-button-hover-bg: var(--sl-color-gray-5);
+  --f-button-outline-color: var(--sl-color-accent);
+  --f-button-svg-filter: none;
+  --f-toolbar-color: var(--sl-color-white);
+  --f-toolbar-bg: var(--sl-color-bg);
+  --f-toolbar-text-shadow: none;
+  --f-toolbar-font: var(--sl-font);
+  --f-caption-color: var(--sl-color-gray-1);
+  --f-caption-bg: var(--sl-color-bg);
+  --f-caption-padding: 0.875rem 1rem max(1rem, env(safe-area-inset-bottom));
+  /* Limit the initial fit area to 88% of the viewport width without limiting zoom. */
+  --f-carousel-slide-padding: clamp(1rem, 3vh, 2rem) 6vw;
+  --f-arrow-color: var(--sl-color-white);
+  --f-arrow-bg: var(--sl-color-gray-6);
+  --f-arrow-hover-bg: var(--sl-color-gray-5);
+  --f-thumb-focus-shadow: inset 0 0 0 2px var(--sl-color-accent);
+  --f-thumb-selected-shadow: inset 0 0 0 2px var(--sl-color-accent);
+  color: var(--sl-color-white);
+  font-family: var(--sl-font);
+}
+
+.mn-fancybox [data-carousel-download][hidden] { display: none; }
+/* Long captions must remain a centered reading block below the image. */
+.mn-fancybox .f-caption {
+  box-sizing: border-box;
+  width: min(100%, 48rem);
+  margin-inline: auto;
+  text-align: start;
+  text-wrap: wrap;
+}
+.mn-fancybox .mn-figure-caption { display: grid; gap: 0.25rem; text-align: start; overflow-wrap: anywhere; }
+.mn-fancybox .mn-figure-caption p { margin: 0; }
+.mn-fancybox .mn-figure-caption-title { color: var(--sl-color-gray-1); font-size: var(--sl-text-sm); font-weight: 600; line-height: 1.4; }
+.mn-fancybox .mn-figure-caption-description { color: var(--sl-color-gray-2); font-size: var(--sl-text-xs); line-height: 1.6; }
+.mn-fancybox .mn-figure-caption .mn-figure-caption-meta { margin-top: 0.25rem; color: var(--sl-color-gray-2); font-size: var(--sl-text-xs); line-height: 1.6; }
+.mn-fancybox .mn-figure-caption-meta a { color: inherit; text-decoration: underline; text-underline-offset: 0.15em; }
+.mn-fancybox .mn-figure-caption-meta a:hover { color: var(--sl-color-accent); }
+.mn-fancybox :is(button, a):focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 50rem) {
+  .fancybox__container.mn-fancybox {
+    --f-carousel-slide-padding: 1rem max(0.75rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  }
+}
+
+/* Keep all controls reachable without a tall, wrapped zoom column on phones. */
+@media (max-width: 30rem) {
+  .mn-fancybox .f-carousel__toolbar { grid-template-columns: 1fr 1fr; }
+  .mn-fancybox .f-carousel__toolbar__column.is-middle {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mn-fancybox {
+    --f-transition-duration: 0ms;
+    --f-interface-enter-duration: 0s;
+    --f-interface-exit-duration: 0s;
+    --f-thumbs-transition: none;
+    --f-button-transition: none;
+    --f-thumb-transition: none;
+  }
+}

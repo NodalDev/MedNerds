@@ -1,8 +1,16 @@
 ---
+import Pagination from 'virtual:starlight/components/Pagination';
 import MedDocsArticleInfo from './MedDocsArticleInfo.astro';
 import { getMedDocsArticleMetadata } from '../lib/meddocs/article-metadata';
+import { resolvePageLayout } from '../data/page-layouts';
 
-const metadata = getMedDocsArticleMetadata(Astro.locals.starlightRoute.entry);
+const route = Astro.locals.starlightRoute;
+const metadata = getMedDocsArticleMetadata(route.entry);
+const showPagination = route.entry.id.startsWith('meddocs/')
+  && resolvePageLayout(route.entry.data.pageLayout) === 'default'
+  && route.entry.data.template !== 'splash'
+  && Boolean(route.pagination.prev || route.pagination.next);
 ---
 
+{showPagination && <Pagination />}
 {metadata && <MedDocsArticleInfo metadata={metadata} />}

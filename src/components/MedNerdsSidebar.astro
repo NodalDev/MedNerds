@@ -14,22 +14,11 @@ if (isMedDocs) {
 ---
 
 <script is:inline>
-  try {
-    if (window.location.pathname.startsWith('/meddocs/')) {
-      const preference = localStorage.getItem('mednerds-sidebar-collapsed');
-      const isCompactDesktop = window.matchMedia(
-        '(min-width: 50rem) and (max-width: 89.999rem)'
-      ).matches;
-      const shouldCollapse = preference === null
-        ? isCompactDesktop
-        : preference === 'true';
-
-      document.documentElement.classList.toggle(
-        'mn-sidebar-collapsed',
-        shouldCollapse
-      );
-    }
-  } catch {}
+  // Reset per page, keeping the compact desktop's collapsed default.
+  document.documentElement.classList.toggle('mn-sidebar-collapsed',
+    window.location.pathname.startsWith('/meddocs/')
+      && window.matchMedia('(min-width: 50rem) and (max-width: 89.999rem)').matches
+  );
 </script>
 
 <DefaultSidebar {...Astro.props}>
@@ -196,32 +185,30 @@ if (isMedDocs) {
     }
   }
 
-  const SIDEBAR_COLLAPSED_KEY = 'mednerds-sidebar-collapsed';
   const desktopSidebar = window.matchMedia('(min-width: 50rem)');
   const compactDesktopSidebar = window.matchMedia(
     '(min-width: 50rem) and (max-width: 89.999rem)'
   );
+  const COLLAPSE_SCROLL_THRESHOLD = 32;
+  const EXPAND_SCROLL_THRESHOLD = 2;
+  const RESUME_SCROLL_DISTANCE = 8;
 
-  function getManualSidebarPreference() {
-    try {
-      const preference = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-      if (preference === 'true') return true;
-      if (preference === 'false') return false;
-    } catch {}
+  let collapseMode: 'auto' | 'manual-collapsed' = 'auto';
+  let autoScrollOrigin = window.scrollY;
+  let scrollFrame: number | undefined;
+  let collapseListeners: AbortController | undefined;
 
-    return null;
+  function cancelSidebarScrollFrame() {
+    if (scrollFrame !== undefined) cancelAnimationFrame(scrollFrame);
+    scrollFrame = undefined;
   }
 
   function syncSidebarCollapsedState() {
-    const manualPreference = getManualSidebarPreference();
-    const collapsed = desktopSidebar.matches && (
-      manualPreference ?? compactDesktopSidebar.matches
-    );
-
-    document.documentElement.classList.toggle(
-      'mn-sidebar-collapsed',
-      collapsed
-    );
+    collapseMode = 'auto';
+    autoScrollOrigin = window.scrollY;
+    cancelSidebarScrollFrame();
+    setSidebarCollapsed(desktopSidebar.matches && compactDesktopSidebar.matches
+      && Boolean(document.querySelector('.mn-sidebar-toggle')));
   }
 
   function isSidebarCollapsed() {
@@ -251,28 +238,68 @@ if (isMedDocs) {
   }
 
   function setSidebarCollapsed(collapsed: boolean) {
+    if (document.documentElement.classList.contains('mn-sidebar-collapsed') === collapsed) {
+      updateSidebarToggle();
+      return;
+    }
     document.documentElement.classList.toggle('mn-sidebar-collapsed', collapsed);
     if (collapsed) closeAllTopLevelGroups();
     else initialiseSidebarAccordion();
     updateSidebarToggle();
-    try {
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
-    } catch {}
+  }
+
+  function handleSidebarScroll() {
+    if (!desktopSidebar.matches || compactDesktopSidebar.matches
+      || collapseMode !== 'auto' || scrollFrame !== undefined) return;
+
+    scrollFrame = requestAnimationFrame(() => {
+      scrollFrame = undefined;
+      const toggle = document.querySelector<HTMLButtonElement>('.mn-sidebar-toggle');
+      if (!toggle || !desktopSidebar.matches || compactDesktopSidebar.matches
+        || collapseMode !== 'auto') return;
+
+      const scrollY = Math.max(0, window.scrollY);
+      if (scrollY <= EXPAND_SCROLL_THRESHOLD) {
+        autoScrollOrigin = scrollY;
+        setSidebarCollapsed(false);
+        return;
+      }
+      if (scrollY <= COLLAPSE_SCROLL_THRESHOLD || isSidebarCollapsed()
+        || Math.abs(scrollY - autoScrollOrigin) < RESUME_SCROLL_DISTANCE) return;
+
+      // Keep navigation focus visible. A mouse-focused toggle remains available
+      // when collapsed; keyboard interaction with it also pauses auto-collapse.
+      const focus = document.activeElement;
+      if (document.getElementById('starlight__sidebar')?.contains(focus)
+        && (focus !== toggle || toggle.matches(':focus-visible'))) return;
+
+      setSidebarCollapsed(true);
+    });
+  }
+
+  function handleSidebarToggle() {
+    if (!desktopSidebar.matches) return;
+    const collapsed = !isSidebarCollapsed();
+    collapseMode = collapsed ? 'manual-collapsed' : 'auto';
+    autoScrollOrigin = window.scrollY;
+    cancelSidebarScrollFrame();
+    setSidebarCollapsed(collapsed);
   }
 
   function initialiseCollapseControl() {
-    const toggle = document.querySelector<HTMLButtonElement>('.mn-sidebar-toggle');
-    if (!toggle) {
-      document.documentElement.classList.remove('mn-sidebar-collapsed');
-      return;
-    }
-
+    // Reinitialisation replaces this page's listeners, never accumulating them.
+    collapseListeners?.abort();
     syncSidebarCollapsedState();
-    updateSidebarToggle();
-    if (toggle.dataset.mednerdsCollapse !== 'true') {
-      toggle.dataset.mednerdsCollapse = 'true';
-      toggle.addEventListener('click', () => setSidebarCollapsed(!isSidebarCollapsed()));
-    }
+    const toggle = document.querySelector<HTMLButtonElement>('.mn-sidebar-toggle');
+    if (!toggle) return;
+
+    collapseListeners = new AbortController();
+    const { signal } = collapseListeners;
+    toggle.dataset.mednerdsCollapse = 'true';
+    toggle.addEventListener('click', handleSidebarToggle, { signal });
+    window.addEventListener('scroll', handleSidebarScroll, { passive: true, signal });
+    desktopSidebar.addEventListener('change', syncSidebarCollapsedState, { signal });
+    compactDesktopSidebar.addEventListener('change', syncSidebarCollapsedState, { signal });
 
   }
 
@@ -441,11 +468,6 @@ if (isMedDocs) {
     initialiseMedNerdsSidebar
   );
 
-  compactDesktopSidebar.addEventListener('change', () => {
-    syncSidebarCollapsedState();
-    initialiseSidebarAccordion();
-    updateSidebarToggle();
-  });
 </script>
 
 <style is:global>

@@ -345,6 +345,12 @@ const activeProduct = getActiveProduct(pathname);
      Große Desktop-Ansicht
      ======================================== */
 
+  @media (min-width: 72rem) {
+    :global(:root[data-theme='dark']) .primary-inner :global(site-search button[data-open-modal]) {
+      background-color: var(--sl-color-bg);
+    }
+  }
+
   /* Die breite Suche erst anzeigen, wenn auch beide Wortmarken Platz haben. */
   @media (min-width: 50rem) and (max-width: 71.999rem) {
     .primary-inner :global(.header) {

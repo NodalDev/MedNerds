@@ -1,0 +1,124 @@
+---
+import type { ComponentProps } from 'astro/types';
+import MediaFigure from '../media/MediaFigure.astro';
+import { getFigureDownloadLabel, resolveFigureDownload } from '../../lib/media/download';
+import { createFigureMetadata, type FigureCredit } from '../../lib/media/figure-metadata';
+
+interface Props extends Omit<ComponentProps<typeof MediaFigure>, 'lightboxMetadata'> {
+  citationTitle?: string;
+  creator?: string;
+  organization?: string;
+  license?: string;
+  licenseUrl?: string;
+  sourceUrl?: string;
+}
+
+const { citationTitle, creator, organization, license, licenseUrl, sourceUrl, ...figureProps } = Astro.props;
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+const metadata = createFigureMetadata({
+  citationTitle, creator, organization, license, licenseUrl, sourceUrl,
+  captionTitle: figureProps.captionTitle, caption: figureProps.caption,
+}, canonicalUrl);
+const downloadHref = resolveFigureDownload(figureProps);
+if (import.meta.env.DEV && figureProps.downloadable === true && !figureProps.downloadSrc) {
+  console.warn(
+    '[MedDocsFigure] This figure is downloadable but has no explicit downloadSrc. ' +
+    'The full-size web image will be used as fallback. For reusable MedDocs ' +
+    'figures, prefer an explicit PNG, JPEG or SVG download source.',
+  );
+}
+const credits: (FigureCredit & { download?: string | true })[] = [...metadata.credits];
+if (downloadHref) credits.push({
+  text: getFigureDownloadLabel(figureProps.downloadFilename),
+  href: downloadHref,
+  download: figureProps.downloadFilename || true,
+});
+---
+
+{credits.length > 0 || metadata.citation ? (
+  <MediaFigure {...figureProps} caption={metadata.caption} lightboxMetadata={metadata} downloadSrc={downloadHref}>
+    <p slot="credit" class="figure-credit">
+      {credits.map(({ text, href, download }, index) => (
+        <>
+          {index > 0 && <span aria-hidden="true"> · </span>}
+          {href ? (
+            <a href={href} download={download}>
+              {download !== undefined && <span aria-hidden="true">↓ </span>}
+              {text}
+            </a>
+          ) : <span>{text}</span>}
+        </>
+      ))}
+      {metadata.citation && (
+        <span data-figure-citation-action hidden>
+          {credits.length > 0 && <span aria-hidden="true"> · </span>}
+          <button type="button" data-figure-citation={metadata.citation}>
+            <span data-citation-label>Zitation kopieren</span>
+          </button>
+          <span class="sr-only" data-citation-status role="status" aria-live="polite" aria-atomic="true"></span>
+        </span>
+      )}
+    </p>
+  </MediaFigure>
+) : (
+  <MediaFigure {...figureProps} />
+)}
+
+<script>
+  const resetTimers = new WeakMap<HTMLButtonElement, number>();
+  const pendingCopies = new WeakSet<HTMLButtonElement>();
+
+  function initialiseCitationActions() {
+    if (!navigator.clipboard?.writeText) return;
+    document.querySelectorAll<HTMLElement>('[data-figure-citation-action]')
+      .forEach((action) => { action.hidden = false; });
+  }
+
+  document.addEventListener('click', async (event) => {
+    const button = event.target instanceof Element
+      ? event.target.closest<HTMLButtonElement>('button[data-figure-citation]') : null;
+    const citation = button?.dataset.figureCitation;
+    if (!button || !citation || pendingCopies.has(button)) return;
+    const label = button.querySelector<HTMLElement>('[data-citation-label]');
+    const status = button.parentElement?.querySelector<HTMLElement>('[data-citation-status]');
+    if (!label || !status) return;
+
+    clearTimeout(resetTimers.get(button));
+    pendingCopies.add(button);
+    button.setAttribute('aria-busy', 'true');
+    status.textContent = '';
+    try {
+      await navigator.clipboard.writeText(citation);
+      label.textContent = 'Zitation kopiert';
+      status.textContent = 'Zitation kopiert';
+    } catch {
+      label.textContent = 'Kopieren fehlgeschlagen';
+      status.textContent = 'Die Zitation konnte nicht kopiert werden. Bitte erneut versuchen.';
+    } finally {
+      pendingCopies.delete(button);
+      button.removeAttribute('aria-busy');
+    }
+    resetTimers.set(button, window.setTimeout(() => {
+      label.textContent = 'Zitation kopieren';
+      status.textContent = '';
+      resetTimers.delete(button);
+    }, 1800));
+  });
+
+  initialiseCitationActions();
+  document.addEventListener('astro:page-load', initialiseCitationActions);
+</script>
+
+<style>
+  .figure-credit {
+    margin: 0.2rem 0 0;
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-xs);
+    line-height: 1.6;
+  }
+  .figure-credit :is(a, button) { color: inherit; text-decoration: underline; text-underline-offset: 0.15em; }
+  .figure-credit button { padding: 0; border: 0; background: transparent; font: inherit; cursor: pointer; }
+  .figure-credit :is(a, button):hover { color: var(--sl-color-accent); }
+  .figure-credit :is(a, button):focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 2px; }
+  [data-figure-citation-action][hidden] { display: none; }
+</style>
