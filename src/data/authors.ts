@@ -7,11 +7,11 @@ export interface Person {
 export const authors = {
   'orlando-frey': {
     name: 'Orlando Frey',
-    description: 'Medizinstudent; verantwortlich für die redaktionellen Inhalte von MedNerds.',
+    description: 'Medizinstudent an der Uni Basel mit besonderem Interesse an Ultraschall, Kardiologie und Notfallmedizin.',
   },
   'tim-luginbuehl': {
     name: 'Tim Luginbühl',
-    description: 'Beschreibung folgt.',
+    description: 'Medizinstudent an der Uni Basel mit besonderen Interesse an Anästhesie und präklinischer sowie klinischer Notfallmedizin.',
   },
   'hans-muster': {
     name: 'Hans Muster',

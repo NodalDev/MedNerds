@@ -83,8 +83,10 @@ export const productLinks = [
     status: 'building',
     children: [
       { label: 'EKG-Lagetyptrainer', href: '/medtools/ekg/lagetyptrainer/', icon: 'tabler:activity-heartbeat' },
-      { label: 'Interaktiver Herzzyklus', href: '/medtools/kardiologie/herzzyklus/', icon: 'tabler:heart' },
+      // Vorläufig zurückgestellt; die Herzzyklus-Seite bleibt als Draft erhalten.
+      // { label: 'Interaktiver Herzzyklus', href: '/medtools/kardiologie/herzzyklus/', icon: 'tabler:heart' },
       { label: 'OSCE-Timer', href: '/medtools/osce-timer/', icon: 'tabler:clock' },
+      { label: 'Linksammlung', href: '/medtools/links/', icon: 'tabler:link' },
     ],
   },
   {

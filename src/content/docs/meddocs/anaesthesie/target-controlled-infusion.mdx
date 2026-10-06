@@ -1,0 +1,155 @@
+---
+title: Target controlled infusion - TCI
+description: Einführund in die funktionsweise von target controlled infusion.
+authors:
+  - orlando-frey
+reviewers:
+  - tim-luginbuehl
+published: 2026-10-06
+updated: 2026-10-06
+reviewed: 2026-10-06
+abbreviations:
+  - TCI
+tags:
+  - Anästhesie
+  - TIVA
+draft: false
+pagefind: true
+sidebar:
+  label: Target controlled infusion - TCI
+  order: 10
+---
+
+## Was ist eine Target-Controlled Infusion?
+
+Die **Target-Controlled Infusion TCI** beschreibt eine Form der intravenösen Medikamentengabe,
+bei der bnicht eine feste Infusionsrate, sondern eine gewünschte Zielkonzentration vorgegeben wird.
+
+Auf Grundlage eines pharmakokinetischen Modells berechnet die Infusionspumpe fortlaufend, wie viel
+Medikament zugeführt werden muss, um die Konzentration zu erreichen und möglichst konstant zu halten.
+
+In der Anästhesie wird TCI insbesondere im Rahmen einer **totalintravenösen Anästhesie (TIVA)** eingesetzt, 
+beispielsweise zur Gabe von Propofol oder Remifentanil.
+
+
+## Wie funktioniert TCI?
+
+Um zu verstehen, wie eine Target-Controlled Infusion (TCI) funktioniert, 
+muss man zunächst einige grundlegende pharmakokinetische Konzepte kennen. 
+
+Entscheidend ist vor allem, wie sich ein intravenös verabreichtes Medikament im Körper verteilt, 
+wie seine Konzentration im Plasma und am Wirkort mit der klinischen Wirkung zusammenhängt 
+und wie sich diese Konzentrationen im Laufe der Zeit verändern.
+
+Eine TCI-Pumpe (Spritzenpumpe/Perfusor®) nutzt diese Zusammenhänge in Form eines mathematischen Modells. 
+Aus den Patientendaten, der bereits verabreichten Medikamentenmenge und dem gewünschten Target berechnet sie fortlaufend die erforderliche Infusionsrate.
+
+
+### Das pharmakokinetische Modell
+
+Nach intravenöser Gabe eines Medikaments verbleibt dieses nicht einfach im Blut. 
+Es verteilt sich in verschiedene Gewebe und wird gleichzeitig metabolisiert und eliminiert.
+
+Diese Vorgänge können nicht kontinuierlich gemessen werden. Deswegen verwenden TCI-Pumpen ein pharmakokinetisches Modell,
+dass den Konzentrationsverlauf des Medikaments beschreibt.
+
+
+#### Das Kompartimentmodell
+
+Die Verteilung eines Medikaments im Körper wird häufig mithilfe eines **Mehrkompartimentmodells** beschrieben.
+Bei vielen TCI-Modellen wird der Körper dabei vereinfacht in drei miteinander verbundene Kompartimente unterteilt:
+
+- ein **zentrales Kompartiment V1**: Hier gelangt das Medikament nach intravenöser Gabe zunächst hinein. Von hier aus verteilt es sich in andere Kompartimente oder wird eleminiert.
+- ein **schnelles peripheres Kompartiment V2**: Repräsentiert Gewebe, zwischen denen und dem zentralen Kompartiment ein relativ schneller Medikemantenaustausch stattfindet.
+- ein **langsames peripheres Kompartiment V3**: Repräsentiert Gewebe, in die sich das Medikament langsamer verteilt und aus denen es entsprechend langsamer zurückkehrt.
+
+HIER BILD
+
+Zwischen diesen Kompartimenten findet fortlaufend ein Austausch des Medikaments statt.
+Gleichzeitig wird das Medikament dabei aus dem zentralen Kompartiment eliminiert.
+
+:::caution[Wichtig]
+Die Kompartimente stellen keine klar abgrenzbaren anatomischen Räume dar. 
+Sie beschreiben modellhaft, wie sich ein Medikament im Körper verteilt und zwischen verschiedenen Bereichen austauscht.
+:::
+
+
+#### Cp - die Plasmakonzentration
+
+Die **Plasmakonzentration (Cp, plasma concentration)** beschreibt die vom Modell berechnete Konzentration des Medikaments im zentralen Kompartiment.
+
+Nach einer intravenösen Gabe steigt Cp zunächst rasch an. 
+Anschliessend fällt die Konzentration wieder ab, da sich das Medikament in periphere Kompartimente verteilt und gleichzeitig eliminiert wird.
+
+:::caution[Wichtig]
+Die von der TCI-Pumpe angezeigte Cp wird nicht gemessen. Sie ist eine anhand des pharmakokinetischen Modells berechnete Konzentration.
+:::
+
+
+#### Ce - die Konzentration am Wirkort
+
+Die klinische Wirkung eines Medikaments hängt jedoch nicht unmittelbar von seiner Konzentration im Plasma ab, 
+sondern von der Konzentration an seinem Wirkort.
+
+Bei Propofol liegt dieser Wirkort beispielsweise im zentralen Nervensystem.
+
+Um diesen Zusammenhang mathematisch abzubilden, wird ein zusätzliches sogenanntes Effektkompartiment verwendet. 
+Die dort berechnete Konzentration wird als **Ce (effect-site concentration)** bezeichnet.
+
+Auch Ce ist keine direkt gemessene Konzentration, sondern eine Modellgrösse.
+
+
+#### Warum Cp und Ce nicht gleichzeitig steigen
+
+Nach einer intravenösen Medikamentengabe steigt die Plasmakonzentration praktisch sofort an. 
+Bis sich das Medikament jedoch vom Plasma zum Wirkort verteilt hat, vergeht eine gewisse Zeit.
+
+Deshalb **folgt Ce der Cp zeitlich verzögert**.
+
+Diese Verzögerung erklärt beispielsweise, warum die maximale klinische Wirkung eines Propofolbolus 
+erst einige Zeit nach der maximalen Plasmakonzentration eintritt.
+
+
+#### ke0 – Verbindung zwischen Plasma und Wirkort
+
+Wie schnell sich die Konzentration im Effektkompartiment an die Plasmakonzentration annähert, wird im Modell durch die Konstante ke0 beschrieben.
+
+Vereinfacht gilt:
+
+- ein höheres ke0 bedeutet einen schnelleren Konzentrationsausgleich zwischen Plasma und Effektort,
+- ein niedrigeres ke0 bedeutet einen langsameren Ausgleich.
+
+ke0 ist damit ein wichtiger Bestandteil der Berechnung von Ce.
+
+#### Plasma-Target und Effect-Site-Target
+
+Je nach TCI-System kann entweder eine gewünschte Plasmakonzentration oder eine gewünschte Effektortkonzentration als Target eingestellt werden.
+
+Beim **Plasma-Targeting** versucht die Pumpe, die berechnete Cp möglichst rasch auf den Zielwert zu bringen.
+
+Beim **Effect-Site-Targeting** ist dagegen Ce die Zielgrösse. Da Ce der Plasmakonzentration zeitlich verzögert folgt, 
+kann die Pumpe zunächst eine vorübergehend höhere Cp erzeugen, damit das gewünschte Ce schneller erreicht wird.
+
+Dieser vorübergehende Anstieg der Plasmakonzentration über die Zielkonzentration am Effektort wird als **Plasma-Overshoot** bezeichnet.
+
+<mark>HIER BILD</mark>
+
+#### Wie die Pumpe das Target erreicht
+
+Wird das Target gesenkt, reduziert oder stoppt die Pumpe die Infusion. Die Konzentration fällt dann durch Redistribution und Elimination ab.
+
+:::note[Merke]
+Eine TCI-Pumpe versucht durch fortlaufende Anpassung der Infusionsrate eine vorgegebene Zielkonzentrationzu erreichen und aufrechtzuerhalten.
+:::
+
+#### Das verwendete Modell ist Entscheidend
+
+Wie Cp und Ce berechnet werden, hängt vom verwendeten pharmakokinetischen Modell ab. ^
+Für Propofol existieren beispielsweise verschiedene Modelle wie Marsh, Schnider oder Eleveld, für Remifentanil unter anderem das Minto-Modell.
+
+Die Modelle unterscheiden sich unter anderem darin, welche Patienteneigenschaften sie berücksichtigen und wie sie Verteilungsvolumina, 
+Clearance und den Konzentrationsausgleich zum Effektort beschreiben.
+
+:::danger[Cave]
+Ein bestimmter Ce-Wert ist deshalb nicht unabhängig vom verwendeten Modell zu interpretieren. Target, Medikament und TCI-Modell müssen immer gemeinsam betrachtet werden.
+:::

@@ -162,6 +162,7 @@ export default defineConfig({
                 },
               ],
             },
+            { slug: 'meddocs/ekg/links-ressourcen' },
           ],
         },
         {
@@ -245,6 +246,7 @@ export default defineConfig({
               ],
             },
             ...echoDraftItems(['formeln', 'echokardiographie-notfallmedizin']),
+            { slug: 'meddocs/echokardiographie/links-ressourcen' },
           ],
         },
         {
@@ -287,6 +289,7 @@ export default defineConfig({
               collapsed: true,
               items: [{ autogenerate: { directory: 'meddocs/notfallmedizin/diverses' } }],
             },
+            { slug: 'meddocs/notfallmedizin/links-ressourcen' },
           ],
         },
         {
@@ -315,6 +318,7 @@ export default defineConfig({
               { slug: 'meddocs/ultraschall/sgum-zertifikate' },
               { slug: 'meddocs/ultraschall/befunde-textvorlagen' },
             ]),
+            { slug: 'meddocs/ultraschall/links-ressourcen' },
           ],
         },
         {

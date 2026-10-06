@@ -59,7 +59,6 @@ check('Mehrere Autoren werden in Frontmatter-Reihenfolge aufgelöst', () => {
   const metadata = getMedDocsArticleMetadata(entry({ ...base, authors: ['orlando-frey', 'tim-luginbuehl'] }));
   assert.deepEqual(metadata.authors.map(({ name }) => name), ['Orlando Frey', 'Tim Luginbühl']);
   assert.strictEqual(metadata.authors[1], authors['tim-luginbuehl']);
-  assert.equal(metadata.authors[1].description, 'Beschreibung folgt.');
 });
 
 check('Hans Muster und mehrere Reviewer verwenden dieselbe Personen-Registry', () => {

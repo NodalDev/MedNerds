@@ -1,0 +1,51 @@
+---
+import LinkExplorer from '../links/LinkExplorer.astro';
+import type { LinkSpecialty } from '../../data/link-resources';
+
+interface Props {
+  specialty: LinkSpecialty;
+  intro: string;
+}
+
+const { specialty, intro } = Astro.props;
+---
+
+<div class="meddocs-resources not-content">
+  <p class="resources-intro">{intro}</p>
+
+  <LinkExplorer specialty={specialty} showSpecialtyFilter={false} compact syncUrl />
+
+  <a class="resources-overview-link" href="/medtools/links/">
+    Alle medizinischen Ressourcen in der Linksammlung ansehen →
+  </a>
+</div>
+
+<style>
+  .meddocs-resources {
+    display: grid;
+    gap: 2rem;
+    padding-block: 0.75rem 1.25rem;
+  }
+
+  .resources-intro {
+    margin: 0;
+    line-height: 1.75;
+  }
+
+  .resources-overview-link {
+    justify-self: start;
+    color: var(--sl-color-text-accent);
+    line-height: 1.65;
+    text-underline-offset: 0.2em;
+  }
+
+  .resources-overview-link:hover {
+    color: var(--sl-color-white);
+  }
+
+  .resources-overview-link:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+  }
+</style>

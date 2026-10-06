@@ -1,0 +1,221 @@
+---
+import { getCollection } from 'astro:content';
+import MedNerdsIcon from '../MedNerdsIcon.astro';
+import { linkSpecialties, linkFormats, linkLanguages, linkAccess, type LinkSpecialty } from '../../data/link-resources';
+import { linkSearchText, sortLinkResources } from '../../lib/links/filters';
+import { formatArticleDate, articleDateTime } from '../../lib/meddocs/article-metadata';
+
+interface Props {
+  specialty?: LinkSpecialty;
+  showSearch?: boolean;
+  showSpecialtyFilter?: boolean;
+  showFormatFilter?: boolean;
+  showLanguageFilter?: boolean;
+  showAccessFilter?: boolean;
+  compact?: boolean;
+  /** Opt in on dedicated resource pages; embedded explorers keep local state. */
+  syncUrl?: boolean;
+}
+const {
+  specialty, showSearch = true, showSpecialtyFilter = true, showFormatFilter = true,
+  showLanguageFilter = true, showAccessFilter = true, compact = false, syncUrl = false,
+} = Astro.props;
+const resources = sortLinkResources(await getCollection('linkResources', ({ data }) => !specialty || data.specialties.includes(specialty)));
+const dimensions = [
+  { key: 'specialty', label: 'Fachgebiet', options: linkSpecialties, show: showSpecialtyFilter },
+  { key: 'format', label: 'Format', options: linkFormats, show: showFormatFilter },
+  { key: 'language', label: 'Sprache', options: linkLanguages, show: showLanguageFilter },
+  { key: 'access', label: 'Zugang', options: linkAccess, show: showAccessFilter },
+] as const;
+const hasControls = showSearch || dimensions.some(({ show }) => show);
+---
+
+<link-explorer class="link-explorer not-content" data-baseline={specialty} data-sync-url={syncUrl ? '' : undefined} data-compact={compact ? '' : undefined}>
+  {hasControls && <form class="explorer-controls" data-controls hidden role="search" aria-label="Ressourcen suchen und filtern">
+    {showSearch && (
+      <label class="search-label">
+        <span>Ressourcen durchsuchen</span>
+        <span class="search-field">
+          <MedNerdsIcon name="tabler:search" size="sm" />
+          <input type="search" name="q" placeholder="Titel, Thema oder Anbieter …" autocomplete="off" />
+        </span>
+      </label>
+    )}
+    <div class="filter-grid">
+      {dimensions.filter(({ show }) => show).map(({ key, label, options }) => (
+        <label>
+          <span>{label}</span>
+          <select name={key}>
+            <option value="">Alle</option>
+            {Object.entries(options).map(([value, text]) => <option value={value}>{text}</option>)}
+          </select>
+        </label>
+      ))}
+    </div>
+  </form>}
+
+  <section aria-label="Ressourcen">
+    <div class="result-toolbar">
+      <div class="result-heading">
+        <h2>Ressourcen</h2>
+        <p data-result-count role="status" aria-live="polite" aria-atomic="true">{resources.length} {resources.length === 1 ? 'Ressource' : 'Ressourcen'}</p>
+      </div>
+      <button type="button" data-reset hidden>Filter zurücksetzen</button>
+    </div>
+    <div class="resource-grid">
+      {resources.map(({ id, data }) => (
+        <article class="resource-card" data-link-resource={id} data-filter-data={JSON.stringify({
+          specialties: data.specialties, formats: data.formats, languages: data.languages,
+          access: data.access, search: linkSearchText(data),
+        })}>
+          <p class="resource-kicker">{data.formats.map((format) => linkFormats[format]).join(' · ')}<span aria-hidden="true"> · </span>{data.languages.map((language) => linkLanguages[language]).join(' / ')}</p>
+          <h3><a href={data.url}>{data.title}<MedNerdsIcon name="tabler:external-link" size="sm" /><span class="sr-only"> (externe Ressource)</span></a></h3>
+          <p class="resource-description">{data.description}</p>
+          <ul class="resource-tags" aria-label="Fachgebiete und Zugang">
+            {data.specialties.map((id) => <li>{linkSpecialties[id]}</li>)}
+            {data.access && <li class="resource-access">{linkAccess[data.access]}</li>}
+          </ul>
+          {data.checked && <p class="resource-checked">Zuletzt geprüft: <time datetime={articleDateTime(data.checked)}>{formatArticleDate(data.checked)}</time></p>}
+        </article>
+      ))}
+    </div>
+    <div class="empty-state" data-empty hidden={resources.length > 0}>
+      <p class="empty-title">Keine passenden Ressourcen gefunden.</p>
+      <p>{resources.length ? 'Passe deine Suche oder Filter an.' : specialty
+        ? 'Für dieses Fachgebiet sind aktuell noch keine Ressourcen eingetragen.'
+        : 'Die Sammlung wird aufgebaut. Noch sind keine Ressourcen eingetragen.'}</p>
+    </div>
+  </section>
+</link-explorer>
+
+<script>
+  import { readLinkFilters, matchesLinkFilters, linkFilterUrl, linkFilterKeys, type LinkFilters, type LinkFilterData } from '../../lib/links/filters';
+  import { linkSpecialtyIds, type LinkSpecialty } from '../../data/link-resources';
+
+  class LinkExplorer extends HTMLElement {
+    private listeners?: AbortController;
+    private urlTimer?: number;
+    private filters: LinkFilters = {};
+    private cards: { element: HTMLElement; data: LinkFilterData }[] = [];
+    private controls = new Map<keyof LinkFilters, HTMLInputElement | HTMLSelectElement>();
+    private baseline?: LinkSpecialty;
+
+    connectedCallback() {
+      this.listeners?.abort();
+      this.listeners = new AbortController();
+      const { signal } = this.listeners;
+      this.baseline = linkSpecialtyIds.find((id) => id === this.dataset.baseline);
+      this.controls.clear();
+      for (const key of linkFilterKeys) {
+        const control = this.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${key}"]`);
+        if (control) this.controls.set(key, control);
+      }
+      this.cards = [...this.querySelectorAll<HTMLElement>('[data-link-resource]')].map((element) => ({
+        element, data: JSON.parse(element.dataset.filterData!) as LinkFilterData,
+      }));
+      this.querySelector('form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        this.changeFilters();
+      }, { signal });
+      this.querySelector('form')?.addEventListener('input', () => this.changeFilters(), { signal });
+      this.querySelector('[data-reset]')?.addEventListener('click', () => {
+        this.querySelector('form')?.reset();
+        this.filters = {};
+        this.applyFilters();
+        this.syncUrl();
+        this.controls.values().next().value?.focus();
+      }, { signal });
+      if (this.hasAttribute('data-sync-url')) {
+        window.addEventListener('popstate', () => this.readUrl(), { signal });
+        this.readUrl();
+      } else this.applyFilters();
+      const panel = this.querySelector<HTMLElement>('[data-controls]');
+      if (panel) panel.hidden = false;
+      document.addEventListener('astro:before-swap', () => this.cleanup(), { signal, once: true });
+    }
+
+    disconnectedCallback() { this.cleanup(); }
+    private cleanup() { this.listeners?.abort(); window.clearTimeout(this.urlTimer); }
+    private readUrl() {
+      window.clearTimeout(this.urlTimer);
+      const incoming = readLinkFilters(new URLSearchParams(location.search));
+      this.filters = {};
+      for (const [key, control] of this.controls) {
+        control.value = incoming[key] ?? '';
+      }
+      this.readControls();
+      this.applyFilters();
+    }
+    private readControls() {
+      const query = new URLSearchParams();
+      for (const [key, control] of this.controls) if (control.value) query.set(key, control.value);
+      this.filters = readLinkFilters(query);
+    }
+    private changeFilters() {
+      this.readControls();
+      this.applyFilters();
+      window.clearTimeout(this.urlTimer);
+      this.urlTimer = window.setTimeout(() => this.syncUrl(), 150);
+    }
+    private syncUrl() {
+      window.clearTimeout(this.urlTimer);
+      if (!this.hasAttribute('data-sync-url')) return;
+      const url = linkFilterUrl(new URL(location.href), this.filters);
+      if (url.href !== location.href) history.replaceState(history.state, '', url);
+    }
+    private applyFilters() {
+      let count = 0;
+      for (const { element, data } of this.cards) {
+        element.hidden = !matchesLinkFilters(data, this.filters, this.baseline);
+        if (!element.hidden) count++;
+      }
+      const status = this.querySelector<HTMLElement>('[data-result-count]');
+      if (status) status.textContent = `${count} ${count === 1 ? 'Ressource' : 'Ressourcen'}`;
+      this.querySelector<HTMLElement>('[data-empty]')!.hidden = count > 0;
+      this.querySelector<HTMLElement>('[data-reset]')!.hidden = !Object.values(this.filters).some(Boolean);
+    }
+  }
+  if (!customElements.get('link-explorer')) customElements.define('link-explorer', LinkExplorer);
+</script>
+
+<style>
+  .link-explorer { display: block; container: link-explorer / inline-size; color: var(--sl-color-gray-2); }
+  .link-explorer [hidden] { display: none !important; }
+  p, h2, h3 { margin: 0; }
+  .explorer-controls { display: grid; gap: 1rem; padding: 1.25rem; border: 1px solid var(--sl-color-hairline); border-radius: 0.75rem; background: var(--mn-surface); }
+  label { display: grid; gap: 0.4rem; min-width: 0; font-size: var(--sl-text-sm); }
+  label > span:first-child { color: var(--sl-color-white); font-weight: 600; }
+  .search-field { display: flex; align-items: center; gap: 0.65rem; padding-inline: 0.85rem; border: 1px solid var(--sl-color-gray-4); border-radius: 0.5rem; background: var(--sl-color-bg); }
+  .search-field :global(svg) { color: var(--sl-color-gray-3); }
+  input, select { width: 100%; min-width: 0; min-height: 2.75rem; color: var(--sl-color-white); font: inherit; font-size: var(--sl-text-sm); }
+  input { padding: 0.6rem 0; border: 0; background: transparent; }
+  input::placeholder { color: var(--sl-color-gray-3); }
+  select { padding: 0.5rem; border: 1px solid var(--sl-color-gray-4); border-radius: 0.5rem; background: var(--sl-color-bg); }
+  :is(input, select, button, a):focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; border-radius: 0.25rem; }
+  .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 0.85rem; }
+  .filter-grid:empty { display: none; }
+  .result-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem 1rem; min-height: 2.75rem; margin-block: 2rem 1.5rem; font-size: var(--sl-text-sm); }
+  .result-heading { display: grid; gap: 0.3rem; }
+  .result-heading h2 { color: var(--sl-color-white); font-size: var(--sl-text-lg); font-weight: 600; line-height: 1.35; }
+  button { min-height: 2.75rem; padding: 0.5rem 0; border: 0; background: transparent; color: var(--sl-color-accent); font: inherit; font-size: var(--sl-text-sm); text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; }
+  .resource-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .resource-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0.8rem; min-width: 0; padding: 1.5rem; border: 1px solid var(--sl-color-hairline); border-radius: 0.75rem; background: var(--mn-surface); overflow-wrap: anywhere; }
+  .resource-kicker, .resource-checked { font-size: var(--sl-text-xs); line-height: 1.6; }
+  .resource-kicker { margin-bottom: 0.1rem; color: var(--mn-tools); font-weight: 600; }
+  .resource-checked { color: var(--sl-color-gray-2); }
+  h3 { color: var(--sl-color-white); font-size: 1.125rem; font-weight: 700; line-height: 1.4; }
+  h3 a { color: inherit; text-decoration: none; }
+  h3 a :global(svg) { margin-inline-start: 0.4rem; color: var(--mn-tools); vertical-align: middle; }
+  h3 a:hover { color: var(--sl-color-accent); text-decoration: underline; text-underline-offset: 0.2em; }
+  .resource-description { color: var(--sl-color-gray-2); font-size: var(--sl-text-sm); line-height: 1.7; }
+  .resource-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.6rem 0 0; margin: auto 0 0; list-style: none; font-size: var(--sl-text-xs); line-height: 1.5; }
+  .resource-tags li { padding: 0.2rem 0.65rem; border-radius: 999px; color: var(--mn-tools); background: color-mix(in srgb, var(--mn-tools) 9%, var(--mn-surface)); }
+  .resource-tags .resource-access { color: var(--sl-color-gray-2); background: color-mix(in srgb, var(--sl-color-gray-3) 10%, var(--mn-surface)); }
+  .empty-state { padding-block: 1.5rem; font-size: var(--sl-text-sm); line-height: 1.65; }
+  .empty-title { margin-bottom: 0.35rem; color: var(--sl-color-white); font-weight: 600; }
+  [data-compact] .resource-card { padding: 1.25rem; }
+  @container link-explorer (min-width: 40rem) {
+    .resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    [data-compact] .resource-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
