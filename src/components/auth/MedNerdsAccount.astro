@@ -1,0 +1,110 @@
+---
+---
+
+<mednerds-account class="mn-account not-content">
+  <p class="account-intro">Melde dich mit deiner E-Mail-Adresse an. Du erhältst einen einmaligen Anmeldecode – ganz ohne Passwort.</p>
+
+  <div class="account-panel">
+    <p data-loading>Anmeldestatus wird geprüft …</p>
+    <noscript><p>Bitte aktiviere JavaScript, um dich anzumelden.</p></noscript>
+
+    <div data-login hidden>
+      <form data-email-form novalidate>
+        <label for="account-email">E-Mail-Adresse</label>
+        <input id="account-email" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="254" required />
+        <div class="account-challenge" data-email-challenge role="group" aria-label="Sicherheitsprüfung"></div>
+        <button type="submit" data-send disabled>Anmeldecode senden</button>
+        <p class="account-hint" data-email-cooldown hidden></p>
+      </form>
+
+      <div data-code-step hidden>
+        <h2 class="account-code-title">Anmeldecode eingeben</h2>
+        <p class="account-delivery">Wir haben einen sechsstelligen Code an <strong data-delivery-email></strong> gesendet.</p>
+        <form data-code-form novalidate>
+          <label for="account-otp">Anmeldecode</label>
+          <input id="account-otp" name="otp" type="text" inputmode="numeric" autocomplete="one-time-code" autocapitalize="none" spellcheck="false" pattern="[0-9]{6}" minlength="6" maxlength="6" aria-describedby="account-code-hint" required />
+          <p class="account-hint" id="account-code-hint">Der Code ist 10 Minuten gültig.</p>
+          <button type="submit" data-verify>Code bestätigen</button>
+        </form>
+        <div class="account-code-actions">
+          <p class="account-hint" data-cooldown hidden></p>
+          <button type="button" class="account-text-button" data-open-resend aria-expanded="false" aria-controls="account-resend" hidden>Neuen Code anfordern</button>
+          <button type="button" class="account-text-button" data-change-email>E-Mail ändern</button>
+        </div>
+        <div class="account-resend" id="account-resend" role="group" aria-labelledby="account-resend-title" data-resend-panel hidden>
+          <p class="account-resend-title" id="account-resend-title" tabindex="-1">Neuen Anmeldecode anfordern</p>
+          <div class="account-challenge" data-resend-challenge role="group" aria-label="Sicherheitsprüfung für einen neuen Code"></div>
+          <div class="account-resend-actions">
+            <button type="button" data-resend disabled>Code erneut senden</button>
+            <button type="button" class="account-text-button" data-cancel-resend>Abbrechen</button>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="account-text-button" data-retry-captcha hidden>Sicherheitsprüfung neu laden</button>
+    </div>
+
+    <div class="account-session" data-session hidden>
+      <p>Du bist angemeldet als:</p>
+      <strong data-session-email></strong>
+      <section class="account-profile" aria-labelledby="account-profile-title" data-profile>
+        <h2 class="account-code-title" id="account-profile-title">Profil</h2>
+        <p class="account-hint" data-profile-loading role="status">Profil wird geladen …</p>
+        <form data-profile-form novalidate hidden>
+          <label for="account-display-name">Anzeigename</label>
+          <input id="account-display-name" name="display_name" type="text" autocomplete="nickname" aria-describedby="account-name-hint" />
+          <p class="account-hint" id="account-name-hint">Dieser Name kann später öffentlich neben deinen Kommentaren erscheinen.</p>
+          <button type="submit" data-profile-save>Änderungen speichern</button>
+        </form>
+        <p class="account-status" data-profile-status role="status" aria-live="polite" aria-atomic="true"></p>
+        <p class="account-error" id="account-profile-error" data-profile-error role="alert" hidden></p>
+        <button type="button" class="account-text-button" data-profile-retry hidden>Profil erneut laden</button>
+        <p class="account-hint" data-staff-role hidden></p>
+      </section>
+      <button type="button" data-logout>Abmelden</button>
+    </div>
+
+    <p class="account-status" data-status role="status" aria-live="polite" aria-atomic="true"></p>
+    <p class="account-error" id="account-error" data-error role="alert" hidden></p>
+    <button type="button" class="account-text-button" data-reload hidden>Seite neu laden</button>
+  </div>
+</mednerds-account>
+
+<script>
+  import { registerAccountElement } from '../../lib/auth/account-element';
+  registerAccountElement();
+</script>
+
+<style>
+  .mn-account { display: block; max-width: 34rem; margin-inline: auto; padding-block: 0.75rem 2rem; }
+  .mn-account [hidden] { display: none !important; }
+  p { margin: 0; }
+  .account-intro { margin-bottom: 1.75rem; line-height: 1.75; }
+  .account-panel { padding: clamp(1rem, 4vw, 1.75rem); border: 1px solid var(--sl-color-hairline); border-radius: 0.85rem; background: var(--mn-surface); }
+  form { display: grid; gap: 0.75rem; }
+  label { color: var(--sl-color-white); font-size: var(--sl-text-sm); font-weight: 600; }
+  input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 2.875rem; padding: 0.7rem 0.85rem; border: 1px solid var(--sl-color-gray-4); border-radius: 0.5rem; color: var(--sl-color-white); background: var(--sl-color-bg); font: inherit; }
+  #account-otp { max-width: 14rem; font-variant-numeric: tabular-nums; letter-spacing: 0.2em; }
+  input[aria-invalid='true'] { border-color: var(--sl-color-text-accent); }
+  .account-challenge { min-width: 0; margin-block: 0.5rem; }
+  button { justify-self: start; min-height: 2.75rem; padding: 0.65rem 1rem; border: 1px solid transparent; border-radius: 0.5rem; color: var(--sl-color-black); background: var(--sl-color-accent-high); font: inherit; font-size: var(--sl-text-sm); font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: 0.6; cursor: default; }
+  button:not(:disabled):hover { border-color: var(--sl-color-accent); }
+  :is(button, input):focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; }
+  .account-text-button { padding-inline: 0; border: 0; background: transparent; color: var(--sl-color-text-accent); text-align: start; text-decoration: underline; text-underline-offset: 0.2em; font-weight: 400; }
+  .account-code-title { margin: 0 0 0.5rem; font-size: var(--sl-text-lg); line-height: 1.3; }
+  .account-delivery { margin-bottom: 1rem; font-size: var(--sl-text-sm); line-height: 1.6; overflow-wrap: anywhere; }
+  .account-delivery strong { color: var(--sl-color-white); }
+  .account-hint { color: var(--sl-color-gray-2); font-size: var(--sl-text-xs); line-height: 1.65; }
+  .account-code-actions, .account-resend-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1.25rem; }
+  .account-code-actions { margin-top: 0.5rem; }
+  .account-resend { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--sl-color-hairline); }
+  .account-resend-title { color: var(--sl-color-white); font-size: var(--sl-text-sm); font-weight: 600; }
+  .account-resend-title:focus { outline: none; }
+  .account-session { display: grid; gap: 0.75rem; }
+  .account-profile { padding-block: 0.75rem; border-top: 1px solid var(--sl-color-hairline); }
+  [data-staff-role]:not([hidden]) { margin-top: 0.75rem; }
+  .account-session strong { margin-bottom: 0.75rem; color: var(--sl-color-white); overflow-wrap: anywhere; }
+  .account-status:not(:empty), .account-error:not(:empty) { margin-top: 0.75rem; font-size: var(--sl-text-sm); line-height: 1.65; }
+  .account-error { color: var(--sl-color-white); padding-inline-start: 0.75rem; border-inline-start: 2px solid var(--sl-color-text-accent); }
+</style>

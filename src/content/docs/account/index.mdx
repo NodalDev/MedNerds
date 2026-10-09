@@ -1,0 +1,17 @@
+---
+title: MedNerds Account
+description: Passwortlose Anmeldung bei MedNerds mit einem einmaligen E-Mail-Code.
+template: splash
+pagefind: false
+sidebar:
+  hidden: true
+head:
+  - tag: meta
+    attrs:
+      name: robots
+      content: noindex, nofollow
+---
+
+import MedNerdsAccount from '../../../components/auth/MedNerdsAccount.astro';
+
+<MedNerdsAccount />
