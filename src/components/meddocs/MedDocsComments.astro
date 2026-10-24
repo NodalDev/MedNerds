@@ -1,0 +1,82 @@
+---
+import { getLegalDocumentVersions } from '../../lib/auth/legal-documents';
+import '../../styles/comments.css';
+import { Icon } from 'astro-icon/components';
+interface Props { articleId: string; authorIds: readonly string[] }
+const { articleId, authorIds } = Astro.props;
+const versions = await getLegalDocumentVersions();
+---
+<meddocs-comments class="mn-comments not-content" data-article-id={articleId} data-article-authors={JSON.stringify(authorIds)} data-terms-version={versions.terms} data-privacy-version={versions.privacy} data-pagefind-ignore>
+  <section class="comments-shell" aria-labelledby="comments-title" id="kommentare">
+    <header class="comments-topline">
+      <h2 id="comments-title">Kommentare <span class="comments-count" data-count hidden></span></h2>
+      <label class="comments-header-tools" data-order hidden>
+        <span class="comments-sr-only">Kommentare sortieren</span>
+        <select class="comments-order" data-sort><option value="newest">Neueste</option><option value="oldest">Älteste</option><option value="helpful">Hilfreichste</option></select>
+      </label>
+    </header>
+    <p class="comments-pending-summary" data-pending-summary hidden></p>
+    <template data-comment-avatar><Icon name="tabler:user" size={18} is:inline aria-hidden="true" focusable="false" /></template>
+    <template data-comment-vote-icon><Icon name="tabler:thumb-up" size={16} is:inline aria-hidden="true" focusable="false" /></template>
+    <div class="comments-composer-home" data-composer-home hidden>
+      <div class="comments-prompt" data-prompt>
+        <span class="comment-avatar" data-composer-avatar aria-hidden="true"><Icon name="tabler:user" size={18} is:inline aria-hidden="true" focusable="false" /></span>
+        <button type="button" class="comments-compose-trigger" data-action="compose" aria-expanded="false" aria-controls="comment-editor">Schreibe einen Kommentar …</button>
+      </div>
+      <p class="comments-hint" data-gate hidden></p>
+      <p class="comments-hint comments-draft-status" data-draft-status role="status" aria-live="polite" hidden></p>
+      <form id="comment-editor" data-composer hidden novalidate>
+        <label class="comments-sr-only" for="comment-body" data-composer-label>Kommentar (Pflichtfeld)</label>
+        <p class="comments-editor-context" data-composer-title hidden></p>
+        <textarea id="comment-body" name="comment" rows="3" placeholder="Schreibe einen Kommentar …" required aria-describedby="comment-body-hint comment-error"></textarea>
+        <div class="comments-editor-footer">
+          <p id="comment-body-hint" class="comments-hint" data-character-hint>Maximal 4.000 Zeichen.</p>
+          <div class="comment-actions"><button type="button" class="comments-action" data-action="cancel-edit">Abbrechen</button><button type="submit" class="comments-primary">Kommentar senden</button></div>
+        </div>
+        <p class="comments-hint" data-moderation-hint>Dein Beitrag wird vor der Veröffentlichung moderiert.</p>
+        <p id="comment-error" class="comments-error" data-error role="alert" hidden></p>
+      </form>
+    </div>
+    <p class="comments-hint" data-list-status role="status" aria-live="polite" aria-atomic="true"></p>
+    <div class="comments-retry" data-public-retry>
+      <button type="button" class="comments-secondary" data-action="load">Kommentare laden</button>
+    </div>
+    <ul class="comment-list" data-public-list aria-label="Diskussion"></ul>
+    <div class="comments-pagination"><button type="button" class="comments-secondary" data-action="more" hidden>Weitere Kommentare laden</button></div>
+    <div class="comments-private-status" data-private-status hidden>
+      <p class="comments-hint" data-own-status role="status" aria-live="polite"></p>
+      <button type="button" class="comments-action" data-action="retry-mine" hidden>Erneut versuchen</button>
+    </div>
+    <details class="comments-personal" data-personal hidden>
+      <summary>Meine offenen Beiträge <span data-personal-count></span></summary>
+      <ul class="comment-list" data-personal-list></ul>
+    </details>
+    <div class="comments-own-more"><button type="button" class="comments-action" data-action="more-mine" hidden>Weitere eigene offene Beiträge laden</button></div>
+    <p class="comments-error" data-withdraw-error role="alert" hidden></p>
+    <p data-action-status role="status" aria-live="polite" aria-atomic="true"></p>
+    <p class="comments-error" data-vote-error role="alert" hidden></p>
+    <dialog data-auth-dialog aria-labelledby="comment-auth-title" aria-describedby="comment-auth-description">
+      <h3 id="comment-auth-title">Anmelden, um zu kommentieren</h3>
+      <p id="comment-auth-description">Dein Kommentar ist vorbereitet. Melde dich an oder erstelle ein Konto, um ihn zur Prüfung einzureichen.</p>
+      <p class="comments-error" data-auth-error role="alert" hidden></p>
+      <div class="comment-actions">
+        <a class="comments-action" data-comment-login href="/account/">Anmelden</a>
+        <a class="comments-action" data-comment-register href="/account/">Konto erstellen</a>
+        <button type="button" class="comments-action" data-action="close-auth" autofocus>Zurück zum Kommentar</button>
+      </div>
+    </dialog>
+    <dialog data-withdraw-dialog aria-labelledby="withdraw-title" aria-describedby="withdraw-description">
+      <h3 id="withdraw-title">Beitrag zurückziehen?</h3><p id="withdraw-description">Dein Text und seine Revisionen werden entfernt. Antworten anderer bleiben erhalten.</p>
+      <div class="comment-actions"><button type="button" class="comments-action" data-action="cancel-withdraw" autofocus>Abbrechen</button><button type="button" class="comments-action comments-danger" data-action="confirm-withdraw">Zurückziehen bestätigen</button></div>
+    </dialog>
+    <noscript><p class="comments-hint">Zum Laden der Kommentare benötigst du JavaScript.</p></noscript>
+  </section>
+</meddocs-comments>
+<script>
+  const register = () => import('../../lib/meddocs/comments/comments-element').then(({ registerCommentsElement }) => registerCommentsElement());
+  for (const host of document.querySelectorAll('meddocs-comments')) {
+    host.querySelector('[data-action="load"]')?.addEventListener('click', () => void register(), { once: true });
+    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) { observer.disconnect(); void register(); } }, { rootMargin: '240px' });
+    observer.observe(host);
+  }
+</script>

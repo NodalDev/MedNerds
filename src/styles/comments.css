@@ -1,0 +1,110 @@
+/* Component-scoped presentation. No Starlight layout internals. */
+.mn-comments { display: block; margin-block: 3rem; color: var(--sl-color-text); overflow-wrap: anywhere; }
+.mn-comments [hidden] { display: none !important; }
+.mn-comments h2, .mn-comments h3, .mn-comments p { margin: 0; }
+.mn-comments h2 { font-size: 1.6rem; line-height: 1.3; }
+.mn-comments h3 { font-size: 1.05rem; line-height: 1.4; }
+.mn-comments section > * + *, .mn-comments form > * + * { margin-block-start: 1rem; }
+.mn-comments .comments-hint, .mn-comments .comments-meta { font-size: .85rem; color: var(--sl-color-gray-2); line-height: 1.6; }
+.mn-comments .comment-list { display: grid; gap: 1rem; list-style: none; padding: 0; margin-block: 1rem; }
+.mn-comments .comment-card { padding: 1.2rem; border: 1px solid var(--sl-color-hairline-light); border-radius: .65rem; min-width: 0; }
+.mn-comments .comment-card > article > * + *, .mn-comments .comment-private > * + * { margin-block-start: .8rem; }
+.mn-comments .comment-private { background: var(--sl-color-bg-nav); }
+.mn-comments .comment-header { display: flex; align-items: flex-start; gap: .75rem; }
+.mn-comments .comment-avatar { display: grid; place-items: center; flex: 0 0 2.25rem; height: 2.25rem; border-radius: 50%; background: var(--sl-color-accent-low); color: var(--sl-color-accent-high); font-size: .8rem; }
+.mn-comments .comment-badge { display: inline-block; margin-inline-start: .6rem; color: var(--sl-color-accent); font-size: .75rem; font-weight: 600; }
+.mn-comments .comment-body { white-space: pre-wrap; line-height: 1.65; }
+.mn-comments .comment-actions { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; }
+.mn-comments .comments-action { display: inline-flex; align-items: center; justify-content: center; min-height: 2.25rem; min-width: 2.25rem; background: transparent; color: var(--sl-color-gray-2); border: 1px solid transparent; border-radius: .4rem; padding: .35rem .55rem; font: inherit; font-size: .85rem; line-height: 1.4; text-decoration: none; cursor: pointer; }
+.mn-comments .comments-action:hover:not(:disabled) { color: var(--sl-color-text); background: color-mix(in srgb, var(--sl-color-gray-5) 22%, transparent); border-color: var(--sl-color-hairline-light); }
+.mn-comments .comments-action:active:not(:disabled) { background: color-mix(in srgb, var(--sl-color-gray-5) 40%, transparent); }
+.mn-comments .comments-action[data-action="withdraw"]:is(:hover,:active):not(:disabled) { color: var(--sl-color-red-high); background: color-mix(in srgb, var(--sl-color-red-low) 30%, transparent); border-color: color-mix(in srgb, var(--sl-color-red-high) 35%, transparent); }
+.mn-comments .comments-primary { background: var(--sl-color-text-accent); color: var(--sl-color-bg); border: 1px solid var(--sl-color-text-accent); padding: .65rem 1rem; border-radius: .5rem; font: inherit; font-weight: 600; cursor: pointer; }
+.mn-comments button:disabled { opacity: .6; cursor: default; }
+.mn-comments :is(button,a,textarea,select,input):focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; }
+.mn-comments form { margin-block: 1.5rem; }
+.mn-comments label { display: block; font-weight: 600; font-size: .9rem; }
+.mn-comments :is(textarea,select,input) { max-width: 100%; width: 100%; background: var(--sl-color-bg); color: var(--sl-color-text); border: 1px solid var(--sl-color-gray-4); border-radius: .45rem; padding: .65rem; font: inherit; box-sizing: border-box; }
+.mn-comments textarea { resize: vertical; }
+.mn-comments .comment-replies { margin-inline-start: 1.25rem; }
+.mn-comments .comments-error, .mn-comments .comments-danger { color: var(--sl-color-red-high); }
+.mn-comments dialog { --comment-dialog-space: max(1rem, env(safe-area-inset-top), env(safe-area-inset-right), env(safe-area-inset-bottom), env(safe-area-inset-left)); position: fixed; inset: 0; margin: auto; width: min(30rem, calc(100% - 2 * var(--comment-dialog-space))); min-width: 0; max-width: calc(100% - 2 * var(--comment-dialog-space)); max-height: calc(100dvh - 2 * var(--comment-dialog-space)); box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; background: var(--sl-color-bg); color: var(--sl-color-text); border: 1px solid var(--sl-color-hairline-light); border-radius: .75rem; padding: clamp(1rem, 3vw, 1.5rem); }
+.mn-comments dialog::backdrop { background: color-mix(in srgb, var(--color-background-950) 55%, transparent); }
+.mn-comments dialog .comment-actions { justify-content: flex-end; gap: .5rem; }
+.mn-comments dialog :is(button,select) { min-height: 2.75rem; }
+.mn-comments dialog > * + * { margin-block-start: 1rem; }
+.mn-comments .comment-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-block: 1rem; }
+.mn-comments .comment-comparison > div { min-width: 0; }
+.mn-comments .comment-comparison h4 { font-size: .85rem; margin: 0 0 .5rem; color: var(--sl-color-gray-2); }
+.mn-comments .comment-comparison p { white-space: pre-wrap; }
+.mn-comments .moderation-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 40rem) { .mn-comments .comment-card { padding: 1rem; } .mn-comments .comment-replies { margin-inline-start: .4rem; } .mn-comments .comment-comparison, .mn-comments .moderation-filters { grid-template-columns: 1fr; } }
+
+/* Reader discussion; shared dialogs and controls use the rules above. */
+meddocs-comments.mn-comments .comments-shell { padding: 1rem 1.1rem; border: 1px solid var(--sl-color-hairline-light); border-radius: .9rem; background: color-mix(in srgb, var(--sl-color-bg-nav) 35%, var(--sl-color-bg)); }
+meddocs-comments.mn-comments .comments-shell > :not(dialog), meddocs-comments.mn-comments form > * + * { margin-block-start: 0; }
+meddocs-comments.mn-comments .comments-topline { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin-block-end: .9rem; }
+meddocs-comments.mn-comments .comments-topline h2 { font-size: 1.25rem; font-weight: 650; line-height: 1.3; }
+meddocs-comments.mn-comments .comments-count { font-weight: 500; color: var(--sl-color-gray-2); }
+meddocs-comments.mn-comments .comments-header-tools { display: flex; gap: .25rem; align-items: center; }
+meddocs-comments.mn-comments .comments-order { width: auto; min-height: 2.25rem; padding: .35rem .45rem; font-size: .75rem; font-weight: 400; color: var(--sl-color-gray-2); border-color: transparent; background: var(--sl-color-bg); cursor: pointer; }
+meddocs-comments.mn-comments .comment-upvote { gap: .35rem; min-width: 4.25rem; }
+meddocs-comments.mn-comments .comment-upvote-count { min-width: 3ch; text-align: start; font-variant-numeric: tabular-nums; }
+meddocs-comments.mn-comments .comment-upvote[aria-pressed="true"] { color: var(--sl-color-text-accent); background: var(--sl-color-accent-low); border-color: color-mix(in srgb, var(--sl-color-text-accent) 35%, transparent); }
+meddocs-comments.mn-comments .comments-prompt { display: grid; grid-template-columns: 2rem minmax(0,1fr); gap: .65rem; align-items: center; }
+meddocs-comments.mn-comments .comment-avatar { width: 2rem; height: 2rem; flex-basis: 2rem; font-size: .67rem; font-weight: 600; color: var(--sl-color-gray-1); background: color-mix(in srgb, var(--sl-color-gray-5) 48%, var(--sl-color-bg)); }
+meddocs-comments.mn-comments [data-composer-avatar] > .comment-avatar { background: none; }
+meddocs-comments.mn-comments .comments-compose-trigger { width: 100%; min-height: 2.4rem; padding: .55rem .85rem; border: 1px solid var(--sl-color-hairline-light); border-radius: 2rem; background: transparent; font: inherit; font-size: .85rem; color: var(--sl-color-gray-2); text-align: start; cursor: text; }
+meddocs-comments.mn-comments .comments-composer-home { margin-block-end: .85rem; }
+meddocs-comments.mn-comments .comments-pending-summary { font-size: .78rem; line-height: 1.5; color: var(--sl-color-gray-2); margin-block-end: .75rem; }
+meddocs-comments.mn-comments [data-gate] { margin-block-start: .45rem; font-size: .78rem; }
+meddocs-comments.mn-comments .comment-list { display: block; margin: 0; padding: 0; list-style: none; }
+meddocs-comments.mn-comments [data-public-list]:not(:empty) { border-block-start: 1px solid var(--sl-color-hairline-light); }
+meddocs-comments.mn-comments .comment-entry { padding-block: 1.05rem; min-width: 0; border-block-end: 1px solid var(--sl-color-hairline-light); }
+meddocs-comments.mn-comments .comment-entry:last-child { border-block-end: 0; }
+meddocs-comments.mn-comments .comment-row { display: grid; grid-template-columns: 2rem minmax(0,1fr); gap: .65rem; }
+meddocs-comments.mn-comments .comment-content { min-width: 0; }
+meddocs-comments.mn-comments .comment-byline { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .5rem; line-height: 1.5; }
+meddocs-comments.mn-comments .comment-name { font-size: .85rem; font-weight: 600; }
+meddocs-comments.mn-comments .comment-byline .comments-meta { font-size: .73rem; }
+meddocs-comments.mn-comments .comment-badge { margin: 0; padding: .08rem .45rem; font-size: .68rem; font-weight: 600; color: var(--sl-color-gray-1); background: color-mix(in srgb, var(--sl-color-gray-5) 45%, transparent); border-radius: 999px; }
+meddocs-comments.mn-comments .comment-body { margin-block-start: .35rem; font-size: .88rem; line-height: 1.65; }
+meddocs-comments.mn-comments .comment-profession { font-size: .72rem; margin-block-start: .2rem; }
+meddocs-comments.mn-comments .comment-actions { gap: .25rem .35rem; margin-block-start: .35rem; }
+meddocs-comments.mn-comments .comments-action { font-size: .76rem; }
+meddocs-comments.mn-comments .comment-thread { margin-block: .55rem 0; margin-inline-start: 2.65rem; padding-inline-start: .75rem; border-inline-start: 1px solid var(--sl-color-hairline-light); }
+meddocs-comments.mn-comments .comment-thread .comment-entry { padding-block: .55rem; border: 0; }
+meddocs-comments.mn-comments .comment-thread .comment-row { grid-template-columns: 1.7rem minmax(0,1fr); gap: .5rem; }
+meddocs-comments.mn-comments .comment-thread .comment-avatar { width: 1.7rem; height: 1.7rem; font-size: .6rem; }
+meddocs-comments.mn-comments .comments-secondary { background: transparent; border: 1px solid var(--sl-color-hairline-light); border-radius: 2rem; min-height: 2.2rem; padding: .4rem .9rem; color: var(--sl-color-gray-2); font: inherit; font-size: .75rem; cursor: pointer; }
+meddocs-comments.mn-comments .comments-pagination, meddocs-comments.mn-comments .comments-retry { display: flex; justify-content: center; }
+meddocs-comments.mn-comments [data-list-status]:not(:empty), meddocs-comments.mn-comments [data-action-status]:not(:empty) { padding-block: .65rem; font-size: .8rem; line-height: 1.5; color: var(--sl-color-gray-2); }
+meddocs-comments.mn-comments .comments-private-status { display: flex; align-items: baseline; flex-wrap: wrap; gap: .25rem .6rem; padding-block-start: .65rem; }
+meddocs-comments.mn-comments .comments-draft-status:not([hidden]) { padding-block: .65rem; font-size: .78rem; }
+meddocs-comments.mn-comments [data-auth-dialog] .comments-action { min-height: 2.75rem; }
+meddocs-comments.mn-comments [data-auth-dialog] .comment-actions { flex-wrap: wrap; }
+meddocs-comments.mn-comments .comments-private-status .comments-hint { font-size: .75rem; }
+meddocs-comments.mn-comments .comment-state { color: var(--sl-color-gray-2); font-size: .7rem; font-weight: 500; }
+meddocs-comments.mn-comments .comment-pending { display: inline-block; padding: .12rem .45rem; border: 1px solid var(--sl-color-hairline-light); border-radius: 999px; background: color-mix(in srgb, var(--sl-color-gray-5) 25%, transparent); line-height: 1.4; }
+meddocs-comments.mn-comments .comment-draft { margin-block-start: .35rem; }
+meddocs-comments.mn-comments .comment-draft summary, meddocs-comments.mn-comments .comments-personal summary { font-size: .75rem; color: var(--sl-color-gray-2); cursor: pointer; padding-block: .3rem; }
+meddocs-comments.mn-comments .comment-draft .comment-body { font-size: .82rem; }
+meddocs-comments.mn-comments .comments-personal { margin-block-start: .5rem; border-block-start: 1px solid var(--sl-color-hairline-light); }
+meddocs-comments.mn-comments .comments-own-more { text-align: center; }
+meddocs-comments.mn-comments form { margin-block: .6rem; }
+meddocs-comments.mn-comments textarea { min-height: 5rem; max-height: 20rem; font-size: .88rem; line-height: 1.6; border-color: var(--sl-color-hairline-light); }
+meddocs-comments.mn-comments .comments-editor-footer { display: flex; align-items: center; justify-content: space-between; gap: .4rem .75rem; flex-wrap: wrap; margin-block-start: .35rem; }
+meddocs-comments.mn-comments .comments-editor-footer .comment-actions { margin: 0; }
+meddocs-comments.mn-comments .comments-editor-footer .comments-hint, meddocs-comments.mn-comments [data-moderation-hint] { font-size: .72rem; }
+meddocs-comments.mn-comments .comments-primary { font-size: .8rem; padding: .45rem .85rem; min-height: 2.2rem; }
+meddocs-comments.mn-comments .comments-editor-context { font-size: .78rem; font-weight: 600; margin-block-end: .35rem; }
+meddocs-comments.mn-comments .comments-error { font-size: .8rem; margin-block-start: .45rem; }
+meddocs-comments.mn-comments .comments-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+meddocs-comments.mn-comments summary:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; }
+@media (max-width: 30rem) {
+  meddocs-comments.mn-comments .comments-shell { padding: .8rem; }
+  meddocs-comments.mn-comments .comments-topline h2 { font-size: 1.15rem; }
+  meddocs-comments.mn-comments .comment-thread { margin-inline-start: .65rem; padding-inline-start: .65rem; }
+  meddocs-comments.mn-comments .comments-order { font-size: .68rem; }
+}
+@media (pointer: coarse) { meddocs-comments.mn-comments button[class], meddocs-comments.mn-comments summary { min-height: 2.75rem; } }

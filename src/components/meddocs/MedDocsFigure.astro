@@ -1,7 +1,7 @@
 ---
 import type { ComponentProps } from 'astro/types';
 import MediaFigure from '../media/MediaFigure.astro';
-import { getFigureDownloadLabel, resolveFigureDownload } from '../../lib/media/download';
+import { resolveFigureDownload } from '../../lib/media/download';
 import { createFigureMetadata, type FigureCredit } from '../../lib/media/figure-metadata';
 
 interface Props extends Omit<ComponentProps<typeof MediaFigure>, 'lightboxMetadata'> {
@@ -29,7 +29,7 @@ if (import.meta.env.DEV && figureProps.downloadable === true && !figureProps.dow
 }
 const credits: (FigureCredit & { download?: string | true })[] = [...metadata.credits];
 if (downloadHref) credits.push({
-  text: getFigureDownloadLabel(figureProps.downloadFilename),
+  text: 'Bild herunterladen',
   href: downloadHref,
   download: figureProps.downloadFilename || true,
 });

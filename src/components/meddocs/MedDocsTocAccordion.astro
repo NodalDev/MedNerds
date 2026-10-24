@@ -1,0 +1,194 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  enabled: boolean;
+}
+
+const { enabled } = Astro.props;
+---
+
+{enabled ? (
+  <meddocs-toc-accordion>
+    <slot />
+    <template data-toc-toggle-template>
+      <button type="button" class="mn-toc-toggle">
+        <Icon name="tabler:chevron-down" size={16} is:inline aria-hidden="true" focusable="false" />
+      </button>
+    </template>
+  </meddocs-toc-accordion>
+) : <slot />}
+
+<script>
+  import { MedDocsTocAccordion } from '../../lib/meddocs/toc-accordion';
+  if (!customElements.get('meddocs-toc-accordion')) {
+    customElements.define('meddocs-toc-accordion', MedDocsTocAccordion);
+  }
+</script>
+
+<style is:global>
+  meddocs-toc-accordion {
+    display: block;
+    overflow-anchor: none;
+  }
+
+  meddocs-toc-accordion .mn-toc-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2rem;
+    align-items: stretch;
+    width: 100%;
+    margin-block: .05rem;
+    border-radius: .35rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  meddocs-toc-accordion .mn-toc-row > a {
+    min-width: 0;
+    min-height: 2rem;
+    margin: 0;
+    border: 0;
+    border-radius: inherit;
+    align-content: center;
+    background: transparent;
+  }
+
+  meddocs-toc-accordion .mn-toc-row > a:is(:hover, :focus, [aria-current='true']) {
+    background: transparent;
+  }
+
+  meddocs-toc-accordion .mn-toc-row:hover,
+  meddocs-toc-accordion .mn-toc-row:active {
+    color: var(--sl-color-gray-1);
+    background: color-mix(in srgb, var(--sl-color-accent) 5%, transparent);
+  }
+
+  meddocs-toc-accordion .mn-toc-row:hover > a {
+    color: var(--sl-color-gray-1);
+  }
+
+  meddocs-toc-accordion .mn-toc-row:has(> a[aria-current='true']) {
+    color: var(--sl-color-accent);
+    background: color-mix(in srgb, var(--sl-color-accent) 7%, transparent);
+  }
+
+  meddocs-toc-accordion .mn-toc-row > a[aria-current='true'] {
+    color: var(--sl-color-accent);
+  }
+
+  meddocs-toc-accordion .mn-toc-row:has(> a[aria-current='true'])::before {
+    position: absolute;
+    inset-block: .3rem;
+    inset-inline-start: 0;
+    width: 2px;
+    border-radius: 999px;
+    background: var(--sl-color-accent);
+    content: '';
+  }
+
+  meddocs-toc-accordion .mn-toc-row > a[aria-current='true']::before {
+    display: none;
+  }
+
+  meddocs-toc-accordion .mn-toc-row:has(:focus-visible) {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -2px;
+    background: color-mix(in srgb, var(--sl-color-accent) 7%, transparent);
+  }
+
+  meddocs-toc-accordion .mn-toc-row > a:focus-visible {
+    outline: none;
+  }
+
+  meddocs-toc-accordion .mn-toc-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    min-width: 0;
+    visibility: hidden;
+  }
+
+  meddocs-toc-accordion .mn-toc-panel[data-expanded='true'] {
+    grid-template-rows: 1fr;
+    visibility: visible;
+  }
+
+  meddocs-toc-accordion[data-toc-animated] .mn-toc-panel {
+    transition: grid-template-rows 130ms ease-out, visibility 0s 130ms;
+  }
+
+  meddocs-toc-accordion[data-toc-animated] .mn-toc-panel[data-expanded='true'] {
+    transition: grid-template-rows 170ms ease-out, visibility 0s;
+  }
+
+  meddocs-toc-accordion .mn-toc-panel-content {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  meddocs-toc-accordion .mn-toc-panel a:focus-visible {
+    outline-offset: -2px;
+  }
+
+  /* Preserve Starlight's existing first-child border after wrapping the mobile list. */
+  meddocs-toc-accordion .mn-toc-panel-content > ul.isMobile > li:first-child > a {
+    border-top: 1px solid var(--sl-color-gray-6);
+  }
+
+  meddocs-toc-accordion [hidden] {
+    display: none;
+  }
+
+  meddocs-toc-accordion .mn-toc-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    min-height: 2rem;
+    padding: .25rem;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  meddocs-toc-accordion .mn-toc-toggle:hover {
+    background: transparent;
+  }
+
+  meddocs-toc-accordion .mn-toc-toggle:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -4px;
+  }
+
+  meddocs-toc-accordion .mn-toc-toggle[aria-expanded='true'] svg {
+    rotate: 180deg;
+  }
+
+  @media (pointer: coarse) {
+    meddocs-toc-accordion .mn-toc-row {
+      grid-template-columns: minmax(0, 1fr) 2.75rem;
+    }
+
+    meddocs-toc-accordion .mn-toc-row > a,
+    meddocs-toc-accordion .mn-toc-toggle {
+      min-height: 2.75rem;
+    }
+
+    meddocs-toc-accordion .mn-toc-toggle {
+      width: 2.75rem;
+    }
+  }
+
+  meddocs-toc-accordion mobile-starlight-toc .mn-toc-row {
+    margin: 0;
+    border-block-start: 1px solid var(--sl-color-gray-6);
+    border-radius: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    meddocs-toc-accordion[data-toc-animated] .mn-toc-panel[data-expanded] {
+      transition: none;
+    }
+  }
+</style>

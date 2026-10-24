@@ -1,0 +1,15 @@
+---
+import { citationNumbers } from '../../lib/meddocs/references/numbering';
+interface Props { sources: readonly string[] }
+const { sources } = Astro.props;
+const route = Astro.locals.starlightRoute;
+const order = route.entry.data.referenceOrder ?? [];
+const numbers = citationNumbers(sources, order);
+---
+<span class="med-citation">[{numbers.map((number, index) => <Fragment>{index > 0 && ', '}<a href={`#quelle-${order[number - 1]}`} aria-label={`Quelle ${number}`}>{number}</a></Fragment>)}]</span>
+<style>
+  .med-citation { white-space: nowrap; font-size: .85em; }
+  a { color: var(--sl-color-accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; }
+</style>

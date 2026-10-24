@@ -6,6 +6,8 @@ import MedNerdsMobileMenuFooter from './MedNerdsMobileMenuFooter.astro';
 import MedNerdsMobileProducts from './MedNerdsMobileProducts.astro';
 import { getActiveProduct } from '../data/product-navigation';
 import { pageLayoutOptions, resolvePageLayout } from '../data/page-layouts';
+import MedDocsLinkPreviews from './meddocs/MedDocsLinkPreviews.astro';
+import { getMedDocsArticleMetadata } from '../lib/meddocs/article-metadata';
 
 const route = Astro.locals.starlightRoute;
 const pageLayout = resolvePageLayout(route.entry.data.pageLayout);
@@ -81,6 +83,9 @@ const activeProduct = getActiveProduct(Astro.url.pathname);
      ======================================== -->
 
 <MedNerdsSiteFooter />
+{route.entry.data.draft === false && getMedDocsArticleMetadata(route.entry) && (
+  <MedDocsLinkPreviews canonicalOrigin={Astro.site?.origin ?? Astro.url.origin} />
+)}
 
 <script>
   import { initializeMediaLightbox } from '../lib/media/fancybox';

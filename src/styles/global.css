@@ -313,6 +313,10 @@
     --mn-aside-tip: var(--color-MedTools-300);
     --mn-aside-caution: var(--color-amber-300);
     --mn-aside-danger: var(--color-red-300);
+    --mn-aside-note-bg: color-mix(in srgb, var(--color-MedNerds-400) 12%, var(--mn-surface));
+    --mn-aside-tip-bg: color-mix(in srgb, var(--color-green-400) 12%, var(--mn-surface));
+    --mn-aside-caution-bg: color-mix(in srgb, var(--color-amber-400) 12%, var(--mn-surface));
+    --mn-aside-danger-bg: color-mix(in srgb, var(--color-red-400) 12%, var(--mn-surface));
   }
 
   :root[data-theme='light'] {
@@ -320,41 +324,41 @@
     --mn-aside-tip: var(--color-MedTools-700);
     --mn-aside-caution: var(--color-amber-700);
     --mn-aside-danger: var(--color-red-700);
+    --mn-aside-note-bg: var(--color-MedNerds-50);
+    --mn-aside-tip-bg: var(--color-green-50);
+    --mn-aside-caution-bg: var(--color-amber-50);
+    --mn-aside-danger-bg: var(--color-red-50);
   }
 
   .starlight-aside {
     --mn-aside-accent: var(--mn-aside-note);
+    --mn-aside-bg: var(--mn-aside-note-bg);
     --sl-color-asides-text-accent: var(--mn-aside-accent);
     --sl-color-asides-border: var(--mn-aside-accent);
 
     padding: clamp(0.9rem, 2vw, 1.1rem) clamp(1rem, 2vw, 1.2rem);
 
-    border: 1px solid color-mix(
-      in oklch,
-      var(--sl-color-hairline) 72%,
-      var(--mn-aside-accent) 28%
-    );
+    border: 0;
     border-inline-start: 3px solid var(--mn-aside-accent);
     border-radius: 0.75rem;
 
-    background: color-mix(
-      in oklch,
-      var(--mn-surface) 94%,
-      var(--mn-aside-accent) 6%
-    );
+    background: var(--mn-aside-bg);
     color: var(--sl-color-gray-1);
   }
 
   .starlight-aside--tip {
     --mn-aside-accent: var(--mn-aside-tip);
+    --mn-aside-bg: var(--mn-aside-tip-bg);
   }
 
   .starlight-aside--caution {
     --mn-aside-accent: var(--mn-aside-caution);
+    --mn-aside-bg: var(--mn-aside-caution-bg);
   }
 
   .starlight-aside--danger {
     --mn-aside-accent: var(--mn-aside-danger);
+    --mn-aside-bg: var(--mn-aside-danger-bg);
   }
 
   .starlight-aside__title {

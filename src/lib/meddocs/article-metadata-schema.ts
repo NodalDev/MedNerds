@@ -1,6 +1,7 @@
 import { z } from 'astro/zod';
 import { authors, type AuthorId } from '../../data/authors.ts';
 import { licenses, type LicenseId } from '../../data/licenses.ts';
+import { publicationIdsSchema, referencesSchema } from './references/schema.ts';
 
 const personId = z.enum(Object.keys(authors) as [AuthorId, ...AuthorId[]]);
 const licenseId = z.enum(Object.keys(licenses) as [LicenseId, ...LicenseId[]]);
@@ -13,6 +14,8 @@ const articleDate = z.union([z.date(), z.iso.date().transform((date) => new Date
 const textList = z.array(z.string().trim().min(1));
 
 export const articleMetadataSchema = z.object({
+  articleId: z.uuid().optional(),
+  comments: z.boolean().optional(),
   authors: z.array(personId).min(1).optional(),
   published: articleDate.optional(),
   updated: articleDate.optional(),
@@ -23,7 +26,21 @@ export const articleMetadataSchema = z.object({
   english: textList.optional(),
   abbreviations: textList.optional(),
   license: licenseId.optional(),
+  linkPreview: z.string().trim().min(1).max(240).optional(),
+  sectionPreviews: z.record(z.string().min(1), z.string().trim().min(1).max(240)).optional(),
+  references: publicationIdsSchema.optional(),
+  // Build-derived records from the central catalog; never author these in frontmatter.
+  resolvedReferences: referencesSchema.optional(),
+  // Build-derived IDs of sources actually cited in MDX, in first-appearance order.
+  referenceOrder: z.array(z.string()).optional(),
+  learningUrl: z.string().regex(/^\/medlearn\/(?!\/)[a-z0-9/-]*$/, 'E-Learning muss auf einen internen MedLearn-Pfad zeigen.').optional(),
 }).superRefine((data, context) => {
+  if (data.comments && !data.articleId) {
+    context.addIssue({ code: 'custom', path: ['articleId'], message: 'Kommentare benötigen eine dauerhaft gespeicherte articleId (UUID).' });
+  }
+  if (data.comments && (!data.authors?.length || !data.published)) {
+    context.addIssue({ code: 'custom', path: ['comments'], message: 'Kommentare benötigen vollständige Artikel-Metadaten.' });
+  }
   // Legacy entries may omit everything. Once editorial metadata is supplied,
   // author(s) and publication date must be supplied together.
   const hasMetadata = data.authors !== undefined || data.published !== undefined

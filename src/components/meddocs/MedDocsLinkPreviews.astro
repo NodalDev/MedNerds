@@ -1,0 +1,47 @@
+---
+interface Props { canonicalOrigin: string }
+const { canonicalOrigin } = Astro.props;
+---
+
+<aside id="meddocs-link-preview" class="mn-link-preview" popover="manual" hidden role="note" aria-label="Linkvorschau" data-canonical-origin={canonicalOrigin}>
+  <p class="mn-link-preview-kind" data-preview-kind></p>
+  <p class="mn-link-preview-title" data-preview-title></p>
+  <p class="mn-link-preview-parent" data-preview-parent hidden></p>
+  <p class="mn-link-preview-text" data-preview-text hidden></p>
+</aside>
+
+<script>
+  import { initializeLinkPreviews, disposeLinkPreviews } from '../../lib/meddocs/link-previews/client';
+  initializeLinkPreviews();
+  document.addEventListener('astro:page-load', initializeLinkPreviews);
+  document.addEventListener('astro:before-swap', disposeLinkPreviews);
+</script>
+
+<style>
+  .mn-link-preview {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    z-index: var(--sl-z-index-menu);
+    box-sizing: border-box;
+    width: min(22rem, calc(100vw - 1rem));
+    max-height: calc(100dvh - 1rem);
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: .65rem;
+    background: var(--sl-color-bg);
+    color: var(--sl-color-text);
+    box-shadow: var(--sl-shadow-md);
+    font-size: var(--sl-text-sm);
+    line-height: 1.55;
+  }
+  .mn-link-preview[hidden] { display: none; }
+  .mn-link-preview p { margin: 0; }
+  .mn-link-preview-kind { color: var(--sl-color-accent); font-size: .72rem; font-weight: 600; }
+  .mn-link-preview p.mn-link-preview-title { margin-block-start: .25rem; font-weight: 600; line-height: 1.35; }
+  .mn-link-preview p.mn-link-preview-parent { margin-block-start: .3rem; color: var(--sl-color-gray-2); font-size: .78rem; }
+  .mn-link-preview p.mn-link-preview-text { margin-block-start: .6rem; color: var(--sl-color-gray-2); }
+  @media print { .mn-link-preview { display: none !important; } }
+</style>

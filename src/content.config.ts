@@ -1,5 +1,5 @@
 import { defineCollection } from 'astro:content';
-import { docsLoader, i18nLoader } from '@astrojs/starlight/loaders';
+import { i18nLoader } from '@astrojs/starlight/loaders';
 import { docsSchema, i18nSchema } from '@astrojs/starlight/schema';
 import { z } from 'astro/zod';
 import { pageLayouts } from './data/page-layouts';
@@ -7,6 +7,8 @@ import { articleMetadataSchema } from './lib/meddocs/article-metadata-schema';
 import { glob } from 'astro/loaders';
 import { medBlogSchema } from './lib/medblog/schema';
 import { linkResourceSchema } from './lib/links/schema';
+import { commentAwareDocsLoader } from './lib/meddocs/comments/loader';
+import { referenceAwareLoader } from './lib/meddocs/references/loader';
 
 export const collections = {
   linkResources: defineCollection({
@@ -18,7 +20,7 @@ export const collections = {
     schema: medBlogSchema,
   }),
 	docs: defineCollection({
-		loader: docsLoader(),
+		loader: referenceAwareLoader(commentAwareDocsLoader()),
 		schema: docsSchema({
 			extend: articleMetadataSchema.safeExtend({
 				pageLayout: z.enum(pageLayouts).optional(),

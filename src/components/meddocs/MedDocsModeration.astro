@@ -1,0 +1,31 @@
+---
+import { getLegalDocumentVersions } from '../../lib/auth/legal-documents';
+import '../../styles/comments.css';
+const versions = await getLegalDocumentVersions();
+---
+<meddocs-moderation class="mn-comments not-content" data-terms-version={versions.terms} data-privacy-version={versions.privacy} data-pagefind-ignore>
+  <p data-gate role="status" aria-live="polite">Administrationsrechte werden geprüft …</p>
+  <div data-admin-panel hidden>
+    <p class="comments-hint">Nur Administratoren können moderieren. Prüfe Nutzertexte auf persönliche oder medizinisch vertrauliche Angaben. Veröffentlichte Fassungen bleiben bei einer ausstehenden Änderung sichtbar.</p>
+    <div class="moderation-filters">
+      <div><label for="moderation-mode">Beiträge</label><select id="moderation-mode"><option value="pending">Ausstehend</option><option value="published">Veröffentlicht</option><option value="hidden">Ausgeblendet</option></select></div>
+      <div><label for="moderation-reason">Grund für die Entscheidung</label><select id="moderation-reason"><option value="other">Sonstiges</option><option value="off_topic">Nicht zum Thema</option><option value="spam">Spam</option><option value="sensitive_data">Vertrauliche / persönliche Daten</option></select></div>
+    </div>
+    <button type="button" class="comments-action" data-action="refresh">Liste aktualisieren</button>
+    <p data-list-status role="status" aria-live="polite" aria-atomic="true"></p>
+    <ul class="comment-list" data-queue aria-label="Kommentare zur Moderation"></ul>
+    <button type="button" class="comments-action" data-action="more" hidden>Weitere Beiträge laden</button>
+  </div>
+  <p data-error class="comments-error" role="alert" hidden></p>
+  <p data-action-status role="status" aria-live="polite" aria-atomic="true"></p>
+  <dialog data-decision-dialog aria-labelledby="moderation-confirm-title" aria-describedby="moderation-confirm-description">
+    <h3 id="moderation-confirm-title">Moderation bestätigen</h3>
+    <p id="moderation-confirm-description"></p>
+    <div class="comment-actions"><button type="button" class="comments-action" data-action="cancel" autofocus>Abbrechen</button><button type="button" class="comments-primary" data-action="confirm">Entscheidung bestätigen</button></div>
+  </dialog>
+  <noscript><p>Die Moderationsansicht benötigt JavaScript.</p></noscript>
+</meddocs-moderation>
+<script>
+  import { registerModerationElement } from '../../lib/meddocs/comments/moderation-element';
+  registerModerationElement();
+</script>

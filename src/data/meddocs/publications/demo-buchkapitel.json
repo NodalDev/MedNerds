@@ -1,0 +1,22 @@
+{
+  "id": "demo-buchkapitel",
+  "type": "chapter",
+  "title": "Darstellung eines Buchkapitels (illustrative Testdaten)",
+  "authors": [
+    {
+      "family": "Muster",
+      "given": "Anna"
+    }
+  ],
+  "editors": [
+    {
+      "family": "Beispiel",
+      "given": "Leon"
+    }
+  ],
+  "year": 2023,
+  "bookTitle": "Demonstrationsband (Testdaten)",
+  "publisher": "Beispielverlag (Testdaten)",
+  "pages": "21–35",
+  "url": "https://example.org/demo/buchkapitel"
+}

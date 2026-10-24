@@ -86,7 +86,17 @@ test('OTP request requires email and CAPTCHA and uses the official options', asy
   for (const token of [undefined, '', '   ']) assert.equal((await store.requestCode('demo@example.test', token)).field, 'captcha');
   assert.equal(mock.calls.send.length, 0);
   assert.equal((await store.requestCode(' demo@example.test ', 'test-captcha')).ok, true);
-  assert.deepEqual(mock.calls.send, [{ email: 'demo@example.test', options: { shouldCreateUser: true, captchaToken: 'test-captcha' } }]);
+  assert.deepEqual(mock.calls.send, [{ email: 'demo@example.test', options: { shouldCreateUser: false, captchaToken: 'test-captcha' } }]);
+});
+
+test('registration explicitly creates users; login never creates users or reveals account existence', async () => {
+  const mock = mockAuth(), store = new AuthStore(mock.api);
+  assert.equal((await store.requestCode('demo@example.test', 'captcha', 'register')).ok,true);
+  assert.equal(mock.calls.send[0].options.shouldCreateUser,true);
+  for (const code of ['otp_disabled','signup_disabled','user_not_found','email_not_confirmed']) {
+    const result=authFailure({code,message:'Account does not exist'},'send');
+    assert.equal(result.ok,false);assert.ok(!result.message.includes('does not exist'));
+  }
 });
 
 test('duplicate sends are rejected and the 60-second cooldown also applies after email changes', async () => {

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { writeFile, unlink, readdir, readFile } from 'node:fs/promises';
-import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { createTestWorkspace } from './lib/test-workspace.mjs';
 import { linkFixtures } from './fixtures/link-resources.mjs';
 import { matchesLinkFilters } from '../src/lib/links/filters.ts';
 
@@ -14,13 +13,14 @@ const medDocsPages = [
 ];
 
 // Starts a dedicated Astro dev server after seeding; use local headless Chrome/CDP.
-// Temporary, explicitly marked fixtures are removed in finally; never commit/publish them.
+// Fixtures, cache and server live in a private workspace removed in finally.
 const site=process.env.LINKS_SITE ?? 'http://127.0.0.1:4325';
 const endpoint=process.env.LINKS_CDP ?? 'http://127.0.0.1:9334';
 const route='/medtools/links/';
 const fixtureName=`browser-link-fixture-${process.pid}`;
 const created=[];
 let server;
+let workspace;
 let serverOutput='';
 let allResources=[];
 let originalResourceCount=0;
@@ -133,15 +133,16 @@ async function assertSidebar(html){
 
 try{
   await command('Page.enable');await command('Runtime.enable');
+  workspace=await createTestWorkspace('links');
   await assert.rejects(readFile(new URL('../dist/meddocs/diverses/links-ressourcen/index.html',import.meta.url)),{code:'ENOENT'});
-  // Add fixtures alongside real content; never remove or rewrite existing resources.
-  originalResourceCount=(await readdir(new URL('../src/content/link-resources/',import.meta.url))).filter(file=>file.endsWith('.md')).length;
+  // Add fixtures only to the private content copy.
+  originalResourceCount=(await readdir(new URL('src/content/link-resources/',workspace.url))).filter(file=>file.endsWith('.md')).length;
   for(const [index,fixture] of linkFixtures.entries()){
-    const path=new URL(`../src/content/link-resources/${fixtureName}-${index}.md`,import.meta.url);
+    const path=new URL(`src/content/link-resources/${fixtureName}-${index}.md`,workspace.url);
     const frontmatter=Object.entries(fixture).map(([key,value])=>`${key}: ${JSON.stringify(value)}`).join('\n');
     await writeFile(path,`---\n${frontmatter}\n---\n`,{flag:'wx'});created.push(path);
   }
-  const embedPath=new URL(`../src/content/docs/medtools/links/${fixtureName}.mdx`,import.meta.url);
+  const embedPath=new URL(`src/content/docs/medtools/links/${fixtureName}.mdx`,workspace.url);
   await writeFile(embedPath,`---\ntitle: Interne Testansicht\ntemplate: splash\ndraft: true\npagefind: false\n---\n\nimport LinkExplorer from '../../../../components/links/LinkExplorer.astro';\n\n<LinkExplorer specialty="ultraschall" showSpecialtyFilter={false} compact />\n\n<LinkExplorer specialty="echokardiographie" showSearch={false} showSpecialtyFilter={false} showFormatFilter={false} showLanguageFilter={false} showAccessFilter={false} />\n\n<LinkExplorer specialty="ekg" showSpecialtyFilter={false} />\n`,{flag:'wx'});
   created.push(embedPath);
   // An initially empty glob has no watcher in this Astro version: seed before startup.
@@ -150,9 +151,7 @@ try{
   let portInUse=false;
   try { await fetch(site);portInUse=true; } catch { /* Expected: the dedicated port is free. */ }
   assert.equal(portInUse,false,'The test server port must be free; do not stop a personal dev server.');
-  server=spawn(process.execPath,[fileURLToPath(new URL('../node_modules/astro/bin/astro.mjs',import.meta.url)),
-    'dev','--host',serverUrl.hostname,'--port',serverUrl.port || '4325','--ignore-lock'],{
-    cwd:fileURLToPath(new URL('../',import.meta.url)),windowsHide:true,
+  server=workspace.astro(['dev','--host',serverUrl.hostname,'--port',serverUrl.port || '4325'],{
     env:{...process.env,ASTRO_DEV_BACKGROUND:'1'},stdio:['ignore','pipe','pipe'],
   });
   server.stdout.on('data',data=>{serverOutput+=data});
@@ -358,24 +357,17 @@ try{
   }
   console.log('✓ Linksammlung browser: V1 including allgemein, five MedDocs baselines, removed Diverses route/sidebar, multi-specialty, URL/query isolation, sidebar last/unique, empty states, SEO/headings, responsive light/dark, no-JS');
 }finally{
+  socket.close();
   try {
-    await command('Emulation.setScriptExecutionDisabled',{value:false});
-    socket.close();await fetch(`${endpoint}/json/close/${target.id}`);
-    for(const path of created.reverse())await unlink(path);
-    // Let the active loader remove fixtures from its generated content store as well.
-    if(server && server.exitCode===null){
-      let cleared=false;
-      for(let i=0;i<40;i++){
-        try { const html=await(await fetch(`${site}${route}`)).text();
-          if(!html.includes(fixtureName) && (html.match(/data-link-resource=/g)||[]).length===originalResourceCount){cleared=true;break;} }
-        catch { /* Content watcher may briefly reload the server module. */ }
-        await pause(100);
-      }
-      assert.equal(cleared,true,'Temporary resources must also leave the generated content store.');
+    if(server?.pid && server.exitCode===null){
+      const stopped=new Promise(resolve=>server.once('exit',resolve));server.kill();await stopped;
     }
   } finally {
-    if(server && server.exitCode===null){
-      const stopped=new Promise(resolve=>server.once('exit',resolve));server.kill();await stopped;
+    try {
+      await workspace?.cleanup();
+    } finally {
+      // A failed CDP connection must not prevent server or filesystem cleanup.
+      await fetch(`${endpoint}/json/close/${target.id}`,{signal:AbortSignal.timeout(2000)}).catch(()=>{});
     }
   }
 }

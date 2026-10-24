@@ -1,0 +1,14 @@
+{
+  "id": "demo-onlineportal",
+  "type": "website",
+  "title": "Darstellung eines Onlineportals (illustrative Testdaten)",
+  "authors": [
+    {
+      "literal": "Beispielinstitut (Testdaten)"
+    }
+  ],
+  "year": 2025,
+  "website": "Demoportal (Testdaten)",
+  "url": "https://example.org/demo/onlineportal",
+  "accessed": "2026-10-11"
+}

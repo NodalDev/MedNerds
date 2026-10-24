@@ -1,0 +1,20 @@
+{
+  "id": "total-intravenous-anesthesia-and-target-controlled-infusions",
+  "type": "book",
+  "title": "Total Intravenous Anesthesia and Target Controlled Infusions",
+  "authors": [
+    {
+      "family": "Absalom",
+      "given": "A.R."
+    },
+    {
+      "family": "Mason",
+      "given": "K.P."
+    }
+  ],
+  "year": 2017,
+  "doi": "https://doi.org/10.1007/978-3-319-47609-4",
+  "publisher": "Springer Cham",
+  "isbn": "978-3-319-47609-4",
+  "edition": "1"
+}

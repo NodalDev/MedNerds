@@ -1,5 +1,71 @@
 # Artikel-Metadaten in MedDocs
 
+## Interne Linkvorschauen
+
+Veröffentlichte Fachartikel erhalten automatisch Artikel- und Abschnittsvorschauen.
+Optionale Übersteuerungen: `linkPreview` und `sectionPreviews` im Zielartikel.
+Details und Beispiele: [Linkvorschauen](./link-previews/README.md).
+
+## Kommentare: erst schreiben, dann anmelden
+
+Der bestehende Composer erlaubt Gästen das Schreiben. Erst ein gültiges ausdrückliches
+Absenden öffnet den nativen Auth-Dialog; für Gast-Upvotes wird derselbe Dialog verwendet.
+Es gibt weder einen zweiten Composer noch eine eigene Authentifizierung. `/account/`
+nutzt weiter E-Mail-OTP, Profilvervollständigung, aktuelle Legal-Prüfung und den
+validierten internen `returnTo`-Pfad. `mode=login` bzw. `mode=register` wählt nur
+die anfängliche bestehende Account-Ansicht aus. Rückkehr zum Artikel mit `#kommentare`.
+
+`comments/draft.ts` hält den Entwurf während der Bearbeitung nicht dauerhaft vor.
+Erst der bewusste Wechsel über einen Account-Link sichert ihn in `sessionStorage`
+für höchstens 30 Minuten: Artikel-ID/Pfad, Text, gegebenenfalls Antwort-/Bearbeitungsziel
+und Version, Accountzuordnung sowie eine bereits verwendete Idempotenz-ID. Keine
+Tokens, URLs mit Kommentartext, Cookies, Logs, serverseitigen anonymen Entwürfe oder
+`localStorage` für diese Texte. Ungültige/veraltete Datensätze werden beim Zugriff
+entfernt. Ein begonnener Auth-Handoff bleibt bis zum Absenden, Abbrechen oder Ablauf
+wiederherstellbar, auch bei einem Reload nach der Rückkehr. Änderungen an diesem
+wiederhergestellten Entwurf werden innerhalb derselben ursprünglichen Frist gesichert;
+Tippen verlängert diese Frist nicht. Ohne vorherigen Auth-Handoff bleiben Entwürfe
+ausschließlich im Composer. Dies ist kein allgemeiner dauerhafter Entwurfs-Autosave.
+
+Der erste verifizierte Account wird bereits im bestehenden Account-Return-Flow an
+den anonymen Entwurf gebunden. Ein anderes Konto verwirft ihn statt ihn zu übernehmen.
+Bei Logout werden private Texte ausgeblendet; bei erneutem Login mit demselben Konto
+kann der tabinterne Entwurf fortgesetzt werden. Ein erkannter Sessionablauf bei der
+Einreichung erhält den Text und bietet erneute Anmeldung an. Blockierter Sitzungsspeicher
+stoppt den Wechsel bei vorhandenem Entwurf mit einer Meldung, statt den Text zu verlieren.
+
+Rückkehr, OTP, Profil-/Legal-Abschluss und Upvote-Anmeldung führen **keine** automatische
+Kommentar- oder Vote-Mutation aus. Erst erneutes ausdrückliches Absenden verwendet
+die bisherigen RPCs einschließlich Backend-Gates, Rate-Limits, Versionen und Idempotenz.
+Schreibfehler erhalten den Text; erfolgreiche Einreichung oder explizites Abbrechen
+entfernen den Entwurf. Keine SQL-/RLS-Änderungen oder zusätzlichen Production-Secrets.
+Die vorhandenen Node- und Browser-Regressionstests decken den Ablauf mit vollständig
+gemockten externen Diensten ab.
+
+## Kommentare: automatisch für veröffentlichte Artikel
+
+Normale MedDocs-Artikel mit `authors` und `published`, ohne `draft: true`, erhalten
+standardmäßig Kommentare. Fehlendes `comments` bedeutet jetzt **an**;
+`comments: false` blendet den Bereich aus und deaktiviert ihn beim nächsten Sync.
+Drafts, Index-/Hub-/Hero-Seiten und Seiten ohne redaktionelle Metadaten bleiben aus.
+`published` bezeichnet das redaktionell gepflegte Datum, kein neues Scheduling-System.
+
+`npm run dev`, `npm start` und `npm run build` ergänzen fehlende `articleId`-UUIDs
+vorab automatisch im Frontmatter, ohne bestehende IDs/Artikeltexte zu verändern.
+Diese IDs zusammen mit dem Artikel versionieren. Bei Umbenennung die gespeicherte
+UUID behalten; bei eigenständigen Kopien `articleId` entfernen, damit unter dem
+neuen Pfad eine eigene UUID entsteht. Die erste Zuordnung ist deterministisch,
+weitere Builds und Umbenennungen verwenden die gespeicherte Identität.
+Für direkte `npx astro ...`-Aufrufe bei neuen Artikeln zuerst `npm run comments:prepare`.
+
+Die zentrale Footer-Komponente rendert genau einen Kommentarbereich nach
+„Über diesen Artikel“. Der gewöhnliche Build erstellt nur das private Manifest
+`.astro/meddocs-comments-manifest.json`; er greift nicht auf Supabase zu.
+Der separat freizugebende Production-Ablauf synchronisiert und aktiviert alle
+veröffentlichten Artikel atomar. Frontmatter erteilt keine Browser-Schreibrechte;
+die vorhandenen Auth-/Profil-/Legal-/Moderationsprüfungen gelten weiter.
+[Automatischer Production-Ablauf](../../../docs/architecture/meddocs-comments-automatic-sync.md).
+
 Normale MedDocs-Artikel referenzieren Personen und Lizenzen über IDs im Frontmatter:
 
 ```yaml
@@ -44,8 +110,8 @@ Metadaten erhalten die Darstellung. `hub`, `legal`, `splash`, Hero-Seiten und
 die bestehenden `index.md`-/`index.mdx`-Übersichten bleiben ausgeschlossen.
 Die aktuelle Artikelkonvention verwendet benannte Dateien, z. B. `test.mdx`.
 
-- `MedNerdsPageTitle.astro` ergänzt Terminologie und `MedDocsArticleMeta` nach dem
-  Titel und vor dem mobilen Inhaltsverzeichnis.
+- `MedNerdsPageTitle.astro` ergänzt Terminologie nach dem Titel und vor dem
+  mobilen Inhaltsverzeichnis; die redaktionelle Metazeile wird nur am Artikelende gezeigt.
 - `MedNerdsContentFooter.astro` ergänzt `MedDocsArticleInfo` nach dem Artikelinhalt
   und vor dem globalen Website-Footer. Dieser Starlight-Footer-Override war vorher
   leer; das bestehende Verhalten der Seitennavigation bleibt erhalten.
@@ -139,3 +205,23 @@ node --experimental-strip-types scripts/test-meddocs-article-metadata.mjs
 npx astro check
 npm run build
 ```
+## Wissenschaftliche Quellen und Zitierexport
+
+Publikationen werden zentral als einzelne JSON-Dateien unter
+`src/data/meddocs/publications/` gepflegt. Im Artikel-Frontmatter stehen unter
+`references` ausschließlich stabile Publikations-IDs. Der bestehende Loader löst
+sie vor der Darstellung auf. [Redaktionelle Anleitung](../../data/meddocs/publications/README.md).
+MDX verwendet `<MedCitation sources={["quellenkennung"]} />`; Vancouver-Nummern
+entstehen ausschließlich für zitierte Quellen beim Build nach erster Verwendung.
+`referenceOrder` enthält nur deren Kennungen und wird nicht manuell gepflegt.
+Nicht zitierte Einträge erscheinen nach Publikationstyp gruppiert und innerhalb
+der Gruppen alphabetisch sortiert als unnummerierte
+„Literatur & weiterführende Informationen“. Ohne MedCitation ist ein Artikel somit
+automatisch ein reiner Literaturartikel. Bei Kombination stehen zuerst
+„Einzelnachweise“, danach die allgemeine Literatur; jede Liste hat ihren eigenen
+Fade-out. Der MedTools-Dialog exportiert Artikel, jede Kategorie, alle Quellen
+oder eine einzelne Quelle; Vancouver kann im Export auch Literatur nummerieren.
+Quellen, vollständige Artikelinformationen und MedTools teilen eine redaktionelle
+Kachel. Davor steht die kompakte Pagination, danach die separate Kommentar-Card.
+Pflege, Typen, Styles/Lizenzen, Exporte, Druck und Tests sind in
+[Quellen und Seitenende](../../../docs/architecture/meddocs-references-and-footer.md) beschrieben.

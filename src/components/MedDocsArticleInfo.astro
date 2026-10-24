@@ -1,15 +1,19 @@
 ---
 import { articleDateTime, formatArticleDate, type ArticleMetadata } from '../lib/meddocs/article-metadata';
+import ArticleActions from './ArticleActions';
 
 interface Props {
   metadata: ArticleMetadata;
+  canonical: string;
+  title: string;
+  learningUrl?: string;
 }
 
-const { metadata } = Astro.props;
+const { metadata, canonical, title, learningUrl } = Astro.props;
 ---
 
 <section class="article-info" aria-labelledby="article-info-heading">
-  <h2 id="article-info-heading">Über diesen Artikel</h2>
+  <header class="article-info-header"><h2 id="article-info-heading">Über diesen Artikel</h2><ArticleActions title={title} canonical={canonical} learningUrl={learningUrl} client:idle /></header>
   <dl>
     <div>
       <dt>{metadata.authors.length === 1 ? 'Autor' : 'Autoren'}</dt>
@@ -60,8 +64,7 @@ const { metadata } = Astro.props;
     <div class="license">
       <dt>Lizenz</dt>
       <dd>
-        <a href={metadata.license.url} rel="license">{metadata.license.label}</a>
-        <p>{metadata.license.fullName}</p>
+        MedDocs-Artikel: <a href={metadata.license.url} rel="license">{metadata.license.label}</a>. Zitierte Drittquellen unterliegen ihren eigenen Lizenzen.
       </dd>
     </div>
   </dl>
@@ -69,9 +72,6 @@ const { metadata } = Astro.props;
 
 <style>
   .article-info {
-    margin-block-start: 3rem;
-    padding-block-start: 1.5rem;
-    border-block-start: 1px solid var(--sl-color-hairline);
     color: var(--sl-color-gray-2);
     font-size: var(--sl-text-sm);
     line-height: 1.6;
@@ -79,12 +79,14 @@ const { metadata } = Astro.props;
   }
 
   h2 {
-    margin: 0 0 1.25rem;
+    margin: 0;
     color: var(--sl-color-white);
     font-size: var(--sl-text-lg);
     font-weight: 600;
     line-height: 1.4;
   }
+
+  .article-info-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-block-end: 1.25rem; }
 
   dl {
     display: grid;

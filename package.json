@@ -2,44 +2,64 @@
   "name": "mednerds-web",
   "type": "module",
   "version": "2.1.0",
+  "engines": {
+    "node": "^22.23.4",
+    "npm": ">=10.9.0 <12"
+  },
   "scripts": {
+    "comments:prepare": "node --experimental-strip-types scripts/prepare-meddocs-comments-sync.mjs --assign-ids",
+    "comments:check": "node --experimental-strip-types scripts/prepare-meddocs-comments-sync.mjs --check",
+    "comments:sync": "node --experimental-strip-types scripts/sync-meddocs-comments.mjs",
+    "predev": "npm run comments:check",
+    "prestart": "npm run comments:check",
+    "prebuild": "npm run comments:check",
+    "build:production": "npm run build && npm run comments:sync",
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "check:quick": "astro check && node --experimental-strip-types --test --test-concurrency=1 scripts/test-auth.mjs scripts/test-profiles.mjs scripts/test-meddocs-article-metadata.mjs scripts/test-link-resources.mjs scripts/test-medblog.mjs scripts/test-osce-timer.mjs scripts/test-osce-timer-tool.mjs",
+    "check:full": "npm run check:quick && node --experimental-strip-types --test --test-concurrency=1 scripts/test-account-phase21.mjs scripts/test-account-deletion.mjs scripts/test-hyperheart-timeline.mjs scripts/test-medcases-production-config.mjs scripts/test-medcases-realtime.mjs scripts/test-medcases-realtime-ui.mjs scripts/test-medcases-realtime-abuse.mjs scripts/test-meddocs-comments.mjs scripts/test-meddocs-references.mjs scripts/test-meddocs-cloud-pgtap.mjs && npm run build && node --experimental-strip-types --test --test-concurrency=1 scripts/test-medcases.mjs scripts/test-medcases-browser-security.mjs scripts/test-meddocs-link-previews.mjs && node scripts/test-meddocs-references-build.mjs",
+    "check:release": "npm run check:full",
     "realtime:dev": "wrangler dev --config workers/medcases-realtime/wrangler.jsonc --var ENVIRONMENT:development",
     "realtime:typecheck": "wrangler types --config workers/medcases-realtime/wrangler.jsonc workers/medcases-realtime/worker-configuration.d.ts && tsc --project workers/medcases-realtime/tsconfig.json --noEmit",
     "realtime:test": "node --experimental-strip-types scripts/test-medcases-realtime.mjs"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.10",
     "@astrojs/react": "^6.0.5",
     "@astrojs/starlight": "^0.41.10",
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@fancyapps/ui": "^6.1.15",
     "@supabase/supabase-js": "^2.117.3",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
-    "astro": "^7.3.2",
+    "astro": "^7.3.3",
     "astro-icon": "^1.2.0",
+    "citeproc": "2.4.63",
     "qrcode-generator": "^2.0.4",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "sharp": "^0.35.3",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3"
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3"
   },
   "allowScripts": {
     "esbuild": true
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
     "@iconify-json/healthicons": "^1.2.13",
     "@iconify-json/logos": "^1.2.15",
     "@iconify-json/simple-icons": "^1.2.97",
     "@iconify-json/tabler": "^1.2.38",
-    "wrangler": "^4.143.1"
+    "@mdx-js/mdx": "3.1.1",
+    "@types/mdast": "^4.0.4",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "js-yaml": "^4.3.2",
+    "remark-directive": "4.0.0",
+    "remark-gfm": "4.0.1",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.152.0"
   }
 }

@@ -1,0 +1,58 @@
+{
+  "commits": {
+    "styles": "5e762f49be0ff19290160a08bfe0202c7d5d729d",
+    "locales": "a89adece41013402236e2c9020972d7e931fbab8"
+  },
+  "files": [
+    {
+      "file": "vancouver.csl",
+      "url": "https://raw.githubusercontent.com/citation-style-language/styles/5e762f49be0ff19290160a08bfe0202c7d5d729d/vancouver.csl",
+      "sha256": "3444eab9501a741cb0e265147caf01d2c00da16d9fe60201c546c5b9831178a6"
+    },
+    {
+      "file": "apa.csl",
+      "url": "https://raw.githubusercontent.com/citation-style-language/styles/5e762f49be0ff19290160a08bfe0202c7d5d729d/apa.csl",
+      "sha256": "56b2dc053036b6103aaeaf3c772e023e4f3773dca53481d29450fb6131364ca3"
+    },
+    {
+      "file": "harvard-cite-them-right.csl",
+      "url": "https://raw.githubusercontent.com/citation-style-language/styles/5e762f49be0ff19290160a08bfe0202c7d5d729d/harvard-cite-them-right.csl",
+      "sha256": "d8cfed287439d7ff9bb185bc22283593dc3f1fd6540c3323adf63554cf14dab8"
+    },
+    {
+      "file": "chicago-author-date.csl",
+      "url": "https://raw.githubusercontent.com/citation-style-language/styles/5e762f49be0ff19290160a08bfe0202c7d5d729d/chicago-author-date.csl",
+      "sha256": "6e4331670690b954bb0fa7a4f275f603e1ec48f25b2bb8185977805211d0500c"
+    },
+    {
+      "file": "modern-language-association.csl",
+      "url": "https://raw.githubusercontent.com/citation-style-language/styles/5e762f49be0ff19290160a08bfe0202c7d5d729d/modern-language-association.csl",
+      "sha256": "65eb5e29e50a53aea2b9ac234ebd24f1632e133251334ceb9acc5fac549ed49f"
+    },
+    {
+      "file": "locales-en-US.xml",
+      "url": "https://raw.githubusercontent.com/citation-style-language/locales/a89adece41013402236e2c9020972d7e931fbab8/locales-en-US.xml",
+      "sha256": "ac864c7c21166b4390d82c31792cdc509400727fa0060b43d8aa17e07f9cb079"
+    },
+    {
+      "file": "locales-en-GB.xml",
+      "url": "https://raw.githubusercontent.com/citation-style-language/locales/a89adece41013402236e2c9020972d7e931fbab8/locales-en-GB.xml",
+      "sha256": "e4a1fed9cec04b5fed5e9027b4055925cd4d8f7c9fe233eb0ceca6d4be3999f6"
+    },
+    {
+      "file": "locales-de-DE.xml",
+      "url": "https://raw.githubusercontent.com/citation-style-language/locales/a89adece41013402236e2c9020972d7e931fbab8/locales-de-DE.xml",
+      "sha256": "befaeb7c9b4f2ce8e4b7e4ef028500c317ba4e92a5edf2125dad267b9b9951ad"
+    }
+  ],
+  "derivations": [
+    {
+      "file": "mednerds-vancouver.csl",
+      "derivedFrom": "vancouver.csl",
+      "upstreamSha256": "3444eab9501a741cb0e265147caf01d2c00da16d9fe60201c546c5b9831178a6",
+      "sha256": "ad4af5f6aa1031584ae2dc7e4d1af2773a65a9677c720ca181db65cf49ebe264",
+      "changes": "MedNerds: punctuated initials, DOI links with URL fallback, no Internet/availability labels, square-bracket numeric citations",
+      "license": "CC-BY-SA-3.0"
+    }
+  ]
+}

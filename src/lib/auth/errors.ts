@@ -1,5 +1,5 @@
 export type AuthAction = 'send' | 'verify' | 'logout';
-export type AuthField = 'email' | 'otp' | 'captcha';
+export type AuthField = 'email' | 'otp' | 'captcha' | 'legal';
 export type AuthResult = { ok: true } | { ok: false; message: string; field?: AuthField };
 
 export function validEmail(email: string): boolean {
@@ -18,6 +18,9 @@ export function authFailure(error: unknown, action: AuthAction): AuthResult {
   if (isRateLimit(error)) return { ok: false, message: 'Zu viele Versuche. Bitte warte mindestens eine Minute und versuche es erneut.' };
   if (code === 'email_address_invalid') return { ok: false, field: 'email', message: 'Bitte gib eine gültige E-Mail-Adresse ein.' };
   if (code === 'captcha_failed') return { ok: false, field: 'captcha', message: 'Die Sicherheitsprüfung ist nicht mehr gültig. Bitte bestätige sie erneut.' };
+  if (action === 'send' && ['otp_disabled', 'signup_disabled', 'user_not_found', 'email_not_confirmed'].includes(String(code))) {
+    return { ok: false, message: 'Die Anfrage konnte nicht abgeschlossen werden. Prüfe deine Angaben oder verwende die Registrierung.' };
+  }
   if (action === 'verify' && ['otp_expired', 'invalid_credentials', 'validation_failed'].includes(String(code))) {
     return { ok: false, field: 'otp', message: 'Der Anmeldecode ist ungültig oder abgelaufen. Prüfe den Code oder fordere einen neuen an.' };
   }

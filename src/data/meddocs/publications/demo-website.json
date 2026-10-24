@@ -1,0 +1,13 @@
+{
+  "id": "demo-website",
+  "type": "website",
+  "title": "Darstellung einer Website (illustrative Testdaten)",
+  "authors": [
+    {
+      "literal": "Beispielredaktion (Testdaten)"
+    }
+  ],
+  "website": "Demoportal (Testdaten)",
+  "url": "https://example.org/demo/website",
+  "accessed": "2026-10-11"
+}

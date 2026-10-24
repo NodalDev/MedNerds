@@ -1,17 +1,33 @@
 ---
+import { getLegalDocumentVersions } from '../../lib/auth/legal-documents';
+import { Icon } from 'astro-icon/components';
+const versions = await getLegalDocumentVersions();
 ---
 
-<mednerds-account class="mn-account not-content">
-  <p class="account-intro">Melde dich mit deiner E-Mail-Adresse an. Du erhältst einen einmaligen Anmeldecode – ganz ohne Passwort.</p>
+<mednerds-account class="mn-account not-content" data-terms-version={versions.terms} data-privacy-version={versions.privacy}>
+  <div class="account-intro" data-account-intro hidden>
+    <p><strong>Neu bei MedNerds oder bereits registriert?</strong></p>
+    <p>Erstelle kostenlos deinen MedNerds-Account oder melde dich mit deinem bestehenden Account an. Du benötigst nur deine E-Mail-Adresse – wir senden dir einen einmaligen Bestätigungscode. Ganz ohne Passwort.</p>
+  </div>
 
   <div class="account-panel">
     <p data-loading>Anmeldestatus wird geprüft …</p>
     <noscript><p>Bitte aktiviere JavaScript, um dich anzumelden.</p></noscript>
 
     <div data-login hidden>
+      <div class="account-mode" role="group" aria-label="Registrieren oder anmelden" data-mode-switch>
+        <button type="button" data-mode="register" aria-pressed="true">Registrieren</button>
+        <button type="button" data-mode="login" aria-pressed="false">Anmelden</button>
+      </div>
       <form data-email-form novalidate>
+        <h2 class="account-code-title" data-form-title>MedNerds-Account erstellen</h2>
         <label for="account-email">E-Mail-Adresse</label>
         <input id="account-email" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="254" required />
+        <div class="account-checks" data-registration-checks>
+          <label class="account-checkbox"><input type="checkbox" data-terms required /> <span>Ich akzeptiere die <a href="/nutzungsbedingungen/">Nutzungsbedingungen</a>.</span></label>
+          <label class="account-checkbox"><input type="checkbox" data-privacy required /> <span>Ich habe die <a href="/datenschutz/">Datenschutzerklärung</a> zur Kenntnis genommen.</span></label>
+        </div>
+        <p class="account-hint" data-registration-unavailable hidden>Die Registrierung ist derzeit nicht verfügbar. Du kannst dich weiterhin anmelden.</p>
         <div class="account-challenge" data-email-challenge role="group" aria-label="Sicherheitsprüfung"></div>
         <button type="submit" data-send disabled>Anmeldecode senden</button>
         <p class="account-hint" data-email-cooldown hidden></p>
@@ -42,26 +58,91 @@
       </div>
 
       <button type="button" class="account-text-button" data-retry-captcha hidden>Sicherheitsprüfung neu laden</button>
+      <p class="account-hint account-deletion-access" data-deletion-access-link>Du möchtest deinen Account löschen? <a href="/account/?action=delete">Zur Account-Löschung</a></p>
+      <p class="account-hint account-deletion-access" data-deletion-access-hint hidden>Melde dich an, um deinen Account sicher zu löschen. Ein Anzeigename ist dafür nicht erforderlich. Die Löschung benötigt anschließend einen neuen Bestätigungscode.</p>
     </div>
 
     <div class="account-session" data-session hidden>
-      <p>Du bist angemeldet als:</p>
-      <strong data-session-email></strong>
+      <div class="account-overview" data-account-overview hidden>
+        <h2 class="account-code-title" data-account-title tabindex="-1">Account</h2>
+        <p>Du bist angemeldet als:</p>
+        <strong data-session-email></strong>
+      </div>
       <section class="account-profile" aria-labelledby="account-profile-title" data-profile>
-        <h2 class="account-code-title" id="account-profile-title">Profil</h2>
+        <div class="account-onboarding" id="profil-vervollstaendigen" data-onboarding-view hidden>
+          <h2 class="account-code-title" id="account-onboarding-title">Vervollständige dein Profil</h2>
+          <p class="account-hint" data-profile-incomplete>Wähle einen Anzeigenamen, um deinen MedNerds-Account einzurichten. Beruf/Funktion ist freiwillig. Weitere Einstellungen kannst du anschließend bearbeiten.</p>
+        </div>
+        <div data-profile-management hidden>
+          <h2 class="account-code-title" id="account-profile-title">Profil</h2>
+          <div class="account-avatar" data-avatar role="img" aria-label="Dein Profilbild"><span data-avatar-neutral aria-hidden="true"><Icon name="tabler:user" size={32} aria-hidden="true" focusable="false" /></span><span data-initials aria-hidden="true" hidden></span></div>
+        </div>
         <p class="account-hint" data-profile-loading role="status">Profil wird geladen …</p>
         <form data-profile-form novalidate hidden>
-          <label for="account-display-name">Anzeigename</label>
-          <input id="account-display-name" name="display_name" type="text" autocomplete="nickname" aria-describedby="account-name-hint" />
-          <p class="account-hint" id="account-name-hint">Dieser Name kann später öffentlich neben deinen Kommentaren erscheinen.</p>
+          <label for="account-display-name">Anzeigename <span class="account-hint">(Pflichtfeld)</span></label>
+          <input id="account-display-name" name="display_name" type="text" autocomplete="nickname" aria-describedby="account-name-hint" required />
+          <p class="account-hint" id="account-name-hint">2–60 Zeichen. Dieser Name kann später öffentlich neben deinen Kommentaren erscheinen.</p>
+          <fieldset class="account-extensions" data-profile-extensions>
+            <legend hidden>Beruf / Funktion</legend>
+            <label for="account-professional-role">Beruf / Funktion <span class="account-hint">(freiwillig)</span></label>
+            <input id="account-professional-role" type="text" name="professional_role" aria-describedby="account-role-hint" />
+            <p class="account-hint" id="account-role-hint">Berufsangaben werden von MedNerds nicht überprüft.</p>
+          </fieldset>
+          <fieldset class="account-extensions" data-profile-preferences hidden>
+              <legend>Weitere Profileinstellungen</legend>
+              <label class="account-checkbox"><input type="checkbox" data-role-public /> <span>Beruf/Funktion öffentlich anzeigen</span></label>
+              <label class="account-checkbox"><input type="checkbox" data-gravatar aria-describedby="account-gravatar-hint" /> <span>Mein Profilbild von Gravatar verwenden</span></label>
+              <p class="account-hint" id="account-gravatar-hint">Wenn du Gravatar aktivierst, wird dein Profilbild von einem externen Dienst geladen. Dabei können technische Verbindungsdaten an Gravatar übertragen werden. Auch der E-Mail-Hash ist nicht automatisch anonym. <a href="https://automattic.com/privacy/">Datenschutzinformationen von Gravatar</a></p>
+          </fieldset>
+          <p class="account-hint" data-extensions-unavailable hidden>Die neuen Profileinstellungen sind noch nicht verfügbar. Deinen Anzeigenamen kannst du weiterhin speichern.</p>
           <button type="submit" data-profile-save>Änderungen speichern</button>
         </form>
+        <button type="button" class="account-text-button account-onboarding-cancel" data-onboarding-cancel hidden>Einrichtung abbrechen</button>
         <p class="account-status" data-profile-status role="status" aria-live="polite" aria-atomic="true"></p>
         <p class="account-error" id="account-profile-error" data-profile-error role="alert" hidden></p>
         <button type="button" class="account-text-button" data-profile-retry hidden>Profil erneut laden</button>
         <p class="account-hint" data-staff-role hidden></p>
       </section>
-      <button type="button" data-logout>Abmelden</button>
+      <section class="account-legal account-profile" data-legal-section hidden aria-labelledby="account-legal-title">
+        <h2 class="account-code-title" id="account-legal-title">Rechtliche Bestätigungen</h2>
+        <p class="account-hint" data-legal-loading role="status" hidden>Bestätigungen werden geprüft …</p>
+        <p class="account-hint" data-legal-pending hidden>Deine Bestätigungen wurden noch nicht gespeichert.</p>
+        <div class="account-checks" data-legal-checks>
+          <label class="account-checkbox"><input type="checkbox" data-account-terms /> <span>Ich akzeptiere die <a href="/nutzungsbedingungen/">Nutzungsbedingungen</a>.</span></label>
+          <label class="account-checkbox"><input type="checkbox" data-account-privacy /> <span>Ich habe die <a href="/datenschutz/">Datenschutzerklärung</a> zur Kenntnis genommen.</span></label>
+        </div>
+        <button type="button" data-legal-save>Bestätigungen speichern</button>
+        <p class="account-error" data-legal-error role="alert" hidden></p>
+      </section>
+      <section class="account-profile account-controls" data-account-controls hidden aria-labelledby="account-controls-title">
+        <h2 class="account-code-title" id="account-controls-title">Konto</h2>
+        <p data-moderation-link hidden><a href="/account/moderation/">MedDocs-Kommentare moderieren</a></p>
+        <button type="button" data-logout>Abmelden</button>
+      </section>
+      <section class="account-profile account-danger" data-danger-area hidden aria-labelledby="account-danger-title">
+        <h2 class="account-code-title" id="account-danger-title">Gefahrenbereich</h2>
+        <p class="account-hint">Du kannst deinen Account dauerhaft löschen. Dein Profil, deine Staff-Zuordnung und deine gespeicherten rechtlichen Bestätigungen werden entfernt. Daten in Backups oder technischen Protokollen können ihren jeweiligen Aufbewahrungsfristen unterliegen.</p>
+        <button type="button" class="account-delete-button" data-delete-open>Account löschen</button>
+      </section>
+      <dialog class="account-delete-dialog" data-delete-dialog aria-labelledby="account-delete-title" aria-describedby="account-delete-description">
+        <h2 class="account-code-title" id="account-delete-title">Account dauerhaft löschen?</h2>
+        <p class="account-hint" id="account-delete-description">Dieser Vorgang kann nicht rückgängig gemacht werden. Bestätige deine Identität mit einem neuen E-Mail-Code und anschließend die endgültige Löschung. Als letzter Administrator musst du zuerst die Administration übergeben.</p>
+        <button type="button" class="account-text-button" data-delete-cancel autofocus>Abbrechen</button>
+        <div data-delete-start>
+          <p class="account-hint">Wir senden einen neuen Code an <strong data-delete-email></strong>.</p>
+          <div class="account-challenge" data-delete-challenge role="group" aria-label="Sicherheitsprüfung für die Account-Löschung"></div>
+          <button type="button" data-delete-send disabled>Bestätigungscode senden</button>
+        </div>
+        <form data-delete-form novalidate hidden>
+          <label for="account-delete-otp">Bestätigungscode</label>
+          <input id="account-delete-otp" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required aria-describedby="account-delete-code-hint account-delete-error" />
+          <p class="account-hint" id="account-delete-code-hint">Die Löschbestätigung gilt höchstens 5 Minuten. Ein Prüfversuch verbraucht sie; danach benötigst du einen neuen Code.</p>
+          <button type="submit" class="account-delete-button" data-delete-confirm>Account endgültig löschen</button>
+        </form>
+        <p class="account-status" data-delete-status role="status" aria-live="polite" aria-atomic="true"></p>
+        <p class="account-error" id="account-delete-error" data-delete-error role="alert" hidden></p>
+        <button type="button" class="account-text-button" data-delete-new-code hidden>Neuen Bestätigungscode anfordern</button>
+      </dialog>
     </div>
 
     <p class="account-status" data-status role="status" aria-live="polite" aria-atomic="true"></p>
@@ -79,11 +160,23 @@
   .mn-account { display: block; max-width: 34rem; margin-inline: auto; padding-block: 0.75rem 2rem; }
   .mn-account [hidden] { display: none !important; }
   p { margin: 0; }
-  .account-intro { margin-bottom: 1.75rem; line-height: 1.75; }
+  .account-intro { margin-bottom: 1.25rem; line-height: 1.65; }
+  .account-intro p + p { margin-top: 0.4rem; }
   .account-panel { padding: clamp(1rem, 4vw, 1.75rem); border: 1px solid var(--sl-color-hairline); border-radius: 0.85rem; background: var(--mn-surface); }
   form { display: grid; gap: 0.75rem; }
   label { color: var(--sl-color-white); font-size: var(--sl-text-sm); font-weight: 600; }
-  input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 2.875rem; padding: 0.7rem 0.85rem; border: 1px solid var(--sl-color-gray-4); border-radius: 0.5rem; color: var(--sl-color-white); background: var(--sl-color-bg); font: inherit; }
+  input:not([type='checkbox']) { box-sizing: border-box; width: 100%; min-width: 0; min-height: 2.875rem; padding: 0.7rem 0.85rem; border: 1px solid var(--sl-color-gray-4); border-radius: 0.5rem; color: var(--sl-color-white); background: var(--sl-color-bg); font: inherit; }
+  input[type='checkbox'] { width: 1.1rem; height: 1.1rem; margin: 0.2rem 0 0; flex-shrink: 0; accent-color: var(--sl-color-accent); }
+  .account-checkbox { display: flex; align-items: flex-start; gap: 0.65rem; min-height: 2.75rem; font-weight: 400; line-height: 1.6; }
+  .account-checks, .account-extensions { display: grid; gap: 0.65rem; }
+  .account-extensions { padding: 0; margin: 0.5rem 0; border: 0; min-width: 0; }
+  .account-extensions legend { margin-bottom: 0.65rem; font-size: var(--sl-text-sm); font-weight: 600; }
+  .account-mode { display: flex; gap: 0.25rem; margin-bottom: 1rem; padding: 0.25rem; border: 1px solid var(--sl-color-hairline); border-radius: 0.6rem; }
+  .account-mode button { flex: 1; background: transparent; color: var(--sl-color-gray-2); }
+  .account-mode button[aria-pressed='true'] { color: var(--sl-color-white); background: var(--sl-color-bg); border-color: var(--sl-color-hairline); }
+  .account-avatar { width: 4rem; height: 4rem; border-radius: 50%; position: relative; display: grid; place-items: center; overflow: hidden; background: var(--sl-color-accent-low); color: var(--sl-color-text-accent); font-size: var(--sl-text-lg); font-weight: 600; }
+  .account-avatar :global(img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .account-avatar :global([data-avatar-neutral]) { width: 2rem; height: 2rem; }
   #account-otp { max-width: 14rem; font-variant-numeric: tabular-nums; letter-spacing: 0.2em; }
   input[aria-invalid='true'] { border-color: var(--sl-color-text-accent); }
   .account-challenge { min-width: 0; margin-block: 0.5rem; }
@@ -102,9 +195,29 @@
   .account-resend-title { color: var(--sl-color-white); font-size: var(--sl-text-sm); font-weight: 600; }
   .account-resend-title:focus { outline: none; }
   .account-session { display: grid; gap: 0.75rem; }
+  .account-overview { display: grid; gap: 0.5rem; }
+  .account-onboarding { margin-bottom: 1.25rem; }
+  .account-onboarding-cancel { margin-top: 0.5rem; }
+  .account-deletion-access { margin-top: 1rem; }
+  .account-profile:has([data-onboarding-view]:not([hidden])) { border-top: 0; padding-top: 0; }
+  [data-profile-management] { margin-bottom: 1rem; }
   .account-profile { padding-block: 0.75rem; border-top: 1px solid var(--sl-color-hairline); }
   [data-staff-role]:not([hidden]) { margin-top: 0.75rem; }
   .account-session strong { margin-bottom: 0.75rem; color: var(--sl-color-white); overflow-wrap: anywhere; }
+  .account-controls, .account-danger { display: grid; gap: 0.75rem; }
+  .account-controls button, .account-danger button { justify-self: start; }
+  .account-danger, .account-delete-dialog {
+    --sl-color-accent: var(--sl-color-red);
+    --sl-color-accent-high: var(--sl-color-red);
+    --sl-color-text-accent: var(--sl-color-red);
+  }
+  .account-danger { padding: 1rem; border: 1px solid color-mix(in srgb, var(--sl-color-red) 40%, var(--sl-color-hairline)); border-inline-start: 3px solid var(--sl-color-red); border-radius: 0.5rem; background: color-mix(in srgb, var(--sl-color-red-low) 25%, transparent); }
+  .account-danger h2, .account-delete-dialog h2 { color: var(--sl-color-red); }
+  .account-delete-button { color: var(--sl-color-bg); background: var(--sl-color-red); border-color: var(--sl-color-red); }
+  .account-delete-button:not(:disabled):hover { background: var(--sl-color-red-high); }
+  .account-delete-dialog { box-sizing: border-box; width: min(32rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); margin: auto; overflow-y: auto; padding: clamp(1rem, 4vw, 1.5rem); border: 1px solid var(--sl-color-hairline); border-radius: 0.85rem; color: var(--sl-color-white); background: var(--mn-surface); }
+  .account-delete-dialog::backdrop { background: color-mix(in srgb, var(--sl-color-black) 65%, transparent); }
+  .account-delete-dialog > * + * { margin-top: 0.85rem; }
   .account-status:not(:empty), .account-error:not(:empty) { margin-top: 0.75rem; font-size: var(--sl-text-sm); line-height: 1.65; }
   .account-error { color: var(--sl-color-white); padding-inline-start: 0.75rem; border-inline-start: 2px solid var(--sl-color-text-accent); }
 </style>

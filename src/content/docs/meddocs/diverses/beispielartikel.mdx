@@ -1,4 +1,5 @@
 ---
+comments: false
 title: Beispielartikel – Starlight Showcase
 description: Visuelle Übersicht der wichtigsten Inhalts- und UI-Elemente in MedDocs.
 authors:
@@ -20,7 +21,16 @@ tags:
   - MedDocs
   - Starlight
   - UI-Komponenten
-draft: true
+references:
+  - demo-zeitschriftenartikel
+  - demo-buch
+  - demo-buchkapitel
+  - demo-website
+  - demo-bericht
+  - demo-onlineartikel
+  - demo-handbuch
+  - demo-onlineportal
+draft: false
 pagefind: false
 sidebar:
   hidden: true
@@ -43,6 +53,7 @@ import {
   Tabs,
 } from '@astrojs/starlight/components';
 import MedDocsFigure from '../../../../components/meddocs/MedDocsFigure.astro';
+import MedCitation from '../../../../components/meddocs/MedCitation.astro';
 import demoImage from '../../../../assets/Logos/MedNerds - icon.webp';
 import demoDownload from '../../../../assets/Logos/MedNerds - icon.svg?url';
 import demoLogo from '../../../../assets/Logos/MedNerds - horizontal - dunkel.webp';
@@ -53,6 +64,38 @@ sie enthalten keine medizinischen Aussagen.
 
 Auch die Veröffentlichungs- und Aktualisierungsdaten dieser Showcase-Seite
 sind Demonstrationsangaben für die Darstellung der Artikel-Metadaten.
+
+## Quellenverweise als Funktionsdemo
+
+Die folgenden acht Literaturangaben sind **illustrative Testdaten**, keine
+verifizierten Publikationen oder medizinischen Belege. Namen, Titel, Verlage,
+Publikations- und Abrufdaten dienen ausschließlich der Design- und Funktionsdemo.
+Alle Quellenlinks verwenden die reservierte Beispieldomain `example.org`;
+es werden keine DOI-Nummern angegeben.
+
+Ein einzelner Quellenverweis <MedCitation sources={["demo-zeitschriftenartikel"]} />
+demonstriert den Sprung ins Literaturverzeichnis.
+
+Ein Mehrfachverweis <MedCitation sources={["demo-buch", "demo-buchkapitel"]} />
+führt zwei unterschiedliche Quellentypen zusammen.
+
+Die erneut zitierte erste Quelle <MedCitation sources={["demo-zeitschriftenartikel"]} />
+behält ihre Nummer. Nur die tatsächlich im Text zitierten Quellen erhalten
+fortlaufende Nummern und erscheinen unter **Einzelnachweise**.
+
+Dieser Verweis auf eine zunächst eingeklappte Quelle
+<MedCitation sources={["demo-handbuch"]} /> öffnet automatisch die weiteren
+Einzelnachweise.
+
+Die Website, der Bericht, der Onlineartikel und das Onlineportal werden bewusst
+nicht im Fließtext zitiert. Diese vier Beispiele erscheinen ausschließlich unter
+**Literatur & weiterführende Quellen**, ohne Nummern oder Aufzählungszeichen.
+Beide Listen lassen sich unabhängig voneinander öffnen. Eine allgemeine Literaturliste
+bedeutet nicht, dass jede Aussage des Artikels ausdrücklich einzeln belegt ist.
+
+Über **MedTools → Zitieren & Exportieren** am Seitenende lassen sich der Artikel,
+die Einzelnachweise, die allgemeine Literatur, alle Quellen oder eine einzelne
+Quelle in fünf Stilen zitieren und als TXT, BibTeX oder RIS exportieren.
 
 ## Überschriften: Ebene H2
 

@@ -1,0 +1,16 @@
+{
+  "id": "demo-buch",
+  "type": "book",
+  "title": "Darstellung eines Buches (illustrative Testdaten)",
+  "authors": [
+    {
+      "family": "Beispiel",
+      "given": "Leon"
+    }
+  ],
+  "year": 2023,
+  "publisher": "Beispielverlag (Testdaten)",
+  "publisherPlace": "Basel",
+  "edition": "2",
+  "url": "https://example.org/demo/buch"
+}

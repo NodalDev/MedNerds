@@ -261,7 +261,7 @@ try {
   }))`);
   for (const figure of figures.slice(0, 2)) {
     assert.equal(figure.linkCount, 1);
-    assert.equal(figure.text, '↓ SVG herunterladen');
+    assert.equal(figure.text, '↓ Bild herunterladen');
     assert.equal(figure.filename, 'mednerds-icon.svg');
     assert.equal(figure.href, figure.source);
     assert.notEqual(figure.href, figure.full);

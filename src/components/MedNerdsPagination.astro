@@ -1,6 +1,5 @@
 ---
 import MedNerdsIcon from './MedNerdsIcon.astro';
-import ArticleActions from './ArticleActions';
 // Keep Starlight's pagination data, direction, labels and layout.
 const isMedDocs = Astro.url.pathname.startsWith('/meddocs/');
 
@@ -9,9 +8,7 @@ const { prev, next } = pagination;
 const isRtl = dir === 'rtl';
 ---
 
-{isMedDocs && <div class="meddocs-tools"><ArticleActions client:load /></div>}
-
-<div class="pagination-links print:hidden" dir={dir}>
+<div class:list={['pagination-links print:hidden', isMedDocs && 'meddocs-pagination']} dir={dir}>
 	{
 		prev && (
 			<a href={prev.href} rel="prev">
@@ -39,12 +36,12 @@ const isRtl = dir === 'rtl';
 </div>
 
 <style>
-  .meddocs-tools {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-  }
+  .meddocs-pagination { margin-block: 1.5rem; gap: 1rem; }
+  .meddocs-pagination a { border: 0; box-shadow: none; border-radius: .25rem; padding: .5rem 0; font-size: .8rem; line-height: 1.5; }
+  .meddocs-pagination .link-title { font-size: .9rem; font-weight: 500; line-height: 1.5; }
+  .meddocs-pagination a:hover { color: var(--sl-color-accent); }
+  .meddocs-pagination a:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 4px; }
+  .meddocs-pagination :global(svg) { width: 1.1rem; height: 1.1rem; }
 	@layer starlight.core {
 		.pagination-links {
 			display: grid;

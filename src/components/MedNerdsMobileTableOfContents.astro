@@ -1,6 +1,8 @@
 ---
 import DefaultMobileTableOfContents from '@astrojs/starlight/components/MobileTableOfContents.astro';
 import { pageLayoutOptions, resolvePageLayout } from '../data/page-layouts';
+import MedDocsTocAccordion from './meddocs/MedDocsTocAccordion.astro';
+import { getMedDocsArticleMetadata } from '../lib/meddocs/article-metadata';
 
 const { toc, entry } = Astro.locals.starlightRoute;
 const { showToc } = pageLayoutOptions[resolvePageLayout(entry.data.pageLayout)];
@@ -10,7 +12,9 @@ const hasMeaningfulTableOfContents = (toc?.items.length ?? 0) > 1;
 {
   showToc && hasMeaningfulTableOfContents && (
     <div class="content-table-of-contents print:hidden">
-      <DefaultMobileTableOfContents />
+      <MedDocsTocAccordion enabled={Boolean(getMedDocsArticleMetadata(entry))}>
+        <DefaultMobileTableOfContents />
+      </MedDocsTocAccordion>
     </div>
   )
 }

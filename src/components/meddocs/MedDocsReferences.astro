@@ -1,0 +1,126 @@
+---
+import { defaultCitationStyle, formatBibliography } from '../../lib/meddocs/references/format';
+import { loadCslAssets } from '../../lib/meddocs/references/assets';
+import { referenceToCsl, doiUrl } from '../../lib/meddocs/references/model';
+import type { Reference } from '../../lib/meddocs/references/schema';
+import { groupLiterature } from '../../lib/meddocs/references/categories';
+interface Props { sources: readonly Reference[]; kind: 'cited' | 'literature' }
+const { sources, kind } = Astro.props;
+const headingId = `references-${kind}-heading`;
+const viewportId = `references-${kind}-viewport`;
+const List = kind === 'cited' ? 'ol' : 'ul';
+const groups = kind === 'cited' ? [{ category: undefined, label: undefined, sources }] : groupLiterature(sources);
+const text = new Map(formatBibliography(sources.map(referenceToCsl), defaultCitationStyle, await loadCslAssets(defaultCitationStyle)).map((row) => [row.id, row.text.replace(/^\d+\.\s*/, '')]));
+---
+{sources.length > 0 && <section class="meddocs-references" data-reference-kind={kind} aria-labelledby={headingId}>
+  <h2 id={headingId}>{kind === 'cited' ? 'Einzelnachweise' : 'Literatur & weiterführende Informationen'}</h2>
+  <div class="references-viewport" id={viewportId} data-reference-viewport>
+    <div data-reference-content>
+    {groups.map((group) => <div class="reference-group" data-literature-category={group.category}>
+    {group.label && <h3 class="reference-group-heading">{group.label}</h3>}
+    <List class:list={['reference-list', kind === 'literature' && 'reference-list-literature']} role={kind === 'literature' ? 'list' : undefined}>
+      {group.sources.map((source) => {
+        const citation = text.get(source.id) ?? '';
+        const linkText = source.doi ? `https://doi.org/${source.doi}` : source.url;
+        const linkHref = source.doi ? doiUrl(source.doi) : source.url;
+        const linkStart = linkText ? citation.lastIndexOf(linkText) : -1;
+        return <li id={`quelle-${source.id}`} tabindex="-1"><span>{linkText && linkStart >= 0
+          ? <Fragment>{citation.slice(0, linkStart)}<a href={linkHref} rel="noopener noreferrer">{linkText}</a>{citation.slice(linkStart + linkText.length)}</Fragment>
+          : citation}</span>
+          {source.doi && source.url && source.url !== linkHref && <div class="reference-links"><a href={source.url} rel="noopener noreferrer">Quelle öffnen</a></div>}
+        </li>;
+      })}
+    </List>
+    </div>)}
+    </div>
+  </div>
+  {sources.length > 3 && <button class="references-toggle" type="button" data-reference-toggle aria-expanded="true" aria-controls={viewportId} hidden>Weniger anzeigen</button>}
+</section>}
+<script>
+  const initialized = new WeakSet<HTMLElement>();
+  const observers = new Map<HTMLElement, ResizeObserver>();
+
+  function measureCollapsedList(section: HTMLElement) {
+    const viewport = section.querySelector<HTMLElement>('[data-reference-viewport]');
+    const fourth = section.querySelectorAll<HTMLElement>('.reference-list > li')[3];
+    if (!viewport || !fourth || !viewport.hasAttribute('data-collapsed')) return;
+    // Measure in CSS pixels, including wrapping and larger fonts. Never clip the first three items.
+    const fadeStart = fourth.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
+    const lineHeight = Number.parseFloat(getComputedStyle(fourth).lineHeight);
+    const fadeHeight = Math.min(fourth.getBoundingClientRect().height, lineHeight * 2.5);
+    viewport.style.setProperty('--references-collapsed-height', `${fadeStart + fadeHeight}px`);
+    viewport.style.setProperty('--references-fade-height', `${fadeHeight}px`);
+  }
+
+  function setExpanded(section: HTMLElement, expanded: boolean) {
+    const viewport = section.querySelector<HTMLElement>('[data-reference-viewport]');
+    const button = section.querySelector<HTMLButtonElement>('[data-reference-toggle]');
+    if (!viewport || !button) return;
+    button.setAttribute('aria-expanded', String(expanded));
+    button.textContent = expanded ? 'Weniger anzeigen' : 'Mehr anzeigen';
+    viewport.toggleAttribute('data-collapsed', !expanded);
+    const items = [...section.querySelectorAll<HTMLElement>('.reference-list > li')];
+    for (const item of items.slice(3)) {
+      if (!expanded && item.contains(document.activeElement)) button.focus({ preventScroll: true });
+      item.inert = !expanded;
+      if (expanded) item.removeAttribute('aria-hidden');
+      else item.setAttribute('aria-hidden', 'true');
+      // Also remove links from the tab order in browsers without inert support.
+      for (const link of item.querySelectorAll<HTMLAnchorElement>('a')) {
+        if (expanded) link.removeAttribute('tabindex');
+        else link.tabIndex = -1;
+      }
+    }
+    for (const group of section.querySelectorAll<HTMLElement>('.reference-group')) {
+      const heading = group.querySelector('h3');
+      if (!heading) continue;
+      if (expanded || items.indexOf(group.querySelector('li')!) < 3) heading.removeAttribute('aria-hidden');
+      else heading.setAttribute('aria-hidden', 'true');
+    }
+    measureCollapsedList(section);
+  }
+
+  function initializeReferences() {
+    for (const [section, observer] of observers) {
+      if (!section.isConnected) { observer.disconnect(); observers.delete(section); }
+    }
+    for (const section of document.querySelectorAll<HTMLElement>('.meddocs-references')) {
+      const button = section.querySelector<HTMLButtonElement>('[data-reference-toggle]');
+      if (!button || initialized.has(section)) continue;
+      initialized.add(section);
+      button.addEventListener('click', () => setExpanded(section, button.getAttribute('aria-expanded') !== 'true'));
+      setExpanded(section, false);
+      button.hidden = false;
+      const list = section.querySelector<HTMLElement>('[data-reference-content]');
+      if (list && typeof ResizeObserver !== 'undefined') {
+        const observer = new ResizeObserver(() => measureCollapsedList(section));
+        observer.observe(list); observers.set(section, observer);
+      }
+    }
+    revealReference(location.hash, true);
+  }
+  function revealReference(hash: string, focus: boolean) {
+    let id: string; try { id = decodeURIComponent(hash.slice(1)); } catch { return; }
+    if (!id.startsWith('quelle-')) return;
+    const target = document.getElementById(id); if (!target) return;
+    const section = target.closest<HTMLElement>('.meddocs-references');
+    if (section && target.hasAttribute('aria-hidden')) setExpanded(section, true);
+    if (focus) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center' }); }
+  }
+  document.addEventListener('click', (event) => {
+    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('.med-citation a') : null;
+    if (link && !event.defaultPrevented) revealReference(link.hash, true);
+  });
+  window.addEventListener('hashchange', () => revealReference(location.hash, true));
+  initializeReferences();
+  document.addEventListener('astro:page-load', initializeReferences);
+  let printState: [HTMLElement, boolean][] = [];
+  window.addEventListener('beforeprint', () => {
+    printState = [...document.querySelectorAll<HTMLElement>('.meddocs-references:has([data-reference-toggle])')]
+      .map((section) => [section, section.querySelector('[data-reference-toggle]')?.getAttribute('aria-expanded') === 'true']);
+    printState.forEach(([section]) => setExpanded(section, true));
+  });
+  window.addEventListener('afterprint', () => {
+    printState.forEach(([section, expanded]) => setExpanded(section, expanded)); printState = [];
+  });
+</script>

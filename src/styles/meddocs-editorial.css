@@ -1,0 +1,75 @@
+.meddocs-editorial { margin-block-start: 2.5rem; padding: 1.25rem; border: 1px solid var(--sl-color-hairline-light); border-radius: .9rem; font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }
+.meddocs-editorial ~ meddocs-comments.mn-comments { margin-block-start: 1.5rem; }
+.meddocs-editorial.has-references > .article-info { border-block-start: 1px solid var(--sl-color-hairline-light); margin-block-start: 1.5rem; padding-block-start: 1.5rem; }
+.meddocs-references h2 { margin: 0 0 1rem; font-size: var(--sl-text-lg); font-weight: 600; color: var(--sl-color-text); }
+.meddocs-references ~ .meddocs-references { margin-block-start: 1.5rem; padding-block-start: 1.5rem; border-block-start: 1px solid var(--sl-color-hairline-light); }
+.meddocs-references .reference-list { margin: 0; padding-inline-start: 1.6rem; }
+.meddocs-references .reference-list-literature { list-style: none; padding-inline-start: 0; }
+.meddocs-references .reference-list-literature > li { padding-inline-start: 0; }
+.meddocs-references .reference-group-heading { margin: 0 0 .5rem; font-size: .875rem; line-height: 1.5; font-weight: 600; color: var(--sl-color-gray-2); }
+.meddocs-references .reference-group + .reference-group { margin-block-start: 1.25rem; }
+.meddocs-references li { padding-inline-start: .25rem; margin-block: .75rem; scroll-margin-block: 7rem; }
+.meddocs-references li:target:not([inert]), .meddocs-references li:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: .25rem; border-radius: .15rem; }
+.meddocs-references a { color: var(--sl-color-accent); font: inherit; }
+.meddocs-references .reference-links { display: flex; gap: .35rem .85rem; flex-wrap: wrap; font-size: .78rem; margin-block-start: .2rem; }
+.references-viewport[data-collapsed] { max-height: var(--references-collapsed-height); overflow: hidden; mask-image: linear-gradient(to bottom, black calc(100% - var(--references-fade-height)), transparent); }
+.references-viewport [inert] { pointer-events: none; }
+.references-toggle { display: block; margin: .25rem auto 0; padding: .5rem .75rem; border: 0; border-radius: .35rem; font: inherit; font-size: .8rem; background: none; color: var(--sl-color-gray-2); cursor: pointer; min-height: 2.75rem; }
+.references-toggle:hover { color: var(--sl-color-text); background: var(--sl-color-bg-nav); }
+.references-toggle[hidden] { display: none; }
+.meddocs-editorial :is(button,a,summary,select):focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; }
+.citation-dialog { inset: 0; margin: auto; width: min(40rem, calc(100% - 2rem)); max-width: none; min-width: 0; max-height: calc(100dvh - 2rem); padding: 1.25rem; border: 1px solid var(--sl-color-hairline-light); border-radius: .9rem; background: var(--sl-color-bg); color: var(--sl-color-text); overflow-y: auto; overflow-wrap: anywhere; overscroll-behavior: contain; box-sizing: border-box; }
+.citation-dialog[open] { display: flex; flex-direction: column; gap: 1rem; }
+.citation-dialog > * { flex-shrink: 0; min-width: 0; }
+.citation-dialog::backdrop { background: color-mix(in srgb, var(--color-background-950) 55%, transparent); }
+.citation-dialog-header { margin: 0; }
+.citation-dialog h2 { overflow-wrap: anywhere; font-size: 1.2rem; line-height: 1.4; margin: 0; }
+.citation-field { display: grid; gap: .35rem; }
+.citation-dialog label { display: block; font-size: .85rem; font-weight: 600; margin: 0; }
+.citation-dialog select { width: 100%; min-width: 0; min-height: 2.75rem; padding: .6rem; border: 1px solid var(--sl-color-gray-4); border-radius: .4rem; background: var(--sl-color-bg); color: var(--sl-color-text); font: inherit; font-size: .875rem; }
+.citation-preview-label { color: var(--sl-color-gray-2); font-size: .78rem; font-weight: 600; margin: 0 0 .4rem; }
+.citation-preview { white-space: pre-wrap; overflow-wrap: anywhere; background: color-mix(in srgb, var(--sl-color-bg-nav) 65%, var(--sl-color-bg)); border: 1px solid var(--sl-color-hairline-light); border-inline-start: 3px solid color-mix(in srgb, var(--sl-color-accent) 55%, var(--sl-color-hairline-light)); border-radius: .5rem; padding: 1rem; font-family: inherit; font-size: .875rem; line-height: 1.65; max-height: min(18rem, 35dvh); overflow-y: auto; user-select: text; }
+.citation-dialog [data-citation-status] { font-size: .8rem; line-height: 1.5; margin: 0; }
+.citation-dialog [data-citation-status]:not(:empty), .citation-dialog [data-citation-retry]:not([hidden]) { margin-block-start: .5rem; }
+.citation-dialog button { display: inline-flex; justify-content: center; align-items: center; gap: .45rem; min-width: 0; font: inherit; font-size: .8rem; line-height: 1.5; border: 1px solid var(--sl-color-hairline-light); border-radius: .4rem; background: var(--sl-color-bg-nav); color: var(--sl-color-text); padding: .6rem .75rem; min-height: 2.75rem; cursor: pointer; }
+.citation-dialog button svg { flex-shrink: 0; }
+.citation-dialog button:hover:not(:disabled) { border-color: var(--sl-color-gray-3); background: color-mix(in srgb, var(--sl-color-gray-5) 20%, var(--sl-color-bg)); }
+.citation-dialog :is(button,select,a,summary,[tabindex]):focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; }
+.citation-dialog button:disabled { opacity: .5; cursor: default; }
+.citation-dialog [hidden] { display: none; }
+.citation-actions { display: grid; gap: .6rem; }
+.citation-dialog .citation-copy { width: 100%; font-weight: 600; background: var(--sl-color-accent-low); color: var(--sl-color-text-accent); border-color: color-mix(in srgb, var(--sl-color-accent) 35%, var(--sl-color-hairline-light)); }
+.citation-exports { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.citation-exports button { background: color-mix(in srgb, var(--sl-color-accent-low) 45%, var(--sl-color-bg)); color: var(--sl-color-text-accent); border-color: color-mix(in srgb, var(--sl-color-accent) 25%, var(--sl-color-hairline-light)); }
+.citation-exports button:hover:not(:disabled) { background: color-mix(in srgb, var(--sl-color-accent-low) 65%, var(--sl-color-bg)); border-color: var(--sl-color-accent); }
+.citation-exports button:active:not(:disabled) { background: color-mix(in srgb, var(--sl-color-accent-low) 80%, var(--sl-color-bg)); }
+.citation-licenses { color: var(--sl-color-gray-2); font-size: .73rem; line-height: 1.6; }
+.citation-attribution { margin: 0; }
+.citation-licenses a { color: inherit; text-underline-offset: .15em; }
+.citation-dialog-footer { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem 1rem; }
+.citation-dialog-footer .citation-licenses { flex: 1 1 20rem; min-width: 0; }
+.citation-dialog-footer button { flex: 0 0 auto; margin-inline-start: auto; background: transparent; }
+.citation-copy-fallback { position: fixed; width: 1px; height: 1px; padding: 0; opacity: 0; }
+.article-tools { position: relative; font-size: .8rem; }
+.meddocs-legacy-tools { display: flex; justify-content: flex-end; margin-block-start: 2rem; }
+.article-tools-trigger { display: inline-flex; align-items: center; gap: .5rem; padding: .4rem .7rem; border: 1px solid var(--sl-color-hairline-light); border-radius: .45rem; background: var(--sl-color-bg-nav); color: var(--sl-color-text); min-height: 2.5rem; cursor: pointer; }
+.article-tools-panel { position: absolute; inset-inline-end: 0; z-index: 30; width: min(17rem, calc(100vw - 4rem)); padding: .4rem; border: 1px solid var(--sl-color-hairline-light); border-radius: .5rem; background: var(--sl-color-bg); }
+.article-tools-panel :is(button,a) { display: block; box-sizing: border-box; width: 100%; text-align: start; padding: .6rem; border: 0; border-radius: .25rem; font: inherit; color: var(--sl-color-text); background: none; text-decoration: none; cursor: pointer; }
+.article-tools-panel :is(button,a):hover { background: var(--sl-color-bg-nav); }
+.article-tools-status { display: block; max-width: 17rem; font-size: .75rem; color: var(--sl-color-gray-2); }
+@media (max-width: 30rem) { .meddocs-editorial { padding: .9rem; } }
+@media (max-width: 40rem) {
+  .citation-dialog { --citation-side-space: max(.5rem, env(safe-area-inset-left), env(safe-area-inset-right)); --citation-block-space: max(.5rem, env(safe-area-inset-top), env(safe-area-inset-bottom)); inset-block: var(--citation-block-space) auto; inset-inline: var(--citation-side-space) auto; margin: 0; width: calc(100dvw - 2 * var(--citation-side-space)); height: calc(100dvh - 2 * var(--citation-block-space)); max-height: calc(100dvh - 2 * var(--citation-block-space)); padding: 1rem; border-radius: .75rem; }
+}
+@media (max-width: 22rem) { .citation-exports { grid-template-columns: minmax(0, 1fr); } }
+@media (pointer: coarse) { .reference-links a { min-height: 2.75rem; } }
+@media print {
+  html:has(.meddocs-editorial) { color-scheme: light; --sl-color-white: CanvasText; --sl-color-text: CanvasText; --sl-color-gray-1: CanvasText; --sl-color-gray-2: CanvasText; --sl-color-gray-3: CanvasText; --sl-color-bg: Canvas; --sl-color-bg-nav: Canvas; --sl-color-accent: var(--color-MedDocs-700); }
+  html:has(.meddocs-editorial) :is(.header, .sidebar, .right-sidebar-container, .mn-site-footer, .content-table-of-contents, .meddocs-pagination, meddocs-comments, .article-tools, .citation-dialog, .references-toggle) { display: none !important; }
+  html:has(.meddocs-editorial) :is(.page, .page-body) { display: block; min-height: 0; }
+  html:has(.meddocs-editorial) .main-frame { padding: 0; }
+  .meddocs-editorial { border: 0; padding: 0; }
+  .references-viewport[data-collapsed] { max-height: none; overflow: visible; mask-image: none; }
+  .meddocs-references li { break-inside: avoid; }
+  .meddocs-editorial { color: var(--sl-color-text); background: var(--sl-color-bg); }
+}

@@ -1,16 +1,37 @@
 ---
 import Pagination from 'virtual:starlight/components/Pagination';
 import MedDocsArticleInfo from './MedDocsArticleInfo.astro';
+import MedDocsComments from './meddocs/MedDocsComments.astro';
+import { commentsVisible } from '../lib/meddocs/comments/articles';
 import { getMedDocsArticleMetadata } from '../lib/meddocs/article-metadata';
 import { resolvePageLayout } from '../data/page-layouts';
+import MedDocsReferences from './meddocs/MedDocsReferences.astro';
+import MedDocsCitationDialog from './meddocs/MedDocsCitationDialog.astro';
+import { partitionReferences } from '../lib/meddocs/references/numbering';
+import { articleToCsl, referenceToCsl, canonicalArticleUrl } from '../lib/meddocs/references/model';
+import { getCollection } from 'astro:content';
+import '../styles/meddocs-editorial.css';
+import ArticleActions from './ArticleActions';
 
 const route = Astro.locals.starlightRoute;
 const metadata = getMedDocsArticleMetadata(route.entry);
+const canonical = route.entry.id.startsWith('meddocs/') ? canonicalArticleUrl(Astro.url.pathname, Astro.site) : undefined;
+const sources = route.entry.data.resolvedReferences ?? [];
+const { cited, literature } = partitionReferences(sources, route.entry.data.referenceOrder ?? []);
+const learningUrl = route.entry.data.learningUrl;
+const learningExists = learningUrl && (await getCollection('docs')).some((entry) => !entry.data.draft && `/${entry.id.replace(/\/index$/, '')}/` === learningUrl);
 const showPagination = route.entry.id.startsWith('meddocs/')
   && resolvePageLayout(route.entry.data.pageLayout) === 'default'
   && route.entry.data.template !== 'splash'
   && Boolean(route.pagination.prev || route.pagination.next);
 ---
 
+{showPagination && !metadata && canonical && <div class="meddocs-legacy-tools print:hidden"><ArticleActions title={route.entry.data.title} canonical={canonical} canCite={false} client:idle /></div>}
 {showPagination && <Pagination />}
-{metadata && <MedDocsArticleInfo metadata={metadata} />}
+{metadata && canonical && <div class:list={['meddocs-editorial not-content', sources.length > 0 && 'has-references']}>
+  <MedDocsReferences sources={cited} kind="cited" />
+  <MedDocsReferences sources={literature} kind="literature" />
+  <MedDocsArticleInfo metadata={metadata} canonical={canonical} title={route.entry.data.title} learningUrl={learningExists ? learningUrl : undefined} />
+  <MedDocsCitationDialog article={articleToCsl(route.entry.data.title, metadata, canonical)} cited={cited.map(referenceToCsl)} literature={literature.map(referenceToCsl)} />
+</div>}
+{commentsVisible(route.entry) && route.entry.data.articleId && <MedDocsComments articleId={route.entry.data.articleId} authorIds={route.entry.data.authors ?? []} />}

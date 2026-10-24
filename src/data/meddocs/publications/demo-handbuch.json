@@ -1,0 +1,13 @@
+{
+  "id": "demo-handbuch",
+  "type": "book",
+  "title": "Darstellung eines Handbuchs (illustrative Testdaten)",
+  "authors": [
+    {
+      "literal": "Beispielredaktion (Testdaten)"
+    }
+  ],
+  "year": 2025,
+  "publisher": "Beispielverlag (Testdaten)",
+  "url": "https://example.org/demo/handbuch"
+}

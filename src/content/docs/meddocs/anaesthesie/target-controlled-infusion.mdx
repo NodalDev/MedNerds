@@ -1,4 +1,6 @@
 ---
+articleId: 6ef3100a-85ed-46b0-8bd5-b0c69aebb9b9
+comments: true
 title: Target controlled infusion - TCI
 description: Einführund in die funktionsweise von target controlled infusion.
 authors:
@@ -17,44 +19,49 @@ draft: false
 pagefind: true
 sidebar:
   label: Target controlled infusion - TCI
-  order: 10
+  order: 20
+references:
+  - total-intravenous-anesthesia-and-target-controlled-infusions
+  - target-controlled-infusion-a-mature-technology
 ---
 
-## Was ist eine Target-Controlled Infusion?
+import MedDocsFigure from '../../../../components/meddocs/MedDocsFigure.astro';
+import MedCitation from '../../../../components/meddocs/MedCitation.astro';
 
-Die **Target-Controlled Infusion TCI** beschreibt eine Form der intravenösen Medikamentengabe,
-bei der bnicht eine feste Infusionsrate, sondern eine gewünschte Zielkonzentration vorgegeben wird.
+## 1. Was ist eine Target-Controlled Infusion?
 
-Auf Grundlage eines pharmakokinetischen Modells berechnet die Infusionspumpe fortlaufend, wie viel
-Medikament zugeführt werden muss, um die Konzentration zu erreichen und möglichst konstant zu halten.
+Bei der **Target-Controlled Infusion** kurz **TCI** wird nicht eine feste Infusionsrate
+sondern eine gewünschte Zielkonzentration vorgegeben. Dabei berechnet eine Infusionspumpe laufend anhand eines pharmakokinetischen Modells, wieviel Medikament zugeführt werden muss,
+um die vorgegebene Konzentration zu erreichen und möglichst konstant zu halten.
 
-In der Anästhesie wird TCI insbesondere im Rahmen einer **totalintravenösen Anästhesie (TIVA)** eingesetzt, 
+In der Anästhesie wird TCI insbesondere im Rahmen einer **[totalintravenösen Anästhesie (TIVA)](/meddocs/anaesthesie/allgemeinanaesthesie/#total-intravenöse-anästhesie-tiva)** eingesetzt,
 beispielsweise zur Gabe von Propofol oder Remifentanil.
 
 
-## Wie funktioniert TCI?
+## 2. Wie funktioniert TCI?
 
 Um zu verstehen, wie eine Target-Controlled Infusion (TCI) funktioniert, 
-muss man zunächst einige grundlegende pharmakokinetische Konzepte kennen. 
+muss man zunächst einige grundlegende pharmakokinetische Konzepte kennen:
 
-Entscheidend ist vor allem, wie sich ein intravenös verabreichtes Medikament im Körper verteilt, 
-wie seine Konzentration im Plasma und am Wirkort mit der klinischen Wirkung zusammenhängt 
-und wie sich diese Konzentrationen im Laufe der Zeit verändern.
+- Wie sich ein intravenös verabreichtes Medikament im Körper verteilt,
+- wie seine Konzentration im Plasma und am Wirkort mit der klinischen Wirkung zusammenhängt
+- und wie sich diese Konzentration im Laufe der Zeit verändern.
 
-Eine TCI-Pumpe (Spritzenpumpe/Perfusor®) nutzt diese Zusammenhänge in Form eines mathematischen Modells. 
-Aus den Patientendaten, der bereits verabreichten Medikamentenmenge und dem gewünschten Target berechnet sie fortlaufend die erforderliche Infusionsrate.
+Eine **TCI-Pumpe** (Spritzenpumpe/Perfusor®) nutzt diese Zusammenhänge in Form eines mathematischen Modells.
+Aus den Patientendaten, der bereits verabreichten Medikamentenmenge und der
+gewünschten Zielkonzentration **(Concentration target = Cet)** berechnet sie fortlaufend die erforderliche Infusionsrate.
 
 
-### Das pharmakokinetische Modell
+## 3. Das pharmakokinetische Modell
 
-Nach intravenöser Gabe eines Medikaments verbleibt dieses nicht einfach im Blut. 
+Nach intravenöser Gabe eines Medikaments verbleibt dieses nicht einfach im Blutplasma.
 Es verteilt sich in verschiedene Gewebe und wird gleichzeitig metabolisiert und eliminiert.
 
 Diese Vorgänge können nicht kontinuierlich gemessen werden. Deswegen verwenden TCI-Pumpen ein pharmakokinetisches Modell,
-dass den Konzentrationsverlauf des Medikaments beschreibt.
+welches den Konzentrationsverlauf des Medikaments beschreibt.
 
 
-#### Das Kompartimentmodell
+### 3.1 Das Kompartimentmodell
 
 Die Verteilung eines Medikaments im Körper wird häufig mithilfe eines **Mehrkompartimentmodells** beschrieben.
 Bei vielen TCI-Modellen wird der Körper dabei vereinfacht in drei miteinander verbundene Kompartimente unterteilt:
@@ -63,30 +70,81 @@ Bei vielen TCI-Modellen wird der Körper dabei vereinfacht in drei miteinander v
 - ein **schnelles peripheres Kompartiment V2**: Repräsentiert Gewebe, zwischen denen und dem zentralen Kompartiment ein relativ schneller Medikemantenaustausch stattfindet.
 - ein **langsames peripheres Kompartiment V3**: Repräsentiert Gewebe, in die sich das Medikament langsamer verteilt und aus denen es entsprechend langsamer zurückkehrt.
 
-HIER BILD
+<MedDocsFigure
+  src="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Kompartimentmodell_preview.webp"
+  fullSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Kompartimentmodell_large.webp"
+  downloadSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Kompartimentmodell_full.png"
+  downloadFilename="Kompartimentmodell"
+  alt="blabla"
+  align='center'
+  captionTitle='Das Kompartimentmodell'
+  caption="Schematische Darstellung des Drei-Kompartiment-Modells und zusätzlichem Effektorkompartiment. Zur Beschreibung der zeitlichen Verzögerung zwischen Plasmakonzentration und Wirkung wird ein zusätzliches, hypothetisches Effektkompartiment verwendet."
+  organization='MedNerds'
+  license='CC BY-NC-SA 4.0'
+  licenseUrl='https://creativecommons.org/licenses/by-nc-sa/4.0/'
+  downloadable
+  width={550}
+/>
 
-Zwischen diesen Kompartimenten findet fortlaufend ein Austausch des Medikaments statt.
-Gleichzeitig wird das Medikament dabei aus dem zentralen Kompartiment eliminiert.
+Nach intravenöser Verabreichung gelangt das Medikament zunächst in das zentrale Kompartiment (V1).
+Von dort verteilt es sich in das schnelle (V2) und das langsame periphere Kompartiment (V3).
+Zwischen dem zentralen und den peripheren Kompartimenten findet ein kontinuierlicher Austausch in beide Richtungen statt.
+Gleichzeitig wird das Medikament aus dem zentralen Kompartiment eliminiert.
 
 :::caution[Wichtig]
 Die Kompartimente stellen keine klar abgrenzbaren anatomischen Räume dar. 
 Sie beschreiben modellhaft, wie sich ein Medikament im Körper verteilt und zwischen verschiedenen Bereichen austauscht.
 :::
 
+Die Verteilung und Elimination eines Medikaments werden im Kompartimentmodell mithilfe sogenannter Geschwindigkeitskonstanten (k) beschrieben.
+Sie geben an, wie schnell ein Medikament zwischen den einzelnen Kompartimenten ausgetauscht oder aus dem Modell eliminiert wird.
 
-#### Cp - die Plasmakonzentration
+<details>
+  <summary>Zusatzwissen: Geschwindigkeitskonstanten im Kompartimentmodell</summary>
+  <p>
+    **Geschwindigkeitskonstanten zwischen den Kompartimenten:**
+    - k₁₂: Verteilung vom zentralen Kompartiment (V1) in das schnelle periphere Kompartiment (V2).
+    - k₂₁: Rückverteilung vom schnellen peripheren Kompartiment (V2) in das zentrale Kompartiment (V1).
+    - k₁₃: Verteilung vom zentralen Kompartiment (V1) in das langsame periphere Kompartiment (V3).
+    - k₃₁: Rückverteilung vom langsamen peripheren Kompartiment (V3) in das zentrale Kompartiment (V1).
+  </p>
+  <p>
+    **Elimination**
+    - k₁₀: Beschreibt die Geschwindigkeit, mit der das Medikament aus dem zentralen Kompartiment eliminiert wird, beispielsweise durch Metabolisierung.
+  </p>
+  <p>
+    **Effektorkompartiment**
+    Zur Beschreibung der zeitlichen Verzögerung zwsichen Plasmakonzentration
+    - k₁ₑ: Beschreibt in der dargestellten Modellform den Übergang vom zentralen Kompartiment zum Effektkompartiment.
+    - kₑ₀: Beschreibt die Geschwindigkeit, mit der das Medikament das modellierte Effektkompartiment wieder verlässt. Die Konstante bestimmt damit wesentlich, wie schnell sich die berechnete Effektortkonzentration (Ce) an die Plasmakonzentration (Cp) angleicht.
+  </p>
+</details>
 
-Die **Plasmakonzentration (Cp, plasma concentration)** beschreibt die vom Modell berechnete Konzentration des Medikaments im zentralen Kompartiment.
+### 3.2 Cp - die Plasmakonzentration
+
+Die **Plasmakonzentration (plasma concentration = Cp)** beschreibt die vom Modell berechnete Konzentration des Medikaments im zentralen Kompartiment.
 
 Nach einer intravenösen Gabe steigt Cp zunächst rasch an. 
 Anschliessend fällt die Konzentration wieder ab, da sich das Medikament in periphere Kompartimente verteilt und gleichzeitig eliminiert wird.
 
-:::caution[Wichtig]
-Die von der TCI-Pumpe angezeigte Cp wird nicht gemessen. Sie ist eine anhand des pharmakokinetischen Modells berechnete Konzentration.
-:::
+<MedDocsFigure
+  src="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Plasmakonzentration_preview.webp"
+  fullSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Plasmakonzentration_large.webp"
+  downloadSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Plasmakonzentration_full.png"
+  downloadFilename="Plasmakonzentration"
+  alt="blabla"
+  align='center'
+  captionTitle='Plasmakonzentration'
+  caption="Text"
+  organization='MedNerds'
+  license='CC BY-NC-SA 4.0'
+  licenseUrl='https://creativecommons.org/licenses/by-nc-sa/4.0/'
+  downloadable
+  width={550}
+/>
 
 
-#### Ce - die Konzentration am Wirkort
+### 3.3 Ce - die Konzentration am Wirkort
 
 Die klinische Wirkung eines Medikaments hängt jedoch nicht unmittelbar von seiner Konzentration im Plasma ab, 
 sondern von der Konzentration an seinem Wirkort.
@@ -98,8 +156,24 @@ Die dort berechnete Konzentration wird als **Ce (effect-site concentration)** be
 
 Auch Ce ist keine direkt gemessene Konzentration, sondern eine Modellgrösse.
 
+<MedDocsFigure
+  src="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Konzentration%20am%20Wirkort_preview.webp"
+  fullSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Konzentration%20am%20Wirkort_large.webp"
+  downloadSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Konzentration%20am%20Wirkort_full.png"
+  downloadFilename="Plasmakonzentration am Wirkort"
+  alt="blabla"
+  align='center'
+  captionTitle='Plasmakonzentration am Wirkort'
+  caption="Text"
+  organization='MedNerds'
+  license='CC BY-NC-SA 4.0'
+  licenseUrl='https://creativecommons.org/licenses/by-nc-sa/4.0/'
+  downloadable
+  width={550}
+/>
 
-#### Warum Cp und Ce nicht gleichzeitig steigen
+
+### 3.4 Warum Cp und Ce nicht gleichzeitig steigen
 
 Nach einer intravenösen Medikamentengabe steigt die Plasmakonzentration praktisch sofort an. 
 Bis sich das Medikament jedoch vom Plasma zum Wirkort verteilt hat, vergeht eine gewisse Zeit.
@@ -109,10 +183,42 @@ Deshalb **folgt Ce der Cp zeitlich verzögert**.
 Diese Verzögerung erklärt beispielsweise, warum die maximale klinische Wirkung eines Propofolbolus 
 erst einige Zeit nach der maximalen Plasmakonzentration eintritt.
 
+<MedDocsFigure
+  src="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Zeitliche%20Verz%C3%B6gerung_preview.webp"
+  fullSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Zeitliche%20Verz%C3%B6gerung_large.webp"
+  downloadSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Zeitliche%20Verz%C3%B6gerung_full.png"
+  downloadFilename="Zeitliche Verzögerung"
+  alt="blabla"
+  align='center'
+  captionTitle='Zeitliche Verzögerung'
+  caption="Text"
+  organization='MedNerds'
+  license='CC BY-NC-SA 4.0'
+  licenseUrl='https://creativecommons.org/licenses/by-nc-sa/4.0/'
+  downloadable
+  width={550}
+/>
 
-#### ke0 – Verbindung zwischen Plasma und Wirkort
+
+### 3.5 ke0 – Verbindung zwischen Plasma und Wirkort
 
 Wie schnell sich die Konzentration im Effektkompartiment an die Plasmakonzentration annähert, wird im Modell durch die Konstante ke0 beschrieben.
+
+<MedDocsFigure
+  src="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Modellvereinfachung_preview.webp"
+  fullSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Modellvereinfachung_large.webp"
+  downloadSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Modellvereinfachung_full.png"
+  downloadFilename="Modellvereinfachung"
+  alt="blabla"
+  align='center'
+  captionTitle='Modellvereinfachung'
+  caption="Text"
+  organization='MedNerds'
+  license='CC BY-NC-SA 4.0'
+  licenseUrl='https://creativecommons.org/licenses/by-nc-sa/4.0/'
+  downloadable
+  width={550}
+/>
 
 Vereinfacht gilt:
 
@@ -121,7 +227,23 @@ Vereinfacht gilt:
 
 ke0 ist damit ein wichtiger Bestandteil der Berechnung von Ce.
 
-#### Plasma-Target und Effect-Site-Target
+<MedDocsFigure
+  src="https://media.mednerds.ch/meddocs/anaesthesie/TCI/ke0_preview.webp"
+  fullSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/ke0_large.webp"
+  downloadSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/ke0_full.png"
+  downloadFilename="Geschwindigkeitskonstante ke0"
+  alt="blabla"
+  align='center'
+  captionTitle='Geschwindigkeitskonstante ke0'
+  caption="Text"
+  organization='MedNerds'
+  license='CC BY-NC-SA 4.0'
+  licenseUrl='https://creativecommons.org/licenses/by-nc-sa/4.0/'
+  downloadable
+  width={550}
+/>
+
+### 3.6 Plasma-Target und Effect-Site-Target
 
 Je nach TCI-System kann entweder eine gewünschte Plasmakonzentration oder eine gewünschte Effektortkonzentration als Target eingestellt werden.
 
@@ -132,9 +254,23 @@ kann die Pumpe zunächst eine vorübergehend höhere Cp erzeugen, damit das gew�
 
 Dieser vorübergehende Anstieg der Plasmakonzentration über die Zielkonzentration am Effektort wird als **Plasma-Overshoot** bezeichnet.
 
-<mark>HIER BILD</mark>
+<MedDocsFigure
+  src="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Plasma%20Overshoot_preview.webp"
+  fullSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Plasma%20Overshoot_large.webp"
+  downloadSrc="https://media.mednerds.ch/meddocs/anaesthesie/TCI/Plasma%20Overshoot_full.png"
+  downloadFilename="Plasma Overshoot"
+  alt="blabla"
+  align='center'
+  captionTitle='Plasma Overshoot'
+  caption="Text"
+  organization='MedNerds'
+  license='CC BY-NC-SA 4.0'
+  licenseUrl='https://creativecommons.org/licenses/by-nc-sa/4.0/'
+  downloadable
+  width={550}
+/>
 
-#### Wie die Pumpe das Target erreicht
+### 3.7 Wie die Pumpe das Target erreicht
 
 Wird das Target gesenkt, reduziert oder stoppt die Pumpe die Infusion. Die Konzentration fällt dann durch Redistribution und Elimination ab.
 
@@ -142,7 +278,9 @@ Wird das Target gesenkt, reduziert oder stoppt die Pumpe die Infusion. Die Konze
 Eine TCI-Pumpe versucht durch fortlaufende Anpassung der Infusionsrate eine vorgegebene Zielkonzentrationzu erreichen und aufrechtzuerhalten.
 :::
 
-#### Das verwendete Modell ist Entscheidend
+
+
+### 3.8 Das verwendete Modell ist Entscheidend
 
 Wie Cp und Ce berechnet werden, hängt vom verwendeten pharmakokinetischen Modell ab. ^
 Für Propofol existieren beispielsweise verschiedene Modelle wie Marsh, Schnider oder Eleveld, für Remifentanil unter anderem das Minto-Modell.
@@ -153,3 +291,27 @@ Clearance und den Konzentrationsausgleich zum Effektort beschreiben.
 :::danger[Cave]
 Ein bestimmter Ce-Wert ist deshalb nicht unabhängig vom verwendeten Modell zu interpretieren. Target, Medikament und TCI-Modell müssen immer gemeinsam betrachtet werden.
 :::
+
+## 4. Pharmakokinetik vs. Pharmakodynamik
+
+## 5. TCI-Modelle
+
+### 5.1 Marsh
+
+### 5.2 Schnider
+
+### 5.3 Eleveld
+
+### 5.4 Minto
+
+## 6. ???
+
+## 7. Grenzen der TCI
+
+## 8. Praxiswissen
+
+## 9. Anwendungsbeispiel
+
+## 10. Zusatzwissen??
+
+## 11. Take-Home Messages

@@ -9,6 +9,7 @@ export interface AuthSnapshot {
   readonly busy: AuthAction | null;
 }
 type Listener = (state: AuthSnapshot) => void;
+export type AuthMode = 'register' | 'login';
 export const CODE_REQUEST_INTERVAL_MS = 60_000;
 
 /** Supabase owns sessions, persistence and refresh. This store exposes only UI state. */
@@ -22,10 +23,12 @@ export class AuthStore {
   private nextRequestAt = 0;
   private readonly auth: AuthApi;
   private readonly now: () => number;
+  private readonly clearDeletedStorage?: (userId: string) => void;
 
-  constructor(auth: AuthApi, now: () => number = Date.now) {
+  constructor(auth: AuthApi, now: () => number = Date.now, clearDeletedStorage?: (userId: string) => void) {
     this.auth = auth;
     this.now = now;
+    this.clearDeletedStorage = clearDeletedStorage;
   }
 
   get state(): AuthSnapshot { return this.snapshot; }
@@ -87,13 +90,13 @@ export class AuthStore {
     finally { this.update({ busy: null }); }
   }
 
-  async requestCode(rawEmail: string, captchaToken: string | undefined): Promise<AuthResult> {
+  async requestCode(rawEmail: string, captchaToken: string | undefined, mode: AuthMode = 'login'): Promise<AuthResult> {
     const email = rawEmail.trim();
     if (!validEmail(email)) return { ok: false, field: 'email', message: 'Bitte gib eine gültige E-Mail-Adresse ein.' };
     if (!captchaToken?.trim()) return { ok: false, field: 'captcha', message: 'Bitte bestätige zuerst die Sicherheitsprüfung.' };
     if (this.resendSeconds > 0) return { ok: false, message: `Bitte warte noch ${this.resendSeconds} Sekunden, bevor du einen neuen Code anforderst.` };
     return this.perform('send', async () => {
-      const { error } = await this.auth.signInWithOtp({ email, options: { shouldCreateUser: true, captchaToken } });
+      const { error } = await this.auth.signInWithOtp({ email, options: { shouldCreateUser: mode === 'register', captchaToken } });
       // This is a UX cooldown; Supabase remains authoritative for rate limits.
       if (!error || isRateLimit(error)) this.nextRequestAt = this.now() + CODE_REQUEST_INTERVAL_MS;
       return error ? authFailure(error, 'send') : { ok: true };
@@ -130,5 +133,24 @@ export class AuthStore {
       this.receiveSession(null);
       return { ok: true };
     });
+  }
+
+  /** Called ONLY after the server confirms deletion of the current account. */
+  async clearDeletedAccount(userId: string): Promise<boolean> {
+    if (this.snapshot.userId !== userId || this.snapshot.busy) return false;
+    this.update({ busy: 'logout' });
+    this.revision++;
+    this.receiveSession(null);
+    let cleared = true;
+    try { await this.auth.signOut({ scope: 'local' }); }
+    catch { /* Server deletion is already confirmed; remove owned local data below. */ }
+    finally {
+      if (!this.snapshot.userId || this.snapshot.userId === userId) {
+        try { this.clearDeletedStorage?.(userId); } catch { cleared = false; }
+        this.revision++; this.receiveSession(null);
+      }
+      this.update({ busy: null });
+    }
+    return cleared;
   }
 }

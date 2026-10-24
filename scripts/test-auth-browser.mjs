@@ -20,6 +20,14 @@ let profileWriteDelay = 0;
 let staffRow = null;
 const profileWrites = [];
 let profileReads = 0;
+let profileExtensions = {professional_role:null,professional_role_public:false,avatar_provider:'initials'};
+let legacyProfile = false, legalReadError = false, legalWriteError = false;
+let legalAccepted = false;
+let gravatarFailure = true, gravatarRequests = 0;
+const legalWrites = [];
+let deletionBeginStatus='last_admin',deletionConfirmStatus='confirmation_invalid',deletionDelay=0;
+const deletionRequests=[];
+const deletionChallenge='99999999-9999-4999-8999-999999999999';
 
 const turnstileMock = `(() => {
   let sequence=0,active;
@@ -63,9 +71,40 @@ async function handleRequest(tab, params) {
   if(url.hostname==='challenges.cloudflare.com' && url.pathname==='/turnstile/v0/api.js') {
     scriptLoads++; return fulfill(200,turnstileMock,'text/javascript');
   }
+  if(url.hostname==='gravatar.com' && url.pathname.startsWith('/avatar/')) {
+    gravatarRequests++;
+    assert.match(url.pathname,/\/avatar\/[0-9a-f]{64}$/);
+    assert.equal(url.searchParams.get('d'),'404');
+    return gravatarFailure ? fulfill(404,'','text/plain')
+      : fulfill(200,'<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="gray"/></svg>','image/svg+xml');
+  }
+  if(url.pathname==='/functions/v1/delete-account') {
+    if(params.request.method==='OPTIONS') return fulfill(200,{});
+    assert.equal(params.request.method,'POST');
+    const body=JSON.parse(params.request.postData);deletionRequests.push(body);
+    if(body.action==='begin') {
+      assert.deepEqual(Object.keys(body).sort(),['action','captchaToken']);assert.ok(body.captchaToken);
+      return deletionBeginStatus==='code_sent' ? fulfill(200,{status:'code_sent',challengeId:deletionChallenge,expiresIn:300})
+        : fulfill(409,{status:deletionBeginStatus});
+    }
+    assert.deepEqual(body,{action:'delete',challengeId:deletionChallenge,code:'000012',confirmed:true});
+    if(deletionDelay) await new Promise(resolve=>setTimeout(resolve,deletionDelay));
+    return fulfill(deletionConfirmStatus==='deleted'?200:409,{status:deletionConfirmStatus});
+  }
   if(url.pathname.startsWith('/rest/v1/')) {
     if(params.request.method==='OPTIONS') return fulfill(200,{});
     const table=url.pathname.split('/').at(-1);
+    if(url.pathname.includes('/rpc/')) {
+      const versions=await tab.evaluate("({terms:document.querySelector('mednerds-account').dataset.termsVersion,privacy:document.querySelector('mednerds-account').dataset.privacyVersion})");
+      if(table==='get_account_legal_state') return legalReadError ? fulfill(404,{code:'PGRST202',message:'private'})
+        : fulfill(200,{registration_enabled:true,gravatar_enabled:true,terms_version:versions.terms,privacy_notice_version:versions.privacy,accepted:legalAccepted});
+      assert.equal(table,'record_account_legal_acceptance');
+      const body=JSON.parse(params.request.postData);legalWrites.push(body);
+      assert.deepEqual(body,{requested_terms_version:versions.terms,requested_privacy_notice_version:versions.privacy});
+      if(legalWriteError) return fulfill(500,{code:'XX',message:'private'});
+      legalAccepted=true;
+      return fulfill(200,{user_id:'00000000-0000-4000-8000-000000000001',terms_version:versions.terms,privacy_notice_version:versions.privacy,accepted_at:'2026-10-10T00:00:00Z'});
+    }
     const userId=url.searchParams.get('user_id')?.replace(/^eq\./,'');
     assert.equal(userId,'00000000-0000-4000-8000-000000000001');
     if(table==='profiles') {
@@ -75,11 +114,13 @@ async function handleRequest(tab, params) {
         if(profileWriteDelay) await new Promise(resolve=>setTimeout(resolve,profileWriteDelay));
         if(profileWriteError) return fulfill(400,{code:profileWriteError,message:'private database diagnostic'});
         profileName=update.display_name;
-        return fulfill(200,{user_id:userId,display_name:profileName,created_at:'2026-10-09T00:00:00Z',updated_at:'2026-10-09T01:00:00Z'});
+        profileExtensions={...profileExtensions,...Object.fromEntries(Object.entries(update).filter(([key])=>key!=='display_name'))};
+        return fulfill(200,{user_id:userId,display_name:profileName,...profileExtensions,created_at:'2026-10-09T00:00:00Z',updated_at:'2026-10-09T01:00:00Z'});
       }
       assert.equal(params.request.method,'GET');profileReads++;
       if(profileReadError) return fulfill(404,{code:profileReadError,message:'private database diagnostic'});
-      return fulfill(200,[{user_id:userId,display_name:profileName,created_at:'2026-10-09T00:00:00Z',updated_at:'2026-10-09T00:00:00Z'}]);
+      if(legacyProfile && url.searchParams.get('select').includes('professional_role')) return fulfill(400,{code:'42703',message:'missing column'});
+      return fulfill(200,[{user_id:userId,display_name:profileName,...(!legacyProfile?profileExtensions:{}),created_at:'2026-10-09T00:00:00Z',updated_at:'2026-10-09T00:00:00Z'}]);
     }
     assert.equal(table,'staff_accounts');assert.equal(params.request.method,'GET');
     return staffReadError ? fulfill(403,{code:'42501',message:'private database diagnostic'}) : fulfill(200,staffRow?[staffRow]:[]);
@@ -119,8 +160,8 @@ async function createTab() {
   },async wait(expression){
     for(let i=0;i<150;i++){if(await this.evaluate(expression))return;await new Promise(resolve=>setTimeout(resolve,75));}
     throw new Error(`Timed out: ${expression}`);
-  },async navigate(){
-    await this.command('Page.navigate',{url:`${site}/account/`});
+  },async navigate(path='/account/'){
+    await this.command('Page.navigate',{url:`${site}${path}`});
     await this.wait("document.readyState==='complete' && !!document.querySelector('mednerds-account')");
   },async input(selector,value){
     await this.evaluate(`(()=>{const field=document.querySelector(${JSON.stringify(selector)});field.value=${JSON.stringify(value)};field.dispatchEvent(new Event('input',{bubbles:true}));})()`);
@@ -168,6 +209,34 @@ try {
   assert.equal(page.title,'MedNerds Account');assert.ok(page.robots.includes('noindex'));assert.equal(page.pagefind,false);
   assert.equal(page.labels,true);assert.equal(page.password,false);assert.equal(page.navLinks,0);
   assert.equal(page.live,'polite');assert.equal(page.otpType,'text');assert.equal(page.otpAutocomplete,'one-time-code');
+  assert.equal(await tab.evaluate("document.querySelector('[data-mode=register]').getAttribute('aria-pressed')"),'true');
+  assert.equal(await tab.evaluate("document.querySelector('[data-terms]').checked || document.querySelector('[data-privacy]').checked"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-registration-checks] a').getAttribute('href')"),'/nutzungsbedingungen/');
+  assert.equal(await tab.evaluate("document.querySelectorAll('[data-registration-checks] a')[1].getAttribute('href')"),'/datenschutz/');
+  await tab.input('#account-email',email);await tab.evaluate('window.__captcha.solve()');
+  await tab.evaluate("document.querySelector('[data-email-form]').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))");
+  assert.equal(requests.filter(r=>r.method==='otp').length,0);
+  await tab.click('[data-mode=login]');await tab.wait('window.__captcha.activeCount===1');
+  assert.equal(await tab.evaluate("document.querySelector('#account-email').value"),email);
+  assert.equal(await tab.evaluate("document.querySelector('[data-registration-checks]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-error]').hidden"),true);
+  await tab.click('[data-mode=register]');await tab.wait('window.__captcha.activeCount===1');
+  await tab.command('Page.bringToFront');
+  await tab.evaluate("document.querySelector('[data-terms]').focus()");
+  await tab.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+  await tab.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+  assert.equal(await tab.evaluate("document.activeElement.getAttribute('href')"),'/nutzungsbedingungen/');
+  for(const [width,theme] of [[320,'dark'],[390,'light'],[1440,'dark']]) {
+    await tab.command('Emulation.setDeviceMetricsOverride',{width,height:950,deviceScaleFactor:1,mobile:width<600});
+    await tab.evaluate(`document.documentElement.dataset.theme='${theme}';window.scrollTo(0,0)`);
+    assert.ok(await tab.evaluate('document.documentElement.scrollWidth<=innerWidth+1'));
+    assert.ok(await tab.evaluate("[...document.querySelectorAll('[data-registration-checks] label')].every(label=>label.getBoundingClientRect().height>=44)"));
+    if(width===1440 || width===390) {
+      const capture=await tab.command('Page.captureScreenshot',{format:'png'});await mkdir(screenshots,{recursive:true});
+      await writeFile(join(screenshots,`mednerds-register-${theme}-${width}.png`),Buffer.from(capture.data,'base64'));
+    }
+  }
+  await tab.evaluate("for(const node of document.querySelectorAll('[data-terms],[data-privacy]')){node.checked=true;node.dispatchEvent(new Event('change',{bubbles:true}));}");
   const indexed=await tab.evaluate(`(async()=>{
     const pagefind=await import('/pagefind/pagefind.js');
     const account=await pagefind.search('Account');
@@ -193,6 +262,7 @@ try {
   // Reconnect the same element: old listeners and widgets must be removed.
   await tab.evaluate("(()=>{const account=document.querySelector('mednerds-account'),parent=account.parentElement;account.remove();parent.append(account);})()");
   await tab.wait("!document.querySelector('[data-login]').hidden && window.__captcha.activeCount===1");
+  await tab.evaluate("for(const node of document.querySelectorAll('[data-terms],[data-privacy]')){node.checked=true;node.dispatchEvent(new Event('change',{bubbles:true}));}");
   await tab.input('#account-email',email);await tab.evaluate('window.__captcha.solve()');
   sendDelay=250;
   await tab.click('[data-send]');
@@ -205,7 +275,7 @@ try {
   assert.equal(await tab.evaluate("document.activeElement.id"),'account-otp');
   assert.equal(await tab.evaluate("document.querySelector('[data-status]').textContent"),'');
   assert.equal(await tab.evaluate('window.__cooldownTimers.size'),1);
-  assert.equal(await tab.evaluate("document.querySelector('.account-code-title').textContent"),'Anmeldecode eingeben');
+  assert.equal(await tab.evaluate("document.querySelector('[data-code-step] .account-code-title').textContent"),'Anmeldecode eingeben');
   assert.ok(await tab.evaluate("document.querySelector('.account-delivery').textContent.includes('sechsstelligen Code')"));
   assert.equal(await tab.evaluate('window.__captcha.activeCount'),0);
   assert.equal(await tab.evaluate("document.querySelector('[data-resend-panel]').hidden"),true);
@@ -304,30 +374,137 @@ try {
   await tab.evaluate('window.__clockOffset+=61000');await tab.wait("!document.querySelector('[data-open-resend]').hidden");
   await tab.click('[data-open-resend]');await tab.wait('window.__captcha.activeCount===1');
   // Existing OTP verification remains available while the resend panel is open, without CAPTCHA.
+  legalWriteError=true;
   await tab.input('#account-otp','000012');await tab.click('[data-verify]');
   await tab.wait("!document.querySelector('[data-session]').hidden");
+  await tab.wait("document.querySelector('[data-legal-error]').textContent.includes('nicht gespeichert')");
+  assert.equal(await tab.evaluate("document.querySelector('[data-legal-section]').hidden"),false);
+  legalWriteError=false;await tab.click('[data-legal-save]');await tab.wait("document.querySelector('[data-legal-section]').hidden");
+  assert.equal(await tab.evaluate("document.querySelector('[data-account-intro]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-status]').textContent"),'');
   assert.equal(await tab.evaluate('window.__cooldownTimers.size'),0);
   assert.equal(requests.filter(r=>r.method==='verify').at(-1).token,'000012');
   assert.equal(await tab.evaluate("document.querySelector('[data-session-email]').textContent"),email);
   await tab.wait("!document.querySelector('[data-profile-form]').hidden");
   assert.equal(await tab.evaluate("document.querySelector('#account-display-name').value"),'');
   assert.ok(await tab.evaluate("document.querySelector('#account-name-hint').textContent.includes('öffentlich')"));
-  assert.equal(await tab.evaluate("document.querySelector('[data-staff-role]').textContent"),'Rolle: Nutzer');
+  assert.equal(await tab.evaluate("document.querySelector('[data-staff-role]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-incomplete]').hidden"),false);
+  await tab.wait("document.querySelector('mednerds-account').dataset.profileSetup==='required' && document.activeElement.id==='account-display-name'");
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-save]').textContent"),'Profil erstellen und fortfahren');
+  assert.equal(await tab.evaluate("document.querySelector('#account-display-name').required"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-account-title]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-preferences]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('mednerds-account').dataset.accountView"),'onboarding');
+  assert.equal(await tab.evaluate("document.querySelector('[data-onboarding-view]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('#account-onboarding-title').textContent"),'Vervollständige dein Profil');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile]').getAttribute('aria-labelledby')"),'account-onboarding-title');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-management]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-account-overview]').hidden"),true);
+  assert.equal(await tab.evaluate("[...document.querySelectorAll('[data-account-overview], [data-profile-management], [data-avatar], [data-profile-preferences], [data-role-public], [data-gravatar]')].every(node=>node.getClientRects().length===0)"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-avatar-neutral]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-initials]').textContent"),'');
+  assert.equal(await tab.evaluate("document.querySelector('[data-avatar]').dataset.avatarState"),'neutral');
+  assert.equal(await tab.evaluate("[...document.querySelectorAll('[data-account-controls], [data-danger-area], [data-logout], [data-delete-open]')].every(node=>node.getClientRects().length===0)"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-onboarding-cancel]').textContent"),'Einrichtung abbrechen');
+  assert.ok(await tab.evaluate("document.querySelector('[data-onboarding-cancel]').getClientRects().length>0"));
+  assert.equal(gravatarRequests,0);
+  // Incomplete accounts use the explicit entry; it does not send codes or delete.
+  await tab.navigate('/account/?action=delete');await tab.wait("document.querySelector('[data-delete-dialog]').open && document.querySelector('mednerds-account').dataset.profileSetup==='required'");
+  assert.equal(await tab.evaluate("document.activeElement.matches('[data-delete-cancel]')"),true);
+  assert.equal(deletionRequests.length,0);
+  await tab.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+  await tab.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+  await tab.wait("!document.querySelector('[data-delete-dialog]').open");
+  assert.equal(await tab.evaluate("document.activeElement.matches('[data-onboarding-cancel]')"),true);
+  await tab.navigate();await tab.wait("document.querySelector('mednerds-account').dataset.profileSetup==='required'");
+  for(const width of [320,390,768,1440]) for(const theme of ['dark','light']) {
+    await tab.command('Emulation.setDeviceMetricsOverride',{width,height:950,deviceScaleFactor:1,mobile:width<600});
+    await tab.evaluate(`document.documentElement.dataset.theme='${theme}';window.scrollTo(0,0)`);
+    assert.ok(await tab.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),`Onboarding ${width} ${theme}: overflow`);
+    assert.ok(await tab.evaluate("[...document.querySelectorAll('[data-session] input:not([type=checkbox]),[data-session] button')].filter(node=>node.getClientRects().length).every(node=>node.getBoundingClientRect().height>=44)"));
+    if((width===390 && theme==='light') || (width===1440 && theme==='dark')) {
+      const capture=await tab.command('Page.captureScreenshot',{format:'png'});await mkdir(screenshots,{recursive:true});
+      await writeFile(join(screenshots,`mednerds-onboarding-${theme}-${width}.png`),Buffer.from(capture.data,'base64'));
+    }
+  }
+  await tab.evaluate("document.querySelector('#account-professional-role').focus()");
+  for(let step=0;step<2;step++) {
+    await tab.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+    await tab.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+  }
+  assert.equal(await tab.evaluate("document.activeElement.matches('[data-onboarding-cancel]') && getComputedStyle(document.activeElement).outlineStyle==='solid'"),true);
+  await tab.click('[data-profile-save]');assert.equal(profileWrites.length,0);
+  assert.equal(await tab.evaluate("document.querySelector('#account-display-name').getAttribute('aria-invalid')"),'true');
+  await tab.input('#account-display-name','Unsaved nickname');
+  assert.equal(await tab.evaluate("document.querySelector('[data-initials]').textContent"),'');
+  assert.equal(await tab.evaluate("document.querySelector('mednerds-account').dataset.accountView"),'onboarding');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-management]').getClientRects().length"),0);
+  await tab.navigate();await tab.wait("document.querySelector('mednerds-account').dataset.profileSetup==='required'");
+  assert.equal(await tab.evaluate("document.querySelector('#account-display-name').value"),'');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-management]').hidden"),true);
+  await tab.click('[data-onboarding-cancel]');await tab.wait("!document.querySelector('[data-login]').hidden");
+  assert.ok(await tab.evaluate("document.querySelector('[data-status]').textContent.includes('Du bist abgemeldet')"));
+  assert.equal(await tab.evaluate("document.querySelector('[data-deletion-access-link] a').getAttribute('href')"),'/account/?action=delete');
+  await tab.navigate('/account/?action=delete');
+  await tab.wait("!document.querySelector('[data-login]').hidden && !!window.__captcha?.activeCount");
+  assert.equal(await tab.evaluate("document.querySelector('[data-mode=login]').getAttribute('aria-pressed')"),'true');
+  assert.equal(await tab.evaluate("document.querySelector('[data-deletion-access-hint]').hidden"),false);
+  await tab.wait('window.__captcha?.activeCount===1');await tab.input('#account-email',email);await tab.evaluate('window.__clockOffset+=61000;window.__captcha.solve()');
+  await tab.wait("!document.querySelector('[data-send]').disabled");await tab.click('[data-send]');await tab.wait("!document.querySelector('[data-code-step]').hidden");
+  await tab.input('#account-otp','000012');await tab.click('[data-verify]');
+  await tab.wait("document.querySelector('mednerds-account').dataset.profileSetup==='required' && document.querySelector('[data-delete-dialog]').open");
+  assert.equal(await tab.evaluate("document.activeElement.matches('[data-delete-cancel]')"),true);
+  await tab.click('[data-delete-cancel]');await tab.navigate();
+  await tab.wait("document.querySelector('mednerds-account').dataset.profileSetup==='required' && document.activeElement.id==='account-display-name'");
+  assert.equal(await tab.evaluate("document.querySelector('[data-onboarding-view]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-management]').hidden"),true);
+  assert.equal(requests.filter(r=>r.method==='otp').at(-1).createUser,false);
+  legalReadError=true;await tab.navigate();await tab.wait("document.querySelector('[data-legal-error]').textContent.includes('nicht verfügbar')");
+  assert.equal(await tab.evaluate("document.querySelector('[data-legal-section]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-legal-save]').disabled"),true);
+  assert.equal(await tab.evaluate("document.querySelector('mednerds-account').dataset.profileSetup"),'required');
+  legalReadError=false;await tab.navigate();await tab.wait("document.querySelector('mednerds-account').dataset.profileSetup==='required'");
   await tab.input('#account-display-name','A');await tab.click('[data-profile-save]');
   assert.equal(profileWrites.length,0);
   assert.equal(await tab.evaluate("document.querySelector('#account-display-name').getAttribute('aria-invalid')"),'true');
   await tab.input('#account-display-name','  Zoë Müller  ');
+  profileWriteError='23514';await tab.click('[data-profile-save]');
+  await tab.wait("document.querySelector('[data-profile-error]').textContent.includes('nicht gespeichert')");
+  assert.equal(await tab.evaluate("document.querySelector('#account-display-name').value"),'  Zoë Müller  ');
+  assert.equal(await tab.evaluate("document.querySelector('mednerds-account').dataset.profileSetup"),'required');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-save]').disabled"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-onboarding-view]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-management]').getClientRects().length"),0);
+  assert.equal(await tab.evaluate("document.querySelector('[data-initials]').textContent"),'');
+  profileWriteError=undefined;
   profileWriteDelay=200;await tab.click('[data-profile-save]');
   await tab.evaluate("document.querySelector('[data-profile-form]').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))");
   assert.equal(await tab.evaluate("document.querySelector('[data-profile-save]').disabled"),true);
-  await tab.wait("document.querySelector('[data-profile-status]').textContent.includes('gespeichert')");profileWriteDelay=0;
-  assert.deepEqual(profileWrites,[{display_name:'Zoë Müller'}]);
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-management]').getClientRects().length"),0);
+  await tab.wait("document.querySelector('mednerds-account').dataset.profileSetup==='complete' && document.activeElement.matches('[data-account-title]')");profileWriteDelay=0;
+  assert.deepEqual(profileWrites.at(-1),{display_name:'Zoë Müller',professional_role:null,professional_role_public:false,avatar_provider:'initials'});
+  assert.equal(profileWrites.length,2); // One failed write, one successful retry; no duplicate submission.
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-status]').textContent"),'Dein Profil wurde erstellt.');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-status]').getAttribute('aria-live')"),'polite');
+  assert.equal(await tab.evaluate("document.querySelector('[data-status]').textContent"),'');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-preferences]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('mednerds-account').dataset.accountView"),'management');
+  assert.equal(await tab.evaluate("document.querySelector('[data-onboarding-view]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-management]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-account-overview]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-account-controls]').hidden || document.querySelector('[data-danger-area]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-onboarding-cancel]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-avatar-neutral]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-avatar-neutral]').getClientRects().length"),0);
+  assert.equal(await tab.evaluate("document.querySelector('[data-initials]').textContent"),'ZM');
   assert.equal(await tab.evaluate("document.querySelector('#account-display-name').value"),'Zoë Müller');
   for(const width of [320,390,768,1440]) for(const theme of ['dark','light']) {
     await tab.command('Emulation.setDeviceMetricsOverride',{width,height:950,deviceScaleFactor:1,mobile:width<600});
     await tab.evaluate(`document.documentElement.dataset.theme='${theme}';window.scrollTo(0,0)`);
     assert.ok(await tab.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),`Profile ${width} ${theme}: overflow`);
-    assert.ok(await tab.evaluate("[...document.querySelectorAll('[data-session] input,[data-session] button')].filter(node=>node.getClientRects().length).every(node=>node.getBoundingClientRect().height>=44)"));
+    assert.equal(await tab.evaluate("(()=>{const area=document.querySelector('[data-danger-area]'),button=area.querySelector('[data-delete-open]'),probe=document.createElement('span');probe.style.color='var(--sl-color-red)';area.append(probe);const red=getComputedStyle(probe).color;probe.remove();return getComputedStyle(button).backgroundColor===red && getComputedStyle(area).borderInlineStartColor===red && getComputedStyle(area.querySelector('h2')).color===red;})()"),true,`Danger uses semantic red ${width} ${theme}`);
+    assert.ok(await tab.evaluate("[...document.querySelectorAll('[data-session] input:not([type=checkbox]),[data-session] button')].filter(node=>node.getClientRects().length).every(node=>node.getBoundingClientRect().height>=44)"));
     if((width===390 && theme==='light') || (width===1440 && theme==='dark')) {
       const capture=await tab.command('Page.captureScreenshot',{format:'png'});
       await mkdir(screenshots,{recursive:true});
@@ -338,7 +515,7 @@ try {
   await tab.evaluate("document.querySelector('#account-display-name').focus()");
   await tab.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
   await tab.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
-  assert.equal(await tab.evaluate("document.activeElement.matches('[data-profile-save]') && document.activeElement.matches(':focus-visible')"),true);
+  assert.equal(await tab.evaluate("document.activeElement.id==='account-professional-role' && document.activeElement.matches(':focus-visible')"),true);
   profileWriteError='23514';await tab.input('#account-display-name','Other');await tab.click('[data-profile-save]');
   await tab.wait("document.querySelector('[data-profile-error]').textContent.includes('nicht gespeichert')");profileWriteError=undefined;
   assert.ok(!(await tab.evaluate('document.body.textContent')).includes('private database diagnostic'));
@@ -347,11 +524,33 @@ try {
   assert.equal(await tab.evaluate("!!document.querySelector('[data-profile] img')"),false);
   await tab.input('#account-display-name','Zoë Müller');await tab.click('[data-profile-save]');
   await tab.wait("document.querySelector('[data-profile-status]').textContent.includes('gespeichert')");
-  assert.equal(await tab.evaluate('window.__captcha.activeCount'),0);
+  await tab.input('#account-professional-role','  Assistenzärztin  Kardiologie  ');
+  await tab.evaluate("document.querySelector('[data-role-public]').checked=true;document.querySelector('[data-gravatar]').checked=true");
+  assert.equal(gravatarRequests,0); // Changing a checkbox alone must not contact Gravatar.
+  await tab.click('[data-profile-save]');await tab.wait("document.querySelector('[data-profile-status]').textContent.includes('gespeichert')");
+  await tab.wait("document.querySelector('[data-avatar]').dataset.avatarState==='fallback'");
+  assert.equal(profileWrites.at(-1).professional_role,'Assistenzärztin Kardiologie');
+  assert.equal(profileWrites.at(-1).professional_role_public,true);
+  assert.equal(profileWrites.at(-1).avatar_provider,'gravatar');
+  assert.equal(gravatarRequests,1);
+  assert.equal(await tab.evaluate("document.querySelector('[data-initials]').textContent"),'ZM');
+  await tab.evaluate("document.querySelector('[data-gravatar]').checked=false");await tab.click('[data-profile-save]');
+  await tab.wait("document.querySelector('[data-profile-status]').textContent.includes('gespeichert')");
+  gravatarFailure=false;
+  await tab.evaluate("document.querySelector('[data-gravatar]').checked=true");await tab.click('[data-profile-save]');
+  await tab.wait("!!document.querySelector('[data-avatar] img') && !document.querySelector('[data-avatar] img').hidden");
+  assert.equal(gravatarRequests,2);
+  await tab.input('#account-professional-role',' ');await tab.evaluate("document.querySelector('[data-gravatar]').checked=false");
+  await tab.click('[data-profile-save]');await tab.wait("document.querySelector('[data-profile-status]').textContent.includes('gespeichert')");
+  assert.equal(profileWrites.at(-1).professional_role,null);assert.equal(profileWrites.at(-1).professional_role_public,false);
+  assert.equal(await tab.evaluate("!!document.querySelector('[data-avatar] img')"),false);
+  assert.equal(await tab.evaluate('window.__captcha?.activeCount ?? 0'),0);
   assert.ok(!(await tab.evaluate('document.body.textContent')).includes('test-refresh-only'));
   await tab.navigate();await tab.wait("!document.querySelector('[data-session]').hidden");
   assert.equal(await tab.evaluate("document.querySelector('[data-session-email]').textContent"),email);
   await tab.wait("!document.querySelector('[data-profile-form]').hidden");
+  assert.equal(await tab.evaluate("document.querySelector('mednerds-account').dataset.profileSetup"),'complete');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-incomplete]').hidden"),true);
   assert.equal(await tab.evaluate("document.querySelector('#account-display-name').value"),'Zoë Müller');
   staffRow={user_id:'00000000-0000-4000-8000-000000000001',role:'admin',author_slug:'orlando-frey',created_at:'2026-10-09T00:00:00Z'};
   await tab.navigate();await tab.wait("document.querySelector('[data-staff-role]').textContent==='Rolle: Administrator'");
@@ -361,6 +560,12 @@ try {
   assert.equal(await tab.evaluate("document.querySelector('[data-session]').hidden"),false);
   assert.equal(await tab.evaluate("document.querySelector('[data-profile-form]').hidden"),true);
   profileReadError=undefined;await tab.click('[data-profile-retry]');await tab.wait("!document.querySelector('[data-profile-form]').hidden");
+  legacyProfile=true;await tab.navigate();await tab.wait("!document.querySelector('[data-profile-form]').hidden");
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-extensions]').disabled"),true);
+  await tab.input('#account-display-name','Legacy name');await tab.click('[data-profile-save]');
+  await tab.wait("document.querySelector('[data-profile-status]').textContent.includes('gespeichert')");
+  assert.deepEqual(profileWrites.at(-1),{display_name:'Legacy name'});
+  legacyProfile=false;
 
   const second=await createTab();await second.navigate();await second.wait("!document.querySelector('[data-session]').hidden");
   assert.equal(await second.evaluate("document.querySelector('[data-session-email]').textContent"),email);
@@ -377,6 +582,7 @@ try {
   await tab.wait('window.__captcha.activeCount===1');await tab.input('#account-email',email);await tab.evaluate('window.__captcha.solve()');
   await tab.click('[data-send]');await tab.wait("!document.querySelector('[data-code-step]').hidden");
   await tab.input('#account-otp','000012');await tab.click('[data-verify]');await tab.wait("!document.querySelector('[data-session]').hidden");
+  assert.equal(requests.filter(r=>r.method==='otp').at(-1).createUser,false);
   await second.wait("!document.querySelector('[data-session]').hidden");
   await tab.click('[data-logout]');await tab.wait("!document.querySelector('[data-login]').hidden");
   await second.wait("!document.querySelector('[data-login]').hidden");
@@ -394,6 +600,7 @@ try {
   assert.equal(await tab.evaluate('window.__captcha.activeCount'),0);
   await tab.evaluate("(()=>{const account=document.querySelector('mednerds-account'),parent=account.parentElement;account.remove();parent.append(account);})()");
   await tab.wait('window.__captcha.activeCount===1 && window.__cooldownTimers.size===1');
+  await tab.click('[data-mode=login]');await tab.wait('window.__captcha.activeCount===1');
   assert.equal(await tab.evaluate("document.querySelector('[data-send]').disabled"),true);
   await tab.evaluate('window.__clockOffset+=61000;window.__captcha.solve()');await tab.wait("!document.querySelector('[data-send]').disabled");
   sendError={status:500,code:'unexpected_failure'};await tab.click('[data-send]');
@@ -407,7 +614,7 @@ try {
     await tab.evaluate(`document.documentElement.dataset.theme='${theme}'`);
     await tab.wait('window.__captcha.activeCount===1');
     assert.ok(await tab.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),`${width} ${theme}: overflow`);
-    assert.ok(await tab.evaluate("[...document.querySelectorAll('mednerds-account input,mednerds-account button')].filter(node=>node.getClientRects().length && !node.closest('.account-challenge')).every(node=>node.getBoundingClientRect().height>=44)"));
+    assert.ok(await tab.evaluate("[...document.querySelectorAll('mednerds-account input:not([type=checkbox]),mednerds-account button')].filter(node=>node.getClientRects().length && !node.closest('.account-challenge')).every(node=>node.getBoundingClientRect().height>=44)"));
   }
   await tab.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
   await tab.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
@@ -430,6 +637,129 @@ try {
   await tab.input('#account-otp','000012');await tab.click('[data-verify]');await tab.wait("!document.querySelector('[data-session]').hidden");
   await tab.evaluate("(()=>{for(const key of Object.keys(localStorage).filter(key=>key.endsWith('-auth-token'))){const value=JSON.parse(localStorage.getItem(key));value.expires_at=1;localStorage.setItem(key,JSON.stringify(value));}})()");
   refreshError=true;await tab.navigate();await tab.wait("!document.querySelector('[data-login]').hidden");refreshError=false;
+  legalReadError=true;await tab.navigate();await tab.wait("!document.querySelector('[data-registration-unavailable]').hidden");
+  await tab.click('[data-mode=login]');await tab.wait('window.__captcha.activeCount===1');
+  assert.equal(await tab.evaluate("document.querySelector('[data-registration-checks]').hidden"),true);
+  assert.equal(gravatarRequests,2);
+  legalReadError=false;
+
+  // The deletion endpoint is mocked separately: no production account is touched.
+  await tab.wait('window.__captcha.activeCount===1');await tab.input('#account-email',email);
+  await tab.evaluate('window.__clockOffset+=61000;window.__captcha.solve()');await tab.wait("!document.querySelector('[data-send]').disabled");
+  await tab.click('[data-send]');await tab.wait("!document.querySelector('[data-code-step]').hidden");
+  await tab.input('#account-otp','000012');await tab.click('[data-verify]');await tab.wait("!document.querySelector('[data-session]').hidden");
+  await tab.click('[data-delete-open]');await tab.wait('window.__captcha.activeCount===1');
+  assert.equal(await tab.evaluate("document.querySelector('[data-delete-dialog]').getAttribute('aria-labelledby')"),'account-delete-title');
+  await tab.evaluate('window.__captcha.solve()');await tab.click('[data-delete-send]');
+  await tab.wait("document.querySelector('[data-delete-error]').textContent.includes('letzte Administrator')");
+  assert.equal(deletionRequests.filter(r=>r.action==='delete').length,0);
+  await tab.click('[data-delete-cancel]');
+  deletionBeginStatus='code_sent';
+  await tab.click('[data-delete-open]');await tab.wait('window.__captcha.activeCount===1');await tab.evaluate('window.__captcha.solve()');
+  await tab.click('[data-delete-send]');await tab.wait("!document.querySelector('[data-delete-form]').hidden");
+  assert.equal(await tab.evaluate("document.activeElement.id==='account-delete-otp'"),true);
+  await tab.input('#account-delete-otp','12345');await tab.click('[data-delete-confirm]');
+  assert.equal(deletionRequests.filter(r=>r.action==='delete').length,0);
+  await tab.input('#account-delete-otp','000012');await tab.click('[data-delete-confirm]');
+  await tab.wait("document.querySelector('[data-delete-error]').textContent.includes('bereits verwendet')");
+  assert.equal(await tab.evaluate("document.querySelector('[data-session]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-status]').textContent.includes('gelöscht')"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-delete-confirm]').disabled"),true);
+  await tab.click('[data-delete-new-code]');await tab.wait('window.__captcha.activeCount===1');
+  await tab.evaluate('window.__captcha.solve()');await tab.click('[data-delete-send]');await tab.wait("!document.querySelector('[data-delete-form]').hidden");
+  // Auth-delete failure preserves the account and needs a fresh confirmation.
+  deletionConfirmStatus='delete_failed';
+  await tab.input('#account-delete-otp','000012');await tab.click('[data-delete-confirm]');
+  await tab.wait("document.querySelector('[data-delete-error]').textContent.includes('Löschung wurde nicht bestätigt')");
+  assert.equal(await tab.evaluate("document.querySelector('[data-session]').hidden"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-status]').textContent.includes('gelöscht')"),false);
+  assert.equal(await tab.evaluate("document.querySelector('[data-delete-confirm]').disabled"),true);
+  await tab.click('[data-delete-new-code]');await tab.wait('window.__captcha.activeCount===1');
+  await tab.evaluate('window.__captcha.solve()');await tab.click('[data-delete-send]');await tab.wait("!document.querySelector('[data-delete-form]').hidden");
+  // Logout in another tab invalidates and clears a prepared deletion dialog.
+  const deletesBeforeLogout=deletionRequests.filter(r=>r.action==='delete').length;
+  await tab.input('#account-delete-otp','000012');
+  await second.wait("!document.querySelector('[data-session]').hidden");await second.click('[data-logout]');
+  await tab.wait("!document.querySelector('[data-login]').hidden && !document.querySelector('[data-delete-dialog]').open");
+  assert.equal(await tab.evaluate("document.querySelector('#account-delete-otp').value"),'');
+  assert.equal(await tab.evaluate("document.querySelector('[data-delete-email]').textContent"),'');
+  await tab.evaluate("document.querySelector('[data-delete-form]').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))");
+  assert.equal(deletionRequests.filter(r=>r.action==='delete').length,deletesBeforeLogout);
+  await tab.wait('window.__captcha.activeCount===1');await tab.input('#account-email',email);
+  await tab.evaluate('window.__clockOffset+=61000;window.__captcha.solve()');await tab.wait("!document.querySelector('[data-send]').disabled");
+  await tab.click('[data-send]');await tab.wait("!document.querySelector('[data-code-step]').hidden");
+  await tab.input('#account-otp','000012');await tab.click('[data-verify]');await tab.wait("!document.querySelector('[data-session]').hidden");
+  await tab.click('[data-delete-open]');await tab.wait('window.__captcha.activeCount===1');await tab.evaluate('window.__captcha.solve()');
+  await tab.click('[data-delete-send]');await tab.wait("!document.querySelector('[data-delete-form]').hidden");
+  for(const width of [320,390,768,1440]) for(const theme of ['dark','light']) {
+    await tab.command('Emulation.setDeviceMetricsOverride',{width,height:950,deviceScaleFactor:1,mobile:width<600});
+    await tab.evaluate(`document.documentElement.dataset.theme='${theme}'`);
+    assert.ok(await tab.evaluate("(()=>{const box=document.querySelector('[data-delete-dialog]').getBoundingClientRect();return box.left>=0&&box.right<=innerWidth&&document.documentElement.scrollWidth<=innerWidth+1;})()"),`Deletion dialog ${width} ${theme}`);
+    if((width===390&&theme==='light')||(width===1440&&theme==='dark')) {
+      const capture=await tab.command('Page.captureScreenshot',{format:'png'});await mkdir(screenshots,{recursive:true});
+      await writeFile(join(screenshots,`mednerds-deletion-${theme}-${width}.png`),Buffer.from(capture.data,'base64'));
+    }
+  }
+  await tab.evaluate("document.querySelector('[data-delete-cancel]').focus()");
+  await tab.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+  await tab.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+  assert.equal(await tab.evaluate("document.activeElement.id==='account-delete-otp'"),true);
+  await tab.evaluate("document.querySelector('[data-delete-confirm]').focus()");
+  await tab.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+  await tab.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+  // Native dialogs may let Tab visit browser chrome, but never the inert page.
+  assert.ok(await tab.evaluate("!document.hasFocus() || document.activeElement===document.querySelector('[data-delete-dialog]') || document.activeElement.closest('[data-delete-dialog]')!==null"));
+  await tab.evaluate("document.querySelector('[data-delete-cancel]').focus();document.querySelector('[data-profile-save]').focus()");
+  assert.equal(await tab.evaluate("document.activeElement.matches('[data-delete-cancel]')"),true);
+  const deletesBefore=deletionRequests.filter(r=>r.action==='delete').length;
+  deletionConfirmStatus='deleted';deletionDelay=200;
+  await tab.input('#account-delete-otp','000012');await tab.click('[data-delete-confirm]');
+  await tab.evaluate("document.querySelector('[data-delete-form]').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))");
+  assert.equal(await tab.evaluate("document.querySelector('[data-delete-cancel]').disabled"),true);
+  await tab.wait("document.querySelector('[data-status]').textContent==='Dein MedNerds-Account wurde dauerhaft gelöscht.'");
+  assert.equal(deletionRequests.filter(r=>r.action==='delete').length,deletesBefore+1);
+  assert.equal(await tab.evaluate("document.querySelector('[data-session]').hidden"),true);
+  assert.equal(await tab.evaluate("document.querySelector('[data-delete-dialog]').open"),false);
+  assert.equal(await tab.evaluate("Object.keys(localStorage).filter(key=>key.endsWith('-auth-token')).length"),0);
+  assert.equal(await tab.evaluate("document.querySelector('#account-email').value"),'');
+  assert.equal(await tab.evaluate("document.querySelector('#account-display-name').value"),'');
+  assert.equal(await tab.evaluate("document.querySelector('#account-professional-role').value"),'');
+  assert.ok(!(await tab.evaluate('document.body.textContent')).includes(email));
+
+  // A protected feature can resume only after BOTH persisted setup and legal proof.
+  profileName=null;profileExtensions={professional_role:null,professional_role_public:false,avatar_provider:'initials'};
+  legalAccepted=false;
+  await tab.click('[data-mode=login]');await tab.wait('window.__captcha.activeCount===1');await tab.input('#account-email',email);
+  await tab.evaluate('window.__clockOffset+=61000;window.__captcha.solve()');await tab.wait("!document.querySelector('[data-send]').disabled");
+  await tab.click('[data-send]');await tab.wait("!document.querySelector('[data-code-step]').hidden");
+  await tab.input('#account-otp','000012');await tab.click('[data-verify]');await tab.wait("document.querySelector('mednerds-account').dataset.accountView==='onboarding'");
+  const verificationsBeforeReturn=requests.filter(r=>r.method==='verify').length;
+  await tab.navigate('/account/?returnTo=%2Fmedlearn%2F%3Fchapter%3D2%23thema');
+  await tab.wait("document.querySelector('mednerds-account').dataset.accountView==='onboarding'");
+  await tab.input('#account-display-name','Learning nickname');
+  assert.equal(await tab.evaluate('location.pathname'),'/account/');
+  assert.equal(await tab.evaluate("document.querySelector('[data-profile-management]').getClientRects().length"),0);
+  await tab.click('[data-profile-save]');await tab.wait("document.querySelector('mednerds-account').dataset.accountView==='management'");
+  assert.equal(await tab.evaluate('location.pathname'),'/account/');
+  assert.equal(await tab.evaluate("document.querySelector('[data-legal-section]').hidden"),false);
+  await tab.evaluate("for(const node of document.querySelectorAll('[data-account-terms],[data-account-privacy]')){node.checked=true;node.dispatchEvent(new Event('change',{bubbles:true}));}");
+  await tab.click('[data-legal-save]');
+  await tab.wait("location.pathname==='/medlearn/' && document.readyState==='complete'");
+  assert.equal(await tab.evaluate('location.search+location.hash'),'?chapter=2#thema');
+  assert.equal(requests.filter(r=>r.method==='verify').length,verificationsBeforeReturn);
+  await tab.navigate('/account/?returnTo=https%3A%2F%2Fevil.example%2F');
+  await tab.wait("document.querySelector('mednerds-account').dataset.accountView==='management'");
+  assert.equal(await tab.evaluate('location.pathname'),'/account/');
+
+  // Fully confirmed deletion also remains available to an incomplete account.
+  profileName=null;await tab.navigate('/account/?action=delete');await tab.wait("document.querySelector('mednerds-account').dataset.accountView==='onboarding' && document.querySelector('[data-delete-dialog]').open");
+  assert.equal(await tab.evaluate("document.querySelector('[data-danger-area]').getClientRects().length"),0);
+  await tab.wait('window.__captcha?.activeCount===1');await tab.evaluate('window.__captcha.solve()');
+  await tab.click('[data-delete-send]');await tab.wait("!document.querySelector('[data-delete-form]').hidden");
+  await tab.input('#account-delete-otp','000012');await tab.click('[data-delete-confirm]');
+  await tab.wait("document.querySelector('[data-status]').textContent==='Dein MedNerds-Account wurde dauerhaft gelöscht.'");
+  assert.equal(await tab.evaluate("document.querySelector('[data-session]').hidden"),true);
+  assert.equal(await tab.evaluate("Object.keys(localStorage).filter(key=>key.endsWith('-auth-token')).length"),0);
 
   const callsBefore=requests.length, scriptsBefore=scriptLoads;
   await tab.command('Emulation.setScriptExecutionDisabled',{value:true});await tab.navigate();
@@ -441,7 +771,7 @@ try {
   await tab.wait("document.readyState==='complete' && !!document.querySelector('.mn-tools-overview')");
   assert.equal(requests.length,callsBefore);assert.equal(scriptLoads,scriptsBefore);
   assert.deepEqual(errors,[]);assert.equal(blockedExternal,0);
-  console.log('✓ Account browser: mock-only OTP/CAPTCHA, profile validation/save/reload/errors/staff, missing backend, logout cleanup, responsive dark/light/keyboard, noindex/Pagefind, no-JS');
+  console.log('✓ Account browser: separate onboarding/management, saved-profile and legal feature return, OTP/session/profile/legal regressions, deletion including incomplete accounts, responsive/dark/light/keyboard; all external services mocked');
   }
 } finally {
   for(const tab of tabs) {
