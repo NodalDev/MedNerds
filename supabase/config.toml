@@ -32,3 +32,8 @@ otp_length = 6
 otp_expiry = 600
 
 # No production SMTP, CAPTCHA secrets or database passwords here.
+
+[functions.delete-account]
+# Custom getUser verification is mandatory, including projects using asymmetric JWTs.
+# Gateway verification is disabled deliberately; the handler rejects missing/invalid JWTs.
+verify_jwt = false

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { ProfileStore, createProfileApi } from '../src/lib/auth/profile-store.ts';
 import { validateDisplayName, getStaffAuthor, isStaffAuthorOfArticle } from '../src/lib/auth/profile.ts';
 
@@ -124,4 +124,22 @@ test('migration contracts: explicit RLS, only name updates, private definer, ide
   const dbTest=await readFile(new URL('../supabase/tests/profiles_staff.test.sql',import.meta.url),'utf8');
   const statement=backfill.replace(/^--.*$/gm,'').trim();
   assert.equal(dbTest.split(statement).length-1,2, 'RLS test uses the migration backfill verbatim twice');
+});
+
+test('staff slug uniqueness is defined once in an additive, idempotent migration (static, not DB validation)', async () => {
+  const directory = new URL('../supabase/migrations/', import.meta.url);
+  const files = (await readdir(directory)).filter(file => file.endsWith('.sql')).sort();
+  const followUp = '20261024000000_staff_author_slug_unique.sql';
+  const migrations = await Promise.all(files.map(file => readFile(new URL(file, directory), 'utf8')));
+  const versions = files.map(file => file.slice(0, 14));
+  assert.equal(new Set(versions).size, versions.length, 'Migration versions are unique');
+  assert.ok(files.includes(followUp));
+  assert.ok(files.indexOf(followUp) > files.indexOf('20261017000000_meddocs_comment_upvotes_sorting.sql'), 'Follow-up runs after the previous latest migration');
+  assert.doesNotMatch(migrations[files.indexOf('20261009000000_profiles_and_staff.sql')], /staff_accounts_author_slug_unique/);
+  const statement = migrations[files.indexOf(followUp)].replace(/^--.*$/gm, '').replace(/\s+/g, ' ').trim();
+  assert.equal(statement, 'create unique index if not exists staff_accounts_author_slug_unique on public.staff_accounts (author_slug) where author_slug is not null;');
+  assert.equal(migrations.join('\n').match(/create\s+unique\s+index\s+(?:if\s+not\s+exists\s+)?staff_accounts_author_slug_unique\b/gi)?.length, 1);
+  const dbTest = await readFile(new URL('../supabase/tests/profiles_staff.test.sql', import.meta.url), 'utf8');
+  assert.match(dbTest, /'23505',\s*null,\s*'An author slug cannot be assigned twice'/);
+  assert.ok(dbTest.includes('CREATE UNIQUE INDEX staff_accounts_author_slug_unique ON public.staff_accounts USING btree (author_slug) WHERE (author_slug IS NOT NULL)'));
 });

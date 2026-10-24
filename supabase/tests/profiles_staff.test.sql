@@ -6,6 +6,15 @@ select no_plan();
 
 select ok((select relrowsecurity from pg_class where oid='public.profiles'::regclass), 'Profiles RLS enabled');
 select ok((select relrowsecurity from pg_class where oid='public.staff_accounts'::regclass), 'Staff RLS enabled');
+-- IF NOT EXISTS checks only the name; also verify the actual index definition.
+select ok(exists (
+  select 1 from pg_catalog.pg_index i
+  where i.indexrelid = pg_catalog.to_regclass('public.staff_accounts_author_slug_unique')
+    and i.indrelid = 'public.staff_accounts'::regclass
+    and i.indisunique and i.indisvalid and i.indisready
+    and pg_catalog.pg_get_indexdef(i.indexrelid) =
+      'CREATE UNIQUE INDEX staff_accounts_author_slug_unique ON public.staff_accounts USING btree (author_slug) WHERE (author_slug IS NOT NULL)'
+), 'Staff author slug index has the expected unique, valid and ready definition');
 select ok(not has_function_privilege('authenticated', 'mednerds_private.create_auth_profile()', 'EXECUTE'), 'Auth trigger not callable by users');
 select ok(not has_schema_privilege('authenticated', 'mednerds_private', 'USAGE'), 'Private functions not exposed');
 
@@ -17,11 +26,25 @@ select is((select count(*)::int from public.profiles where user_id in ('11111111
 select is((select display_name from public.profiles where user_id='11111111-1111-4111-8111-111111111111'), null::text, 'Metadata/name not copied');
 select is((select count(*)::int from public.staff_accounts where user_id='11111111-1111-4111-8111-111111111111'), 0, 'Registration/metadata cannot assign staff');
 
--- Simulate a pre-migration Auth user, then run the migration's backfill twice.
--- test-profiles.mjs checks both statements match the versioned migration.
-alter table auth.users disable trigger mednerds_auth_user_created;
-insert into auth.users (id) values ('33333333-3333-4333-8333-333333333333');
-alter table auth.users enable trigger mednerds_auth_user_created;
+-- Simulate an existing Auth user without a profile.
+-- Keep the real Auth trigger enabled at all times.
+insert into auth.users (id)
+values ('33333333-3333-4333-8333-333333333333');
+
+-- Remove only the synthetic user's automatically created profile.
+delete from public.profiles
+where user_id = '33333333-3333-4333-8333-333333333333';
+
+-- Verify the legacy-user scenario.
+select is(
+  (
+    select count(*)::int
+    from public.profiles
+    where user_id = '33333333-3333-4333-8333-333333333333'
+  ),
+  0,
+  'Legacy user initially has no profile'
+);
 insert into public.profiles (user_id)
 select id from auth.users
 on conflict (user_id) do nothing;
@@ -33,6 +56,18 @@ select is((select count(*)::int from public.profiles where user_id='33333333-333
 -- Only privileged maintenance grants staff. B will be an app admin.
 insert into public.staff_accounts (user_id, role, author_slug) values
   ('22222222-2222-4222-8222-222222222222', 'admin', 'orlando-frey');
+
+select throws_ok(
+  $$insert into public.staff_accounts (user_id, role, author_slug)
+    values (
+      '11111111-1111-4111-8111-111111111111',
+      'author',
+      'orlando-frey'
+    )$$,
+  '23505',
+  null,
+  'An author slug cannot be assigned twice'
+);
 
 set local role anon;
 select throws_ok($$select * from public.profiles$$, '42501', null, 'Anon cannot read profiles');
@@ -88,8 +123,10 @@ set local role authenticated;
 select is((select count(*)::int from public.profiles),0,'No identity reads no profiles');
 select results_eq($$update public.profiles set display_name='Forbidden' returning user_id$$,$$select null::uuid where false$$,'No identity edits no profiles');
 reset role;
+-- Local fixture handover: the Phase-2.2 guard must retain another administrator.
+insert into public.staff_accounts (user_id, role) values ('11111111-1111-4111-8111-111111111111', 'admin');
 delete from auth.users where id='22222222-2222-4222-8222-222222222222';
 select is((select count(*)::int from public.profiles where user_id='22222222-2222-4222-8222-222222222222'),0,'Auth delete cascades profile');
 select is((select count(*)::int from public.staff_accounts where user_id='22222222-2222-4222-8222-222222222222'),0,'Auth delete cascades staff');
-select * from finish();
+select * from finish(true);
 rollback;
