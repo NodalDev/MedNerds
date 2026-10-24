@@ -9,6 +9,7 @@ import { medBlogSchema } from './lib/medblog/schema';
 import { linkResourceSchema } from './lib/links/schema';
 import { commentAwareDocsLoader } from './lib/meddocs/comments/loader';
 import { referenceAwareLoader } from './lib/meddocs/references/loader';
+import { publishedContentLoader } from './lib/published-content-loader';
 
 export const collections = {
   linkResources: defineCollection({
@@ -16,11 +17,12 @@ export const collections = {
     schema: linkResourceSchema,
   }),
   medblog: defineCollection({
-    loader: glob({ pattern: '*.{md,mdx}', base: './src/content/medblog' }),
+    loader: publishedContentLoader(glob({ pattern: '*.{md,mdx}', base: './src/content/medblog' })),
     schema: medBlogSchema,
   }),
 	docs: defineCollection({
-		loader: referenceAwareLoader(commentAwareDocsLoader()),
+		// Keep Starlight's system 404; generate the complete operator manifest before filtering.
+		loader: publishedContentLoader(referenceAwareLoader(commentAwareDocsLoader()), ['404']),
 		schema: docsSchema({
 			extend: articleMetadataSchema.safeExtend({
 				pageLayout: z.enum(pageLayouts).optional(),
