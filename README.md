@@ -47,15 +47,54 @@ Zum Einsatz kommen unter anderem:
 
 ## Lokale Entwicklung
 
-Voraussetzung ist eine aktuelle Node.js-Installation.
+Die konkrete Node.js-Version steht in `.node-version`; der kompatible Bereich
+für Node.js und npm in `package.json` unter `engines`. Verwende die angegebene
+Node-22-LTS-Version mit aktuellen Sicherheitsupdates. Systemweite Installationen
+werden durch diese Dateien nicht automatisch umgestellt.
 
 Repository klonen und Abhängigkeiten installieren:
 
 ```bash
 git clone https://github.com/NodalDev/MedNerds.git
 cd MedNerds
-npm install
+npm ci --include=dev
 ```
+
+Die DevDependencies werden auch für den statischen Build benötigt: unter anderem
+Astro Check, TypeScript, Icon-Daten und `js-yaml` für die lokale
+Artikelvorbereitung. `npm ci` installiert die Versionen aus `package-lock.json`;
+das Lockfile zusammen mit `package.json` versionieren. Ein Hosting-Build darf
+die DevDependencies daher nicht mit `--omit=dev` ausschließen.
+
+Künftige GitHub-Actions-Workflows sollen bei `actions/setup-node`
+`node-version-file: .node-version` verwenden. Netlify kann dieselbe Datei lesen;
+abweichende `NODE_VERSION`-Overrides dort vermeiden. Es ist kein neuer
+Deployment-Workflow eingerichtet worden.
+
+| Anlass | Befehl | Umfang |
+| --- | --- | --- |
+| Kleine Änderungen während der Entwicklung | `npm run check:quick` | Astro Check und schnelle lokale Auth-/Profil-, Metadaten-, Filter- und Timerprüfungen; kein Build |
+| Größere Änderungen / vor GitHub | `npm run check:full` | Quick einmal, weitere lokale Unit-/Mocktests, ein regulärer Build mit Pagefind, Prüfungen seiner Ausgabe und isolierte Quellen-Buildtests |
+| Vor öffentlichem Release | `npm run check:release` | Vorerst Alias für Full; keine Bereitstellung oder zusätzliche Cloud-Prüfung |
+
+Alle Stufen arbeiten ohne Datenbankverbindung und ohne Änderungen an
+Quelldateien. Full schreibt reguläre Build-Artefakte und eigene temporäre
+Testkopien. Seine zwei zusätzlichen Quellen-Builds prüfen gezielt die
+Idempotenz des Content-Caches; sie überschreiben kein reguläres `dist/`.
+Die Testlisten sind ausdrücklich aufgezählt, ohne automatische `test-*`-Suche.
+
+Einzelne Tests bleiben direkt ausführbar. Browser-/Live-Tests mit CDP, Worker
+oder Datenbank sind bewusste manuelle Spezialprüfungen. Inventar, Voraussetzungen
+und Sicherheitsgrenzen stehen in [scripts/README.md](scripts/README.md).
+`npx astro check` und `npm run build` bleiben separat verfügbar.
+Der Befehl `npm run build:production` synchronisiert zusätzlich Kommentare mit
+Supabase und ist ausdrücklich kein lokaler Check.
+
+`dev`, `start` und `build` prüfen vorhandene Artikel-UUIDs nur lesend über
+`npm run comments:check`. Fehlt einem veröffentlichten MedDocs-Artikel die ID,
+vorher ausdrücklich `npm run comments:prepare` ausführen und die ergänzte
+Frontmatter-ID prüfen und mit dem Artikel versionieren. Bestehende IDs bei
+Umbenennungen beibehalten; der normale Build vergibt keine IDs.
 
 ## Linksammlung pflegen
 
