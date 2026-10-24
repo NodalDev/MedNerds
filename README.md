@@ -7,6 +7,18 @@ Ziel ist es, medizinisches Wissen strukturiert aufzubereiten und für Studium, k
 
 > **Status:** MedNerds befindet sich aktuell in aktiver Entwicklung.
 
+## Versionierung
+
+Die Projektversion in `package.json` orientiert sich an Semantic Versioning;
+`package-lock.json` führt dieselbe Version. Mit `0.5.0` wurde die zuvor
+uneinheitliche Nummerierung einmalig vereinheitlicht.
+
+- `0.x.y` kennzeichnet die Entwicklungsphase.
+- `1.0.0` steht für den ersten bewusst freigegebenen stabilen Versionsstand.
+- Patch-Versionen kennzeichnen kleinere Fehlerkorrekturen; Minor-Versionen neue Entwicklungsmeilensteine.
+- Git-Tags haben das Format `vX.Y.Z` und stimmen mit `package.json` überein. Sie werden nur für bewusst freigegebene Versionsstände erstellt, nicht automatisch für jeden Commit.
+- SQL-Migrationsversionen bleiben unabhängig von der MedNerds-Projektversion.
+
 ## Bereiche
 
 MedNerds besteht aus mehreren Bereichen mit unterschiedlichen Schwerpunkten:

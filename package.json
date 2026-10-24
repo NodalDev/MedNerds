@@ -1,7 +1,7 @@
 {
   "name": "mednerds-web",
   "type": "module",
-  "version": "2.1.0",
+  "version": "0.5.0",
   "engines": {
     "node": "^22.23.4",
     "npm": ">=10.9.0 <12"
