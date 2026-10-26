@@ -7,6 +7,7 @@ export const sidebarIcons = {
   Anästhesie: 'healthicons:syringe-24px',
   EKG: 'healthicons:heart-cardiogram',
   Echokardiographie: 'healthicons:heart-organ',
+  Medikamente: 'griddy-pills-alt-02-filled',
   Notfallmedizin: 'healthicons:accident-and-emergency',
   Ultraschall: 'healthicons:ultrasound-scanner',
   Diverses: 'healthicons:cardiogram-e',

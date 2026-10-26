@@ -7,11 +7,12 @@ export function disposeLinkPreviews(): void { dispose?.(); dispose = undefined; 
 async function loadPreview(path: string): Promise<ArticlePreview | undefined> {
   let request = cache.get(path);
   if (!request) {
-    request = fetch(previewAssetPath(path), { credentials: 'omit', mode: 'same-origin', redirect: 'error' })
+    request = fetch(previewAssetPath(path), { credentials: 'same-origin', mode: 'same-origin', redirect: 'error' })
       .then(async (response) => {
-        if (!response.ok) return;
+        if (!response.ok) throw new Error('Preview request failed.');
         const value: unknown = await response.json();
-        return isArticlePreview(value, path) ? value : undefined;
+        if (!isArticlePreview(value, path)) throw new Error('Invalid article preview.');
+        return value;
       }).catch(() => { cache.delete(path); return undefined; });
     cache.set(path, request);
   }
@@ -26,9 +27,8 @@ export function initializeLinkPreviews(): void {
   if (!panel || !content) return;
   const canonicalOrigin = panel.dataset.canonicalOrigin ?? location.origin;
   const hover = matchMedia('(any-hover: hover)');
-  const kind = panel.querySelector<HTMLElement>('[data-preview-kind]')!;
+  const breadcrumb = panel.querySelector<HTMLElement>('[data-preview-breadcrumb]')!;
   const title = panel.querySelector<HTMLElement>('[data-preview-title]')!;
-  const parent = panel.querySelector<HTMLElement>('[data-preview-parent]')!;
   const text = panel.querySelector<HTMLElement>('[data-preview-text]')!;
   if (typeof panel.showPopover !== 'function') panel.removeAttribute('popover');
   let active: HTMLAnchorElement | undefined;
@@ -87,10 +87,8 @@ export function initializeLinkPreviews(): void {
       if (current !== generation || active !== link || !link.isConnected) return;
       if (!article || !hover.matches) { close(); return; }
       const preview = selectedPreview(article, target.hash);
-      kind.textContent = preview.kind;
+      breadcrumb.textContent = preview.parent ? `${preview.parent} › ${preview.title}` : preview.title;
       title.textContent = preview.title;
-      parent.textContent = preview.parent ? `Aus: ${preview.parent}` : '';
-      parent.hidden = !preview.parent;
       text.textContent = preview.text ?? '';
       text.hidden = !preview.text;
       panel!.hidden = false;

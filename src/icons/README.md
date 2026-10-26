@@ -27,3 +27,8 @@ illustrations stay in their existing asset directories.
 Starlight 0.41.10 with the new icon source. Check them when upgrading Starlight.
 Starlight-owned search, theme/menu controls and disclosure carets retain their
 native icons. React's ArticleActions keeps its text symbols without another library.
+
+The requested Griddy Icons `pills-alt-02-filled` symbol is stored locally as
+`griddy-pills-alt-02-filled.svg`. Use `<MedNerdsIcon name="griddy-pills-alt-02-filled" />`.
+Its MIT license is included in `public/licenses/griddy-icons-MIT.txt`; see
+`THIRD_PARTY_NOTICES.md` for attribution. No runtime icon download is needed.

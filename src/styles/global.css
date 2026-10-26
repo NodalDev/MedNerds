@@ -346,6 +346,11 @@
     color: var(--sl-color-gray-1);
   }
 
+  :root:has(.mednerds-header[data-product='meddocs']) main .sl-markdown-content .starlight-aside {
+    margin-inline: clamp(0.5rem, 2vw, 1.5rem);
+    overflow-wrap: anywhere;
+  }
+
   .starlight-aside--tip {
     --mn-aside-accent: var(--mn-aside-tip);
     --mn-aside-bg: var(--mn-aside-tip-bg);
@@ -447,6 +452,7 @@
   .mn-sidebar-badge--new { --mn-badge-color: var(--mn-badge-new); }
   .mn-sidebar-badge--top { --mn-badge-color: var(--mn-badge-top); }
   .mn-sidebar-badge--soon { --mn-badge-color: var(--mn-badge-soon); }
+  .mn-sidebar-badge--building,
   .mn-sidebar-badge--planned { --mn-badge-color: var(--mn-badge-planned); }
   .mn-sidebar-badge--popular { --mn-badge-color: var(--mn-badge-popular); }
 

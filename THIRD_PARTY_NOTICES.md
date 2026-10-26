@@ -63,3 +63,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## Griddy Icons
+
+The `pills-alt-02-filled` SVG is from [Griddy Icons](https://github.com/griddy-icons/griddy-icons),
+via the [Iconify Griddy Icons collection](https://github.com/iconify/icon-sets/blob/master/json/griddy-icons.json) (0.2.0).
+Copyright (c) 2025 Griddy Icons. License: MIT.
+The complete license is included in [public/licenses/griddy-icons-MIT.txt](./public/licenses/griddy-icons-MIT.txt).
+The icon is stored locally and rendered through the existing astro-icon integration.

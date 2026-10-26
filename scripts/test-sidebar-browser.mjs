@@ -202,6 +202,23 @@ try {
   await collapsed(false);
   await scrollTo(100);
   await collapsed(true);
+  await viewport(1100);
+  await collapsed(true);
+  await evaluate(`window.medicationsGroup = Array.from(document.querySelectorAll('.sidebar-content .top-level > li > details'))
+    .find(details => details.querySelector(':scope > summary .large')?.textContent.trim() === 'Medikamente')`);
+  assert.ok(await evaluate('!!window.medicationsGroup'));
+  assert.equal(await evaluate("getComputedStyle(window.medicationsGroup.querySelector(':scope > summary')).visibility"), 'visible');
+  assert.equal(await evaluate("window.medicationsGroup.querySelector('svg[data-icon]').getAttribute('data-icon')"), 'griddy-pills-alt-02-filled');
+  assert.deepEqual(await evaluate("Array.from(window.medicationsGroup.querySelectorAll(':scope > ul > li > details > summary .large')).map(label => label.textContent.trim())"),
+    ['Anästhetika & Analgetika', 'Kreislauf & Hämodynamik']);
+  assert.equal(await evaluate("window.medicationsGroup.querySelectorAll('a').length"), 0, 'Empty medication folders have no placeholder links');
+  await evaluate("window.medicationsGroup.querySelector(':scope > summary').focus()");
+  await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter' });
+  await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter' });
+  await collapsed(false);
+  assert.equal(await evaluate('window.medicationsGroup.open'), true, 'The medication icon expands and opens its group without an overview page');
+  assert.equal(await evaluate("document.activeElement === window.medicationsGroup.querySelector(':scope > summary')"), true);
+  console.log('V Empty medication folders and Griddy icon stay accessible in the compact sidebar');
   await navigate('/medtools/');
   assert.equal(await evaluate("!!document.querySelector('.mn-sidebar-toggle')"), false);
   await evaluate("window.scrollTo({top:100,behavior:'instant'}); document.dispatchEvent(new Event('astro:page-load'))");

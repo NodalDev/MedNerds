@@ -297,6 +297,20 @@ if (isMedDocs) {
     const { signal } = collapseListeners;
     toggle.dataset.mednerdsCollapse = 'true';
     toggle.addEventListener('click', handleSidebarToggle, { signal });
+    // Groups without an overview page expand the sidebar instead of linking to a missing page.
+    for (const details of getTopLevelDetails()) {
+      const summary = details.querySelector<HTMLElement>(':scope > summary');
+      if (!summary || getOverviewLink(details)) continue;
+      summary.setAttribute('aria-label', summary.textContent?.trim() ?? '');
+      summary.addEventListener('click', (event) => {
+        if (!isSidebarCollapsed()) return;
+        event.preventDefault();
+        handleSidebarToggle();
+        details.open = true;
+        persistSidebarOpenState();
+      }, { signal });
+    }
+
     window.addEventListener('scroll', handleSidebarScroll, { passive: true, signal });
     desktopSidebar.addEventListener('change', syncSidebarCollapsedState, { signal });
     compactDesktopSidebar.addEventListener('change', syncSidebarCollapsedState, { signal });
@@ -517,7 +531,7 @@ if (isMedDocs) {
         var(--mn-left-rail-collapsed-width);
     }
 
-    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > details {
+    :root.mn-sidebar-collapsed:has(.mn-sidebar-toggle) .sidebar-content .top-level > li > a.mn-sidebar-collapsed-link + details {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;

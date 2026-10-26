@@ -14,7 +14,7 @@ const target = await (await fetch(`${endpoint}/json/new?about:blank`, { method: 
 const socket = new WebSocket(target.webSocketDebuggerUrl);
 await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
 let sequence = 0;
-const pending = new Map(), requests = [], overrides = new Map();
+const pending = new Map(), requests = [], overrides = new Map(), failures = new Map();
 const errors = [];
 let delayedPath, delayedRequest;
 function command(method, params = {}) {
@@ -30,6 +30,16 @@ socket.onmessage = ({ data }) => {
   if (message.method === 'Fetch.requestPaused') {
     const request = message.params, url = new URL(request.request.url);
     requests.push(url.href);
+    if (failures.has(url.pathname)) {
+      const failure = failures.get(url.pathname); failures.delete(url.pathname);
+      if (failure === 'network') void command('Fetch.failRequest', { requestId: request.requestId, errorReason: 'Failed' });
+      else void command('Fetch.fulfillRequest', { requestId: request.requestId,
+        responseCode: typeof failure === 'number' ? failure : 200,
+        responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+        body: Buffer.from('{invalid json').toString('base64'),
+      });
+      return;
+    }
     if (url.pathname === delayedPath) { delayedRequest = request.requestId; return; }
     if (overrides.has(url.pathname)) { void fulfill(request.requestId, overrides.get(url.pathname)); return; }
     void command(url.origin === site ? 'Fetch.continueRequest' : 'Fetch.failRequest', url.origin === site
@@ -59,6 +69,7 @@ async function hover(selector) {
 }
 const visible = "!document.querySelector('#meddocs-link-preview').hidden";
 const title = "document.querySelector('[data-preview-title]').textContent";
+const breadcrumb = "document.querySelector('[data-preview-breadcrumb]').textContent";
 const previewRequests = () => requests.filter(url => new URL(url).pathname.startsWith('/meddocs-previews/'));
 const asset = path => '/meddocs-previews' + path.slice(0, -1) + '.json';
 try {
@@ -69,6 +80,19 @@ try {
   await wait("document.readyState === 'complete' && !!document.querySelector('#meddocs-link-preview')");
   await pause(200);
   assert.equal(previewRequests().length, 0, 'no eager preview network requests');
+  // Observe the options of real browser requests without reading credentials or response bodies.
+  await evaluate(`(() => {
+    const originalFetch = window.fetch.bind(window);
+    window.__previewFetches = [];
+    window.fetch = (input, options) => {
+      const path = new URL(input, location.href).pathname;
+      if (path.startsWith('/meddocs-previews/')) window.__previewFetches.push({
+        path, credentials: options?.credentials, mode: options?.mode, redirect: options?.redirect,
+      });
+      return originalFetch(input, options);
+    };
+  })()`);
+
   await evaluate(`(() => {
     const paragraph = document.createElement('p'); paragraph.id = 'preview-test-links';
     const links = [ ['article', ${JSON.stringify(article)}], ['section', ${JSON.stringify(echo + '#b-mode')}], ['unknown', ${JSON.stringify(echo + '#veraltet')}],
@@ -85,7 +109,8 @@ try {
   assert.equal(previewRequests().length, 0, 'brief hover does not fetch or open a preview');
   await hover('#test-article'); await wait(visible);
   assert.equal(await evaluate(title), 'Allgemeinanästhesie');
-  assert.equal(await evaluate("document.querySelector('[data-preview-kind]').textContent"), 'Artikel');
+  assert.equal(await evaluate(breadcrumb), await evaluate(title));
+  assert.equal(await evaluate("document.querySelector('#meddocs-link-preview [data-preview-parent], #meddocs-link-preview [data-preview-kind], #meddocs-link-preview nav, #meddocs-link-preview a')"), null);
   assert.equal(await evaluate("document.querySelector('#test-article').getAttribute('href')"), article);
   const beforeY = await evaluate('scrollY');
   const cardPoint = await evaluate("(() => { const r = document.querySelector('#meddocs-link-preview').getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; })()");
@@ -95,13 +120,41 @@ try {
   await hover('#test-article'); await pause(200); assert.equal(await evaluate(visible), true, 'returning to the source link keeps it open');
   await press('Escape', 'Escape', 27); assert.equal(await evaluate(visible), false);
 
+  assert.deepEqual(await evaluate('window.__previewFetches[0]'), {
+    path: asset(article), credentials: 'same-origin', mode: 'same-origin', redirect: 'error',
+  }, 'password-protected Netlify previews retain same-origin authentication');
+  await evaluate(`(() => {
+    const paragraph = document.createElement('p');
+    const link = document.createElement('a'); link.id = 'test-preview-retry'; link.textContent = 'Retry preview';
+    paragraph.append(link); document.querySelector('main .sl-markdown-content').prepend(paragraph);
+  })()`);
+  for (const [name, failure] of [['http-401', 401], ['http-403', 403], ['http-500', 500], ['network', 'network'], ['json', 'invalid-json']]) {
+    const path = `/meddocs/test/preview-${name}/`, previewPath = asset(path);
+    overrides.set(previewPath, { path, title: `Retry ${name}`, text: 'Valid preview after a failed request.', sections: {} });
+    failures.set(previewPath, failure);
+    await evaluate(`document.querySelector('#test-preview-retry').href = ${JSON.stringify(path)}`);
+    await hover('#test-preview-retry');
+    await wait(`window.__previewFetches.some(request => request.path === ${JSON.stringify(previewPath)})`);
+    await pause(150);
+    assert.equal(await evaluate(visible), false, `${name}: a failed request leaves the preview closed`);
+    assert.equal(previewRequests().filter(url => new URL(url).pathname === previewPath).length, 1, `${name}: no automatic retry`);
+    await hover('#test-preview-retry'); await wait(visible);
+    assert.equal(await evaluate(title), `Retry ${name}`, `${name}: a later hover shows the successful retry`);
+    assert.equal(previewRequests().filter(url => new URL(url).pathname === previewPath).length, 2);
+    await press('Escape', 'Escape', 27);
+    await hover('#test-preview-retry'); await wait(visible);
+    assert.equal(await evaluate(title), `Retry ${name}`);
+    assert.equal(previewRequests().filter(url => new URL(url).pathname === previewPath).length, 2, `${name}: the valid retry is cached`);
+    await press('Escape', 'Escape', 27);
+  }
+
   await hover('#test-section'); await wait(visible);
   assert.equal(await evaluate(title), 'B-Mode');
-  assert.equal(await evaluate("document.querySelector('[data-preview-kind]').textContent"), 'Unterkapitel');
-  assert.match(await evaluate("document.querySelector('[data-preview-parent]').textContent"), /Physikalische.*Grundlagen/i);
+  assert.match(await evaluate(breadcrumb), /^Physikalische.*Grundlagen › B-Mode$/i);
+  assert.doesNotMatch(await evaluate("document.querySelector('#meddocs-link-preview').textContent"), /Unterkapitel|Aus:/);
   assert.ok((await evaluate("document.querySelector('[data-preview-text]').textContent")).length > 0);
   await hover('#test-unknown'); await wait(`${visible} && ${title} !== 'B-Mode'`);
-  assert.equal(await evaluate("document.querySelector('[data-preview-kind]').textContent"), 'Artikel');
+  assert.equal(await evaluate(breadcrumb), await evaluate(title));
   assert.equal(previewRequests().filter(url => new URL(url).pathname === asset(echo)).length, 1, 'all sections share one cached article asset');
   await press('Escape', 'Escape', 27);
 
@@ -136,12 +189,23 @@ try {
   await pause(100); assert.equal(await evaluate(title), 'Allgemeinanästhesie', 'stale async responses cannot replace the new card');
   await press('Escape', 'Escape', 27);
 
+  const longPath = '/meddocs/test/long-breadcrumb/';
+  const longPage = 'Langer Seitentitel '.repeat(20), longSection = 'Langes Unterkapitel '.repeat(20) + 'x'.repeat(250);
+  overrides.set(asset(longPath), { path: longPath, title: longPage, sections: { abschnitt: { title: longSection } } });
+  await evaluate(`(() => {
+    const paragraph = document.createElement('p'), link = document.createElement('a');
+    link.id = 'test-long'; link.href = ${JSON.stringify(longPath + '#abschnitt')}; link.textContent = 'Lange Breadcrumbs';
+    paragraph.append(link); document.querySelector('main .sl-markdown-content').prepend(paragraph);
+  })()`);
   for (const width of [1440, 768, 375]) for (const theme of ['light', 'dark']) {
     await command('Emulation.setDeviceMetricsOverride', { width, height: 850, deviceScaleFactor: 1, mobile: false });
     await evaluate(`document.documentElement.dataset.theme = '${theme}'`);
     await pause(200);
     const articleWidth = await evaluate('document.documentElement.scrollWidth');
-    await hover('#test-section'); await wait(visible);
+    await hover('#test-long'); await wait(visible);
+    assert.equal(await evaluate(breadcrumb), longPage + ' › ' + longSection);
+    assert.equal(await evaluate("document.querySelector('[data-preview-text]').hidden"), true, 'optional excerpt may be absent');
+    assert.equal(await evaluate("(() => { const element = document.querySelector('[data-preview-breadcrumb]'); const style = getComputedStyle(element); return element.scrollWidth <= element.clientWidth + 1 && element.getBoundingClientRect().height > parseFloat(style.lineHeight); })()"), true, 'long breadcrumb wraps without horizontal overflow');
     assert.equal(await evaluate("(() => {const r=document.querySelector('#meddocs-link-preview').getBoundingClientRect();return r.left>=0&&r.top>=0&&r.right<=document.documentElement.clientWidth&&r.bottom<=innerHeight;})()"), true);
     // Existing offline/blocked article images are outside this feature; the floating card must add no overflow.
     assert.ok(await evaluate('document.documentElement.scrollWidth') <= articleWidth + 1);
@@ -161,7 +225,7 @@ try {
   assert.equal(await evaluate("document.querySelector('#meddocs-link-preview').hidden"), true);
   await command('Emulation.setScriptExecutionDisabled', { value: false });
   assert.deepEqual(errors, []);
-  console.log('✓ Link previews: lazy/cache, article/section/fallback, hover/card, keyboard/Escape, safe text, async race, native navigation, touch/no-JS, themes/viewport');
+  console.log('✓ Link previews: same-origin authentication, HTTP/network/JSON retry, lazy/cache, page/section breadcrumbs, long-title wrapping, hover/card, keyboard/Escape, safe text, async race, native navigation, touch/no-JS, themes/viewport');
 } catch (error) {
   const screen = await command('Page.captureScreenshot', { format: 'png' }).catch(() => null);
   if (screen) await writeFile(join(screenshots, 'meddocs-link-preview-failure.png'), Buffer.from(screen.data, 'base64'));

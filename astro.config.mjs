@@ -250,6 +250,22 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Medikamente',
+          collapsed: true,
+          items: [
+            {
+              label: 'Anästhetika & Analgetika',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/medikamente/anaesthetika-analgetika' } }],
+            },
+            {
+              label: 'Kreislauf & Hämodynamik',
+              collapsed: true,
+              items: [{ autogenerate: { directory: 'meddocs/medikamente/kreislauf-haemodynamik' } }],
+            },
+          ],
+        },
+        {
           label: 'Notfallmedizin',
           collapsed: true,
           items: [

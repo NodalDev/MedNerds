@@ -1,12 +1,12 @@
 import type { StarlightRouteData } from '@astrojs/starlight/route-data';
 
-export type SidebarBadge = 'new' | 'top' | 'soon' | 'planned' | 'popular';
+export type SidebarBadge = 'new' | 'top' | 'soon' | 'building' | 'planned' | 'popular';
 type SidebarEntry = StarlightRouteData['sidebar'][number];
 
 // Texte zentral halten; weitere Sprachen können hier ergänzt werden.
 export const sidebarBadgeLabels: Record<string, Record<SidebarBadge, string>> = {
-  de: { new: 'Neu', top: 'Top', soon: 'Bald', planned: 'Geplant', popular: 'Beliebt' },
-  en: { new: 'New', top: 'Top', soon: 'Soon', planned: 'Planned', popular: 'Popular' },
+  de: { new: 'Neu', top: 'Top', soon: 'Bald', building: 'Im Aufbau', planned: 'Geplant', popular: 'Beliebt' },
+  en: { new: 'New', top: 'Top', soon: 'Soon', building: 'Under construction', planned: 'Planned', popular: 'Popular' },
 };
 
 type BadgeAssignment = (
@@ -17,9 +17,10 @@ type BadgeAssignment = (
 // Hier Status zuweisen oder eine Zeile entfernen, um ihren Badge auszublenden.
 // Gruppen: vollständiger Pfad der Sidebar-Labels; Links: genaue Ziel-URL.
 export const sidebarBadges: readonly BadgeAssignment[] = [
-  { group: ['Anästhesie'], badge: 'planned' },
+  { group: ['Anästhesie'], badge: 'building' },
   { group: ['EKG'], badge: 'planned' },
-  { group: ['Echokardiographie'], badge: 'new' },
+  { group: ['Echokardiographie'], badge: 'popular' },
+  { group: ['Medikamente'], badge: 'building' },
   { group: ['Notfallmedizin'], badge: 'planned' },
   { group: ['Ultraschall'], badge: 'planned' },
   { group: ['Diverses'], badge: 'planned' },
