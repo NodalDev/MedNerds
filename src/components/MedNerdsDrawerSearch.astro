@@ -18,7 +18,9 @@ const searchLabel = Astro.locals.t('search.label');
       if (!button || button.dataset.searchReady === 'true') return;
 
       button.dataset.searchReady = 'true';
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (event) => {
+        // The forwarded click opens Starlight's dialog; keep this click out of its outside-click handler.
+        event.stopPropagation();
         document
           .querySelector<HTMLButtonElement>('site-search button[data-open-modal]')
           ?.click();

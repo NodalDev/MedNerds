@@ -1,0 +1,6 @@
+# Cloudflare-R2-Bilder über die MedNerds-Domain ausliefern
+
+[[redirects]]
+  from = "/media-assets/*"
+  to = "https://media.mednerds.ch/:splat"
+  status = 200

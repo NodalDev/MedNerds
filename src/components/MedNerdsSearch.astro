@@ -1,0 +1,105 @@
+---
+import DefaultSearch from '@astrojs/starlight/components/Search.astro';
+---
+
+<!-- Reuse Starlight's dialog, Pagefind initialization and keyboard/focus handling.
+     The wrapper only adds help to the existing search container; state stays in CSS. -->
+<mednerds-search>
+  <DefaultSearch {...Astro.props} />
+  <template>
+    <div class="mn-search-help">
+      <p class="mn-search-help-title">Was möchtest du wissen?</p>
+      <p>Suche nach medizinischen Begriffen, Abkürzungen oder Themen.</p>
+      <p class="mn-search-keyboard">
+        <kbd>Tab</kbd> Navigieren · <kbd>Enter</kbd> Link öffnen · <kbd>Esc</kbd> Schliessen
+      </p>
+    </div>
+  </template>
+</mednerds-search>
+
+<script>
+  class MedNerdsSearch extends HTMLElement {
+    connectedCallback() {
+      const container = this.querySelector('site-search .search-container');
+      const template = this.querySelector('template');
+      if (!container || !template) return; // Development keeps Starlight's build-only notice.
+      container.append(template.content.cloneNode(true));
+      template.remove(); // Reconnecting the element cannot duplicate the help.
+      this.querySelector('#starlight__search')?.setAttribute('aria-live', 'polite');
+    }
+  }
+
+  if (!customElements.get('mednerds-search')) {
+    customElements.define('mednerds-search', MedNerdsSearch);
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    mednerds-search { display: contents; }
+
+    mednerds-search dialog {
+      --mn-search-viewport-gap: 1rem;
+      --mn-search-frame-space: 2rem;
+      margin: .5rem auto auto;
+      width: calc(100% - 1rem);
+      height: max-content;
+      min-height: 0;
+      max-height: calc(100dvh - var(--mn-search-viewport-gap));
+      border-radius: .5rem;
+    }
+
+    mednerds-search .dialog-frame { min-height: 0; }
+    mednerds-search .search-container { min-width: 0; overflow-wrap: anywhere; }
+
+    #starlight__search .pagefind-ui__form {
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100dvh - var(--mn-search-viewport-gap) - var(--mn-search-frame-space) - 2px);
+    }
+
+    #starlight__search .pagefind-ui__search-input { flex: none; }
+    #starlight__search .pagefind-ui__search-clear.pagefind-ui__suppressed { visibility: hidden; }
+    #starlight__search .pagefind-ui__drawer { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    #starlight__search .pagefind-ui__message { height: auto; }
+
+    #starlight__search :is(input, button, a):focus-visible {
+      outline: 2px solid var(--sl-color-accent);
+      outline-offset: 2px;
+    }
+
+    mednerds-search .mn-search-help {
+      display: none;
+      margin-block-start: 1rem;
+      color: var(--sl-color-gray-2);
+      font-size: var(--sl-text-sm);
+      line-height: 1.6;
+    }
+
+    mednerds-search .search-container:has(.pagefind-ui__search-input:placeholder-shown) .mn-search-help {
+      display: block;
+    }
+
+    mednerds-search .mn-search-help p { margin: 0; }
+    mednerds-search .mn-search-help .mn-search-help-title { color: var(--sl-color-gray-1); font-weight: 600; }
+    mednerds-search .mn-search-help .mn-search-keyboard { margin-block-start: .75rem; font-size: var(--sl-text-xs); }
+    mednerds-search .mn-search-keyboard kbd { font: inherit; font-weight: 600; }
+
+    @media (min-width: 50rem) {
+      mednerds-search dialog {
+        --mn-search-viewport-gap: 8rem;
+        --mn-search-frame-space: 3rem;
+        margin-block-start: 4rem;
+        width: 90%;
+      }
+    }
+
+    @media (max-width: 49.999rem) {
+      #starlight__search { --sl-search-cancel-space: 6rem; }
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      mednerds-search .mn-search-keyboard { display: none; }
+    }
+  }
+</style>

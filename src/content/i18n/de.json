@@ -1,1 +1,13 @@
-{}
+{
+  "pagefind.language": "de",
+  "pagefind.search_label": "MedDocs durchsuchen",
+  "pagefind.one_result": "[COUNT] Ergebnis für «[SEARCH_TERM]»",
+  "pagefind.many_results": "[COUNT] Ergebnisse für «[SEARCH_TERM]»",
+  "pagefind.zero_results": "Keine Ergebnisse für «[SEARCH_TERM]»",
+  "pagefind.searching": "Suche nach «[SEARCH_TERM]» …",
+  "pagefind.load_more": "Weitere Ergebnisse laden",
+  "pagefind.clear_search": "Suche löschen",
+  "pagefind.filters_label": "Filter",
+  "pagefind.alt_search": "Keine Ergebnisse für «[SEARCH_TERM]». Stattdessen Ergebnisse für «[DIFFERENT_TERM]».",
+  "pagefind.search_suggestion": "Keine Ergebnisse für «[SEARCH_TERM]». Versuche eine dieser Suchanfragen:"
+}

@@ -46,6 +46,7 @@ export default defineConfig({
       customCss: ['./src/styles/global.css'],
       components: {
         Header: './src/components/MedNerdsHeader.astro',
+        Search: './src/components/MedNerdsSearch.astro',
         ThemeSelect: './src/components/MedNerdsThemeSelect.astro',
         MobileMenuFooter: './src/components/MedNerdsMobileMenuFooter.astro',
         SiteTitle: './src/components/MedNerdsSiteTitle.astro',
