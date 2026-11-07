@@ -2,6 +2,8 @@
 dist/
 # generated types
 .astro/
+# local Netlify CLI state and Edge runtime cache
+.netlify/
 
 # dependencies
 node_modules/

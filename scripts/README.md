@@ -1,7 +1,7 @@
 # Tests und Wartungswerkzeuge
 
 Node gemäß `../.node-version`, Installation mit `npm ci --include=dev`.
-Die flache Struktur bleibt bestehen: alle 46 Node-Testskripte haben einen
+Die flache Struktur bleibt bestehen: alle 48 Node-Testskripte haben einen
 eigenständigen Zweck. Keine Löschungen, Verschiebungen, neue Testbibliothek oder
 neuer Runner. Seltene Nutzung oder überlappende Themen sind kein Redundanznachweis.
 
@@ -19,13 +19,13 @@ Node-Runner führt die Dateien mit `--test-concurrency=1` sequenziell aus. Ein
 fehlgeschlagener Teil beendet die `&&`-Kette. Keine Globs wie `scripts/test-*.mjs`:
 darunter liegen auch echte Datenbank-/Browser-Runner.
 
-Full prüft 21 der 46 Testskripte automatisch. Der isolierte Quellen-Buildtest
+Full prüft 21 der 48 Testskripte automatisch. Der isolierte Quellen-Buildtest
 benötigt bewusst zwei Builds derselben Fixture-Kopie: Der zweite prüft stabile
 Zitationsnummern nach erneutem Laden des Content-Caches. Das ist zusätzlich zum
 einmaligen regulären Build erforderlich und keine zweite reguläre Buildausgabe.
 Beide Fixture-Builds teilen genau eine private Arbeitskopie und werden bereinigt.
 
-Die 16 CDP-Browsertests brauchen einen separat gestarteten Browser und passende
+Die CDP-Browsertests brauchen einen separat gestarteten Browser und passende
 lokale Server; fünf weitere Node-Spezialtests benötigen Worker, PostgreSQL oder
 gehören zum historischen Cloud-Ablauf. Keine dieser Voraussetzungen wird von
 den Standardchecks gestartet. Tests mit eingebauten API-/HTTP-Mocks zählen
@@ -72,6 +72,10 @@ Aufruf: `node --experimental-strip-types scripts/test-media-urls.mjs`.
 
 ## Manuelle Spezialtests: außerhalb aller Standardchecks
 
+`node --experimental-strip-types scripts/test-preview-access.mjs` prüft die
+Edge-Zugriffsschicht mit frischen In-Memory-Testdaten ohne Netlify oder Supabase.
+Einrichtung, CLI und Grenzen: [Preview Access](../docs/deployment/preview-access.md).
+
 CDP bedeutet ein bereits gestarteter lokaler Chrome/Chromium mit Debug-Port.
 Die Kopfzeilen der Skripte nennen Ports und gegebenenfalls `*_SITE`/`*_CDP`-
 Variablen. Bei parallelen Läufen Ports und Screenshotziele trennen. Keine
@@ -79,6 +83,7 @@ persönlichen Browserprofile verwenden und keine Server fremder Läufe beenden.
 
 | Datei | Voraussetzung / Zweck / Grenze |
 | --- | --- |
+| `test-preview-access-browser.mjs` | Regulärer Build + CDP; echte Gate-Handler mit temporären Testschlüsseln vor lokalen Dateien. Login/Logout, Responsive, Suche und MedCases-Fragmente; keine echte Netlify-Ratelimit-/CDN-Prüfung |
 | `test-auth-browser.mjs` | Lokaler Build + CDP; Auth-, OTP-, Profil- und Lösch-UI mit blockierten/gemockten externen Requests |
 | `test-link-resources-browser.mjs` | Regulärer Build zum Lesen + CDP; eigener isolierter Dev-Server mit Ressourcen-Fixtures |
 | `test-medblog-browser.mjs` | Lokaler Build + CDP; Blog-Filter, Links und responsive Darstellung |
