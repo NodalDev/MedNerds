@@ -4,6 +4,11 @@ import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import icon from 'astro-icon';
+import { satteri } from '@astrojs/markdown-satteri';
+import { mediaUrlPlugin } from './src/lib/media/markdown.ts';
+
+// PROD also applies to local preview builds, which have no Netlify proxy.
+const useMediaProxy = process.env.NETLIFY === 'true';
 
 // Starlight autogenerate cannot interleave direct articles and explicit subgroups.
 // These Echo articles are drafts: omit their explicit slugs from production.
@@ -18,6 +23,9 @@ function echoDraftItems(slugs) {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://mednerds.ch',
+  markdown: {
+    processor: satteri({ hastPlugins: [mediaUrlPlugin(useMediaProxy)] }),
+  },
   redirects: {
     '/meddocs/echokardiographie/theorie-grundlagen/test/': '/meddocs/echokardiographie/grundlagen-technik/anatomie-des-herzens/',
   },
@@ -352,6 +360,7 @@ export default defineConfig({
     icon({ include: { tabler: ['*'], healthicons: ['*'], 'simple-icons': ['*'] } }),
   ],
   vite: {
+    define: { 'import.meta.env.MEDNERDS_MEDIA_PROXY': JSON.stringify(useMediaProxy) },
     plugins: [tailwindcss()],
   },
 });

@@ -132,7 +132,7 @@ wenn verlässliche redaktionelle Angaben vorliegen.
 ## Abbildungen
 
 Neue inhaltliche MedDocs-Abbildungen verwenden `MedDocsFigure`. Bestehende
-Markdown-Bilder werden nicht automatisch umgeschrieben. Andere Produktbereiche
+Markdown-Bilder erhalten dadurch keine Lightbox. Andere Produktbereiche
 können die neutrale `MediaFigure` verwenden; beide nutzen dieselbe zentrale
 Lightbox-Initialisierung im PageFrame. Es werden ausschließlich markierte
 Figures eingebunden, keine sonstigen Bilder oder Logos.
@@ -153,13 +153,13 @@ import image from './abbildung.webp';
 - `src`: lokales Astro-`ImageMetadata` (optimierte Vorschau) oder URL/Dateipfad
   als String (normales `<img>`). Bei String-Quellen bekannte `width` und `height`
   mitgeben, um Platz vor dem Laden zu reservieren. Es gibt keine externen
-  Größenabfragen und keine fest konfigurierte Medien-Domain.
+  Größenabfragen. Die R2-Ausgabe über den Medien-Proxy ist unten beschrieben.
 - `fullSrc`: große Bilddatei für Lightbox und normalen Link ohne JavaScript;
   ohne Angabe wird die ursprüngliche `src`-Datei verwendet.
 - `downloadable`: standardmäßig `false`. Bei `true` lädt die offizielle
   Fancybox-Toolbar `downloadSrc`, sonst `fullSrc` bzw. die ursprüngliche Datei.
   `downloadFilename` ist optional. Browserregeln für Downloads von anderen
-  Domains bleiben maßgeblich; es wird kein Download-Proxy eingerichtet.
+  Domains bleiben maßgeblich; R2-Dateien nutzen auf Netlify denselben Medien-Proxy.
   `MedDocsFigure` zeigt zusätzlich einen direkten Link in der Metazeile zur
   selben Datei. Das Formatlabel kommt aus `downloadFilename`. Ohne explizites
   `downloadSrc` weist eine Development-Warnung auf den verwendeten Fallback hin.
@@ -190,6 +190,70 @@ Captions sind Text, kein HTML. Creator, Organisation, Lizenz und explizite Quell
 erscheinen auch in Fancybox; Lizenz und Quelle sind dort ebenfalls verlinkt.
 Der Showcase verwendet vorhandenes Branding mit dessen eigenen Rechtehinweisen,
 keine erfundene Creative-Commons-Lizenz.
+
+### Cloudflare-R2-Bilder
+
+Redaktioneller Ablauf: Bild bei Cloudflare R2 hochladen, Preview-, Full- und
+gegebenenfalls Source-URL kopieren und **unverändert** in `MedDocsFigure` einfügen.
+Die Original-URLs bleiben in den MDX-Quelldateien; zusätzliche Schritte entfallen.
+
+`resolveMediaUrl()` in `src/lib/media/urls.ts` wandelt ausschließlich die HTTPS-Origin
+`https://media.mednerds.ch` bei der Ausgabe in `/media-assets/…` um. Pfadschreibung,
+Encoding, Query und Fragment bleiben erhalten. `MediaFigure` und die gemeinsame
+Download-Auswahl verwenden diesen Resolver für Vorschau, Lightbox und Download,
+auch wenn die Props aus Frontmatter oder Datenmodulen kommen. Native Markdown-Bilder
+und wörtliche `<img src="…">`-/Medienlink-Attribute in MDX werden zusätzlich durch
+`src/lib/media/markdown.ts` in Astros vorhandener Sätteri-AST-Pipeline verarbeitet.
+Andere Link-Hosts sowie Text und Code bleiben unverändert. Neue dynamische Bilder
+verwenden `MedDocsFigure`/`MediaFigure`; freie MDX-Ausdrücke und eigene Komponenten
+werden nicht umgeschrieben. R2-`srcset`, Video-Poster und CSS-Hintergründe werden
+derzeit nicht verwendet und besitzen keine zusätzliche Transformation. Lokale
+Astro-Bilder einschließlich ihrer generierten responsiven Varianten bleiben erhalten.
+
+`astro.config.mjs` aktiviert die Umschreibung ausschließlich bei `NETLIFY=true`
+(Netlifys automatisch gesetzte Build-Variable), nicht anhand von `PROD`. Gewöhnliches
+`npm run dev` und `npm run build` mit anschließendem `npm run preview` behalten daher
+die R2-URLs. Netlify Dev kann den vorhandenen Rewrite ausführen; für die Proxy-Ausgabe
+muss auch dessen Astro-Prozess `NETLIFY=true` erhalten. Ohne Marker bleiben die
+Original-URLs nutzbar. Ein ausdrücklich mit diesem Marker erzeugter Testbuild braucht
+beim Servieren ebenfalls einen Proxy; für normale lokale Preview ohne Marker neu bauen.
+
+Vorausgesetzt wird die bestehende Regel in `netlify.toml`:
+
+```toml
+[[redirects]]
+  from = "/media-assets/*"
+  to = "https://media.mednerds.ch/:splat"
+  status = 200
+```
+
+Sie vermeidet direkte Browserverbindungen zur Medien-Domain, die in einzelnen
+institutionellen Netzen am HTTPS-Proxy scheitern. Es gibt keine zusätzliche Function,
+Bildoptimierung oder lokale Kopie. Für eine spätere Preview-Zugangskontrolle bleibt
+`/media-assets/*` geschützt; es wird keine öffentliche Ausnahme eingerichtet.
+
+Nach einem späteren Deployment mit bestehender Sitzung im Browser prüfen: Preview
+und Lightbox laden über dieselbe Website-Origin ohne Redirect zu R2, Downloads sind
+vollständig, MIME-Typen passen zur Datei. Auch Cache-Header, Range-Anfragen und große
+Originaldateien prüfen. Die Vermittlung verursacht Netlify-Datentransfer; Upstream-
+Caching ist plattformabhängig. Netlify dokumentiert ein [Proxy-Zeitlimit von
+26 Sekunden](https://docs.netlify.com/manage/routing/redirects/rewrites-proxies/)
+und [kein standardmäßig aktiviertes CDN-Caching für Proxy-Antworten](https://docs.netlify.com/build/caching/caching-overview/).
+Bewusst werden keine zusätzlichen Cache-Regeln gesetzt, die mit künftigem Preview
+Access kollidieren; tatsächliche Upstream-/Cache-Header müssen live geprüft werden.
+
+Gezielte Tests (keine Remote-Zugriffe):
+
+```sh
+node --experimental-strip-types scripts/test-media-urls.mjs
+# Nach einem normalen lokalen Build:
+node --experimental-strip-types scripts/test-media-urls.mjs --built=local
+# Nach einem ausschließlich lokal mit NETLIFY=true simulierten Netlify-Build:
+node --experimental-strip-types scripts/test-media-urls.mjs --built=netlify
+# Browsertest mit diesem Build, lokaler Preview und Chrome/CDP:
+# MEDIA_PROXY_BUILD=true setzen; optionale Server-/CDP-URLs siehe Skript.
+node --experimental-strip-types scripts/test-media-figures-browser.mjs
+```
 
 Browser-Regressionstest mit laufendem Astro-Dev-Server und Headless-Chrome/CDP:
 

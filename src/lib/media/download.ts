@@ -1,5 +1,5 @@
 import type { ImageMetadata } from 'astro';
-import { validateFigureUrl } from './urls.ts';
+import { resolveMediaUrl, validateFigureUrl } from './urls.ts';
 
 type DownloadOptions = {
   src: ImageMetadata | string;
@@ -15,10 +15,10 @@ const downloadFormats = new Map([
 /** Shared source selection for the figure's native link and Fancybox toolbar. */
 export function resolveFigureDownload(options: DownloadOptions): string | undefined {
   if (!options.downloadable) return undefined;
-  return validateFigureUrl(
+  return resolveMediaUrl(validateFigureUrl(
     options.downloadSrc || options.fullSrc ||
       (typeof options.src === 'string' ? options.src : options.src.src),
-  );
+  ));
 }
 
 /** Use the filename alone; signed URLs and URL suffixes are not format evidence. */

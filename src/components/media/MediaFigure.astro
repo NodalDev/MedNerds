@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
-import { validateFigureUrl } from '../../lib/media/urls';
+import { resolveMediaUrl, validateFigureUrl } from '../../lib/media/urls';
 import { resolveFigureDownload } from '../../lib/media/download';
 import type { FigureMetadata } from '../../lib/media/figure-metadata';
 
@@ -30,8 +30,8 @@ const {
   downloadable = false, downloadSrc, downloadFilename, width, height,
   class: className,
 } = Astro.props;
-const previewSrc = typeof src === 'string' ? validateFigureUrl(src) : src.src;
-const imageHref = fullSrc ? validateFigureUrl(fullSrc) : previewSrc;
+const previewSrc = typeof src === 'string' ? resolveMediaUrl(validateFigureUrl(src)) : src.src;
+const imageHref = fullSrc ? resolveMediaUrl(validateFigureUrl(fullSrc)) : previewSrc;
 const downloadHref = resolveFigureDownload({ src: previewSrc, fullSrc: imageHref, downloadable, downloadSrc });
 const captionText = lightboxMetadata?.caption ?? caption;
 const titleText = lightboxMetadata?.captionTitle ?? captionTitle?.trim();

@@ -2,12 +2,18 @@ import assert from 'node:assert/strict';
 import { validateFigureUrl } from '../src/lib/media/urls.ts';
 import { getFigureDownloadLabel, resolveFigureDownload } from '../src/lib/media/download.ts';
 import { createFigureMetadata } from '../src/lib/media/figure-metadata.ts';
+import { readFile } from 'node:fs/promises';
 
 // Use an Astro dev server (the showcase is a draft) and local headless Chrome/CDP.
 // No additional browser dependency is needed. Run with --experimental-strip-types.
 const site = process.env.MEDIA_SITE ?? 'http://127.0.0.1:4325';
 const endpoint = process.env.MEDIA_CDP ?? 'http://127.0.0.1:9223';
-const route = '/meddocs/diverses/beispielartikel/';
+// Optional built-site mode checks routing with fixture bytes, never the remote R2 service.
+const proxyBuild = process.env.MEDIA_PROXY_BUILD === 'true';
+const route = proxyBuild ? '/meddocs/anaesthesie/target-controlled-infusion/' : '/meddocs/diverses/beispielartikel/';
+const proxyRequests = [];
+const directRequests = [];
+const fixture = proxyBuild ? await readFile('src/assets/Logos/MedNerds - icon.webp') : undefined;
 const marker = '[data-mednerds-fancybox]';
 for (const url of ['/image.webp', './image.webp', 'https://example.org/a.webp?signature=a%2Bb']) {
   assert.equal(validateFigureUrl(url), url);
@@ -66,6 +72,22 @@ const pending = new Map();
 const errors = [];
 socket.onmessage = ({ data }) => {
   const message = JSON.parse(data);
+  if (proxyBuild && message.method === 'Fetch.requestPaused') {
+    const { requestId, request } = message.params;
+    const url = new URL(request.url);
+    let response;
+    if (url.hostname === 'media.mednerds.ch') {
+      directRequests.push(request.url);
+      response = command('Fetch.failRequest', { requestId, errorReason: 'BlockedByClient' });
+    } else if (url.origin !== new URL(site).origin) {
+      response = command('Fetch.failRequest', { requestId, errorReason: 'BlockedByClient' });
+    } else if (url.pathname.startsWith('/media-assets/')) {
+      proxyRequests.push(url.pathname);
+      response = command('Fetch.fulfillRequest', { requestId, responseCode: 200,
+        responseHeaders: [{ name: 'Content-Type', value: 'image/webp' }], body: fixture.toString('base64') });
+    } else response = command('Fetch.continueRequest', { requestId });
+    response.catch(error => errors.push(error.message));
+  }
   if (message.id && pending.has(message.id)) {
     const { resolve, reject } = pending.get(message.id);
     pending.delete(message.id);
@@ -187,6 +209,41 @@ async function state() {
 
 try {
   await command('Page.enable'); await command('Runtime.enable');
+  if (proxyBuild) {
+    await command('Fetch.enable', { patterns: [{ urlPattern: '*' }] });
+    for (const width of [375, 1440]) {
+      await command('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: width < 600 });
+      await navigate(route);
+      await waitFor("!!document.querySelector('style[data-mednerds-fancybox-styles]')");
+      for (const theme of ['light', 'dark']) {
+        await evaluate(`document.documentElement.dataset.theme = '${theme}';
+          document.querySelector('${marker} img').scrollIntoView({block:'center'})`);
+        await waitFor(`document.querySelector('${marker} img').naturalWidth > 0`);
+        await open(0);
+        assert.equal(await evaluate("document.querySelector('.mn-fancybox .is-selected img').getAttribute('src').startsWith('/media-assets/')"), true);
+        await evaluate(`(() => {
+          const original = HTMLAnchorElement.prototype.click;
+          HTMLAnchorElement.prototype.click = function () { window.testDownload = {href:this.href,filename:this.download}; };
+          try { document.querySelector('.mn-fancybox [data-carousel-download]').click(); }
+          finally { HTMLAnchorElement.prototype.click = original; }
+        })()`);
+        const download = await evaluate('window.testDownload');
+        assert.equal(download.href, `${site}/media-assets/meddocs/anaesthesie/TCI/Kompartimentmodell_full.png`);
+        assert.equal(await evaluate(`document.querySelector('.figure-credit a[download]').href`), download.href);
+        assert.equal(await evaluate(`(async () => {
+          const response = await fetch(${JSON.stringify(download.href)});
+          return response.ok && (await response.blob()).size > 0;
+        })()`), true);
+        await close();
+      }
+    }
+    assert.deepEqual(directRequests, []);
+    assert.ok(proxyRequests.some(path => path.endsWith('_preview.webp')));
+    assert.ok(proxyRequests.some(path => path.endsWith('_large.webp')));
+    assert.ok(proxyRequests.some(path => path.endsWith('_full.png')));
+    assert.deepEqual(errors, []);
+    console.log('V Built proxy routing: preview, Fancybox/full, source downloads, mobile/desktop light/dark; no direct R2 requests (fixture bytes, no live proxy validation)');
+  } else {
   await navigate(route);
   await waitFor("!!document.querySelector('style[data-mednerds-fancybox-styles]')");
   await waitFor("document.querySelector('[data-figure-citation-action]')?.hidden === false");
@@ -527,6 +584,7 @@ try {
   await waitFor(`location.href === ${JSON.stringify(fallback)} && !!document.querySelector('body > img')`);
   assert.deepEqual(errors, []);
   console.log('✓ Figure alignment/title/description, metadata/citations, Clipboard API/accessible feedback, safe captions/credits, downloads, galleries, keyboard/fullscreen/touch, responsive light/dark, reduced motion, opt-in loading and no-JS fallback');
+  }
 } finally {
   await command('Emulation.setScriptExecutionDisabled', { value: false });
   socket.close();

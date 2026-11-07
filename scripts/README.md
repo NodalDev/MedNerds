@@ -1,7 +1,7 @@
 # Tests und Wartungswerkzeuge
 
 Node gemäß `../.node-version`, Installation mit `npm ci --include=dev`.
-Die flache Struktur bleibt bestehen: alle 42 Node-Testskripte haben einen
+Die flache Struktur bleibt bestehen: alle 46 Node-Testskripte haben einen
 eigenständigen Zweck. Keine Löschungen, Verschiebungen, neue Testbibliothek oder
 neuer Runner. Seltene Nutzung oder überlappende Themen sind kein Redundanznachweis.
 
@@ -19,7 +19,7 @@ Node-Runner führt die Dateien mit `--test-concurrency=1` sequenziell aus. Ein
 fehlgeschlagener Teil beendet die `&&`-Kette. Keine Globs wie `scripts/test-*.mjs`:
 darunter liegen auch echte Datenbank-/Browser-Runner.
 
-Full prüft 21 der 42 Testskripte automatisch. Der isolierte Quellen-Buildtest
+Full prüft 21 der 46 Testskripte automatisch. Der isolierte Quellen-Buildtest
 benötigt bewusst zwei Builds derselben Fixture-Kopie: Der zweite prüft stabile
 Zitationsnummern nach erneutem Laden des Content-Caches. Das ist zusätzlich zum
 einmaligen regulären Build erforderlich und keine zweite reguläre Buildausgabe.
@@ -65,6 +65,11 @@ Diese Prüfungen überschneiden sich fachlich, aber nicht im Prüfziel: zum
 Beispiel Timer-Core/Sound-Tool, Rollenprojektion/gerenderte Rolle und
 Lösch-Handler/Account-Browserflow sind keine austauschbaren Tests.
 
+Der zusätzliche lokale Medientest `test-media-urls.mjs` prüft Resolver und die
+vorhandene Markdown-/MDX-Pipeline ohne Server oder Remote-Zugriff. Nach einem
+Build prüft `--built=local` beziehungsweise `--built=netlify` auch die Ausgabe.
+Aufruf: `node --experimental-strip-types scripts/test-media-urls.mjs`.
+
 ## Manuelle Spezialtests: außerhalb aller Standardchecks
 
 CDP bedeutet ein bereits gestarteter lokaler Chrome/Chromium mit Debug-Port.
@@ -87,7 +92,7 @@ persönlichen Browserprofile verwenden und keine Server fremder Läufe beenden.
 | `test-meddocs-link-previews-browser.mjs` | Lokaler Server + CDP; Hover, Tastatur, Touch und Lazy Loading |
 | `test-meddocs-references-browser.mjs` | CDP + ausdrücklich behaltene Quellen-Testkopie; Dialog, Exporte und Layout. Vorbereitung/Cleanup siehe [Etappe-3-Bericht](../docs/audits/2026-10-24-tests-build.md) |
 | `test-meddocs-toc-browser.mjs` | Lokaler Server + CDP; Scrollspy, Accordion und Keyboard/Reduced Motion |
-| `test-media-figures-browser.mjs` | Lokaler Dev-Server + CDP; Figure, Fancybox, Download, Clipboard und Zoom |
+| `test-media-figures-browser.mjs` | Lokaler Dev-Server + CDP; Figure, Fancybox, Download, Clipboard und Zoom. Mit `MEDIA_PROXY_BUILD=true`: simulierter Netlify-Build + Preview/CDP, R2-Routing mit lokalen Bild-Fixtures |
 | `test-osce-timer-browser.mjs` | Lokaler Build + CDP; Timer-/Sound-/Fullscreen-Oberfläche |
 | `test-sidebar-browser.mjs` | Lokaler Build + CDP; Sidebar-Zustände und responsive Interaktion |
 | `test-medcases-production-live.mjs` | Trotz Name ausschließlich Loopback-Worker `127.0.0.1:8787` im Production-Modus; erzeugt lokale Sessions und prüft Origin-/Sicherheitsregeln |
